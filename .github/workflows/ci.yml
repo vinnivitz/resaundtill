@@ -1,0 +1,43 @@
+name: Deploy Docker Image
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  docker:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v3
+          with:
+            lfs: true
+        
+        - name: Set up QEMU
+          uses: docker/setup-buildx-action@v2
+          with:
+            install: true
+          
+        - name: Docker Labels
+          id: meta
+          uses: docker/metadata-action@v4
+          with:
+            images: |
+              vinnivitz/resaundtill
+              docker.vinnipedia.org/${{ github.repository }}
+            tags: |
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+        - name: Log in to Docker Hub
+          uses: docker/login-action@v2
+          with:
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_TOKEN }}
+        - name: Build and push
+          uses: docker/build-push-action@v3
+          with:
+            platforms: linux/amd64
+            push: true
+            tags: ${{ steps.meta.outputs.tags }}
