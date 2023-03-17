@@ -1,2 +1,4 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<svelte:head>Resa und Till - Reiseblog</svelte:head>
+
+<h1>Willkommen auf dem Reisblog von Till und Resa</h1>
+<p>Hier könnt ihr immer auf dem laufenden bleiben, wo wir beide uns gerade rumtreiben und was wir spannendes erleben.</p>
