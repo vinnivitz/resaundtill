@@ -1,0 +1,9 @@
+*
+!src
+!static
+!package.json
+!pnpm-lock.yaml
+!postcss.config.cjs
+!svelte.config.js
+!tsconfig.json
+!vite.config.ts
