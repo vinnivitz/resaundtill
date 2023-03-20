@@ -25,7 +25,7 @@ jobs:
           with:
             images: |
               vinnivitz/resaundtill
-              docker.vinnipedia.org/vinni/resaundtill
+              docker.vinnipedia.org/${{ github.repository }}
             tags: |
               type=semver,pattern={{version}}
               type=semver,pattern={{major}}.{{minor}}
@@ -40,5 +40,5 @@ jobs:
           uses: docker/build-push-action@v3
           with:
             platforms: linux/amd64
-            push: true
-            tags: docker.vinnipedia.org/vinni/resaundtill:latest
+            load: true
+            tags: ${{ steps.meta.outputs.tags }}
