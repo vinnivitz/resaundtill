@@ -24,18 +24,20 @@ jobs:
           uses: docker/metadata-action@v4
           with:
             images: |
-              vinnivitz/resaundtill
+              ${{ github.repository }}
               docker.vinnipedia.org/${{ github.repository }}
             tags: |
               type=semver,pattern={{version}}
               type=semver,pattern={{major}}.{{minor}}
               type=semver,pattern={{major}}
+
         - name: Log in to the Docker registry
           uses: docker/login-action@v2
           with:
             registry: docker.vinnipedia.org/v2
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_TOKEN }}
+
         - name: Build and push
           uses: docker/build-push-action@v3
           with:
