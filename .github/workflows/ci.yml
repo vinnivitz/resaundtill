@@ -25,7 +25,7 @@ jobs:
           with:
             images: |
               vinnivitz/resaundtill
-              docker.vinnipedia.org/${{ github.repository }}
+              docker.vinnipedia.org/v2/${{ github.repository }}
             tags: |
               type=semver,pattern={{version}}
               type=semver,pattern={{major}}.{{minor}}
