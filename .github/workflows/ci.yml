@@ -42,5 +42,5 @@ jobs:
           uses: docker/build-push-action@v3
           with:
             platforms: linux/amd64
-            load: true
+            push: true
             tags: ${{ steps.meta.outputs.tags }}
