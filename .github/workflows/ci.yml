@@ -46,4 +46,4 @@ jobs:
           with:
             platforms: linux/amd64
             push: true
-            tags: docker.vinnipedia.org/vinnivitz/resaundtill
+            tags: ${{ steps.meta.outputs.tags }}
