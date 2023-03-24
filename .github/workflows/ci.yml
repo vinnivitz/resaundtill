@@ -27,7 +27,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            foo/bar
+            ${{ github.repository }}
             docker.vinnipedia.org/${{ github.repository }}
           tags: |
             type=semver,pattern={{version}}
