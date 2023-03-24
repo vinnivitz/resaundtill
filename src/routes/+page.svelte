@@ -7,4 +7,4 @@
     <p>Hier könnt ihr immer auf dem laufenden bleiben, wo wir beide uns gerade rumtreiben und was wir spannendes erleben.</p>
 </main>
 
-<footer>Created by VinniVitz with love!</footer>
+<footer>Created by VinniVitz with love from Dresden!</footer>
