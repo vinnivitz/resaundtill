@@ -7,11 +7,11 @@ import autoprefixer from 'autoprefixer';
 const config = {
 	plugins: [
 		//Some plugins, like tailwindcss/nesting, need to run before Tailwind,
-		tailwindcss,
-		nested,
+		tailwindcss(),
+		nested(),
 		cssnano({ preset: 'default' }),
 		//But others, like autoprefixer, need to run after,
-		autoprefixer
+		autoprefixer()
 	]
 }
 

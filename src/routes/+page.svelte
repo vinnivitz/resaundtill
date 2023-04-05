@@ -1,12 +1,8 @@
-<svelte:head>Resa und Till - Reiseblog</svelte:head>
+<script lang="ts">
+	import Map from '$lib/components/Map.svelte';
 
-<head />
+</script>
 
-<main>
-	<h1>Willkommen auf dem Reisblog von Till und Resa</h1>
-	<p>
-		Hier könnt ihr immer auf dem laufenden bleiben, wo wir beide uns gerade rumtreiben und was wir Spannendes erleben.
-	</p>
-</main>
+<svelte:head><title>Resa und Till - Reiseblog</title></svelte:head>
 
-<footer>Created by VinniVitz with love from Dresden!</footer>
+<Map />
