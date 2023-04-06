@@ -29,6 +29,7 @@
 	</div>
 	<div class="w-full bg-gradient-to-t from-black to-transparent">
 		<h2 class="p-5">
+			<div class="font-medium text-gray-300 text-md dark:text-gray-100" />
 			<div class="font-medium text-gray-300 text-md dark:text-gray-100">{post.title}</div>
 		</h2>
 	</div>

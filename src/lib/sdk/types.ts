@@ -1,4 +1,9 @@
-import type { ID } from "@directus/sdk";
+import type { ID } from '@directus/sdk';
+
+export type DirectusLocation = {
+	coordinates: number[];
+	type: string;
+};
 
 export type BlogPostEntry = {
 	id: ID;
@@ -7,15 +12,15 @@ export type BlogPostEntry = {
 	date: string;
 	title: string;
 	description?: string;
-	location?: string;
-    images?: BlogPostImage[];
+	location?: DirectusLocation;
+	images?: BlogPostImage[];
 };
 
 export type BlogPostImage = {
 	id: ID;
 	directus_files_id: ID;
 	resaundtill_id: ID;
-}
+};
 
 export enum BlogPostStatus {
 	public = 'public',

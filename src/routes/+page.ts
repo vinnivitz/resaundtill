@@ -14,7 +14,7 @@ export const load: PageLoad = async () => {
 
 	if (!response.data) throw error(500);
 
-	const posts: BlogPostEntry[] = response.data;
+	const posts = response.data;
 
 	return { posts };
 };
