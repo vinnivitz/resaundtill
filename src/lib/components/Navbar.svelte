@@ -4,13 +4,11 @@
 	import { _ } from 'svelte-i18n';
 	import clickOutside from '$lib/utils/clickOutside';
 	import { page } from '$app/stores';
-	import Icon from 'svelte-icons-pack/Icon.svelte';
-	import IoLanguage from 'svelte-icons-pack/io/IoLanguage';
 
-	let currentRoute: string = Page.home;
+	// let currentRoute: string = Page.home;
 	let hidden = true;
 
-	page.subscribe((path) => (currentRoute = path.url.pathname));
+	// page.subscribe((path) => (currentRoute = path.url.pathname));
 </script>
 
 <Navbar>
@@ -26,19 +24,19 @@
 	</div>
 
 	<NavUl {hidden}>
-		<NavLi href={Page.home} active={currentRoute === Page.home}>
+		<NavLi href={Page.home} active={$page.url.pathname === Page.home}>
 			<span class="text-md md:text-xl">{$_('nav.map')}</span>
 		</NavLi>
-		<NavLi href={Page.travel} active={currentRoute === Page.travel}>
+		<NavLi href={Page.travel} active={$page.url.pathname === Page.travel}>
 			<span class="text-xl">{$_('nav.travel')}</span>
 		</NavLi>
-		<NavLi href={Page.gallery} active={currentRoute === Page.gallery}>
+		<NavLi href={Page.gallery} active={$page.url.pathname === Page.gallery}>
 			<span class="text-xl">{$_('nav.gallery')}</span>
 		</NavLi>
-		<NavLi href={Page.support} active={currentRoute === Page.support}>
+		<NavLi href={Page.support} active={$page.url.pathname === Page.support}>
 			<span class="text-xl">{$_('nav.support-us')}</span>
 		</NavLi>
-		<NavLi href={Page.legals} active={currentRoute === Page.legals}>
+		<NavLi href={Page.legals} active={$page.url.pathname === Page.legals}>
 			<span class="text-xl">{$_('nav.legals')}</span>
 		</NavLi>
 	</NavUl>

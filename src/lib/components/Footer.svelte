@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Footer, FooterCopyright, FooterLinkGroup, FooterBrand, FooterLink } from 'flowbite-svelte';
+	import { Footer, FooterCopyright } from 'flowbite-svelte';
 </script>
 
 <Footer footerType="custom" customClass="leading-10 m-1">
-	<FooterCopyright href="/" by="Vinzenz Fuhrmann." year={new Date().getFullYear()} />
+	<FooterCopyright href="https://github.com/vinnivitz" target="_blank" by="Vinzenz Fuhrmann." year={new Date().getFullYear()} />
 </Footer>
