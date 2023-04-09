@@ -13,6 +13,6 @@ const config = {
 		//But others, like autoprefixer, need to run after,
 		autoprefixer()
 	]
-}
+};
 
-export default config
+export default config;

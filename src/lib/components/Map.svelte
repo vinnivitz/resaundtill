@@ -7,7 +7,6 @@
 	onMount(async () => {
 		const L = await import('leaflet');
 
-
 		const map = L.map('map').setView([coords[coords.length - 1][1], coords[coords.length - 1][0]], 13);
 		map.zoomControl.remove();
 		map.zoomOut(3);
@@ -27,7 +26,7 @@
 		const markers = coords.map((coord) => L.marker([coord[1], coord[0]], { icon }).addTo(map));
 		if (markers.length > 1) {
 			for (let i = 0; i < markers.length - 1; i++) {
-				L.polyline([markers[i].getLatLng(), markers[i + 1].getLatLng()], {color: 'blue'}).addTo(map);
+				L.polyline([markers[i].getLatLng(), markers[i + 1].getLatLng()], { color: 'blue' }).addTo(map);
 			}
 		}
 	});
@@ -36,7 +35,7 @@
 <svelte:head />
 
 <div id="map" />
-<div class="show-lines"></div>
+<div class="show-lines" />
 
 <style>
 	#map {

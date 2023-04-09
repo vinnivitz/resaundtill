@@ -1,1 +1,1 @@
-<img src="images/mr_krabs.gif" alt="">
+<img src="images/mr_krabs.gif" alt="" />

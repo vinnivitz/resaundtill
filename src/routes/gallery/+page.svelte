@@ -6,4 +6,4 @@
 	export let data: PageData;
 </script>
 
-<Gallery urls={data.files.map(file => `${env.PUBLIC_DIRECTUS_API_URL}/assets/${file.id}`)} />
+<Gallery urls={data.files.map((file) => `${env.PUBLIC_DIRECTUS_API_URL}/assets/${file.id}`)} />

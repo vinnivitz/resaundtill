@@ -18,5 +18,5 @@
 </script>
 
 <div class="p-5 xl:p-10">
-    <PhotoSwipeGallery {images} styling="flex" />
+	<PhotoSwipeGallery {images} styling="flex" />
 </div>
