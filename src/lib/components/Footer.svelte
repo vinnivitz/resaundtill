@@ -3,5 +3,10 @@
 </script>
 
 <Footer footerType="custom" customClass="leading-10 m-1">
-	<FooterCopyright href="https://github.com/vinnivitz" target="_blank" by="Vinzenz Fuhrmann." year={new Date().getFullYear()} />
+	<FooterCopyright
+		href="https://github.com/vinnivitz"
+		target="_blank"
+		by="Vinzenz Fuhrmann."
+		year={new Date().getFullYear()}
+	/>
 </Footer>
