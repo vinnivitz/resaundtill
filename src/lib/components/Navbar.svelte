@@ -28,16 +28,16 @@
 			<span class="text-md md:text-xl">{$_('nav.map')}</span>
 		</NavLi>
 		<NavLi href={Page.travel} active={$page.url.pathname === Page.travel}>
-			<span class="text-xl">{$_('nav.travel')}</span>
+			<span class="text-md md:text-xl">{$_('nav.travel')}</span>
 		</NavLi>
 		<NavLi href={Page.gallery} active={$page.url.pathname === Page.gallery}>
-			<span class="text-xl">{$_('nav.gallery')}</span>
+			<span class="text-md md:text-xl">{$_('nav.gallery')}</span>
 		</NavLi>
 		<NavLi href={Page.support} active={$page.url.pathname === Page.support}>
-			<span class="text-xl">{$_('nav.support-us')}</span>
+			<span class="text-md md:text-xl">{$_('nav.support-us')}</span>
 		</NavLi>
 		<NavLi href={Page.legals} active={$page.url.pathname === Page.legals}>
-			<span class="text-xl">{$_('nav.legals')}</span>
+			<span class="text-md md:text-xl">{$_('nav.legals')}</span>
 		</NavLi>
 	</NavUl>
 </Navbar>
