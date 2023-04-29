@@ -1,4 +1,4 @@
-export enum Page {
+export enum PagePath {
 	home = '/',
 	travel = '/travel',
 	gallery = '/gallery',

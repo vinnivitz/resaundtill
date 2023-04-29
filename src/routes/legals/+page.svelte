@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { fly } from 'svelte/transition';
 </script>
 
-<div class="m-5 pt-10 xl:m-10">
+<section in:fly={{ y: 50, duration: 1000 }} class="p-5 md:p-10">
 	<h1 class="text-3xl">{$_('legals.title')}</h1>
 	<h3 class=" mt-5 text-xl">{$_('legals.content-liability.title')}</h3>
 	<p class="mt-3">
@@ -20,4 +21,4 @@
 	<p class="mt-3">
 		{$_('legals.privacy.content')}
 	</p>
-</div>
+</section>

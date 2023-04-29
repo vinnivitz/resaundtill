@@ -35,10 +35,9 @@
 <svelte:head />
 
 <div id="map" />
-<div class="show-lines" />
 
 <style>
 	#map {
-		height: calc(100vh - 5.8rem);
+		height: calc(100vh - 5rem);
 	}
 </style>

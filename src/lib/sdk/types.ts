@@ -5,10 +5,14 @@ export type DirectusLocation = {
 	type: string;
 };
 
+export type SupportInfoEntry = {
+	id: ID;
+	content: string;
+};
+
 export type BlogPostEntry = {
 	id: ID;
 	status: number;
-	slug: string;
 	date: string;
 	title: string;
 	description?: string;
@@ -16,10 +20,18 @@ export type BlogPostEntry = {
 	images?: BlogPostImage[];
 };
 
+export type DirectusImage = {
+	id: ID;
+	height: number,
+	width: number,
+	title?: string;
+	description?: string;
+}
+
 export type BlogPostImage = {
 	id: ID;
-	directus_files_id: ID;
-	resaundtill_id: ID;
+	directus_files_id: DirectusImage;
+	resaundtill_id: BlogPostEntry;
 };
 
 export enum BlogPostStatus {
@@ -342,6 +354,7 @@ export type DirectusOperations = {
 
 export type CustomDirectusTypes = {
 	resaundtill: BlogPostEntry;
+	resaundtill_support: SupportInfoEntry;
 	directus_activity: DirectusActivity;
 	directus_collections: DirectusCollections;
 	directus_fields: DirectusFields;

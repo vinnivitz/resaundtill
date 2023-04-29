@@ -1,19 +1,53 @@
 <script lang="ts">
+	import { env } from '$env/dynamic/public';
 	import type { BlogPostEntry } from '$lib/sdk/types';
-	import BlogPost from './BlogPost.svelte';
 
 	export let posts: BlogPostEntry[];
 </script>
 
-<div class="max-w-screen-xl p-5 mx-auto dark:bg-gray-800 dark:text-gray-100">
+<div class="max-w-screen-xl p-5 mx-auto dark:text-gray-100">
 	<div class="grid grid-cols-1 gap-5 lg:grid-cols-4 sm:grid-cols-2">
 		{#each posts as post}
 			<a
 				href={`/travel/${post.id}`}
 				class="xl:transition xl:ease-in-out xl:delay-150 xl:hover:-translate-y-1 xl:hover:scale-110 xl:duration-300"
 			>
-				<BlogPost {post} />
+				<div
+					class="relative flex items-end justify-start w-full text-left bg-center bg-cover h-96 dark:bg-gray-500"
+					style={`background-image: url(${
+						post.images && post.images[0]
+							? env.PUBLIC_DIRECTUS_API_URL + '/assets/' + (post.images && post.images[0]?.directus_files_id)
+							: 'images/travel.jpg'
+					});`}
+				>
+					<div
+						class="thumbnail-img absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-b dark:via-transparent dark:from-gray-900 dark:to-gray-900"
+					/>
+					<div class="absolute top-0 left-0 right-0 flex items-center justify-between mx-5 mt-3">
+						<div class="flex flex-col justify-start text-center dark:text-gray-100">
+							<span
+								class="text-3xl font-semibold leading-none tracking-wide shadow-white"
+								style="filter: drop-shadow(0 0 2px rgb(255 255 255));">{new Date(post.date).getDay()}</span
+							>
+							<span class="leading-none uppercase" style="filter: drop-shadow(0 0 2px rgb(255 255 255));"
+								>{new Date(post.date).toLocaleString('default', { month: 'long' })}</span
+							>
+						</div>
+					</div>
+					<div class="w-full bg-gradient-to-t from-black to-transparent">
+						<h2 class="p-5">
+							<div class="font-medium text-gray-300 text-md dark:text-gray-100" />
+							<div class="font-medium text-gray-300 text-md dark:text-gray-100">{post.title}</div>
+						</h2>
+					</div>
+				</div>
 			</a>
 		{/each}
 	</div>
 </div>
+
+<style lang="postcss">
+	.thumbnail-img {
+		z-index: -1;
+	}
+</style>

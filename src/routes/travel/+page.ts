@@ -6,7 +6,7 @@ import { BlogPostStatus, type BlogPostEntry } from '$lib/sdk/types';
 export const load: PageLoad = async () => {
 	const response = await SDK.items('resaundtill').readByQuery({
 		limit: -1,
-		filter: { status: BlogPostStatus.public, date: { _gt: new Date() } },
+		filter: { status: BlogPostStatus.public },
 		sort: ['date'],
 		//@ts-ignore
 		fields: '*.*'
@@ -14,7 +14,7 @@ export const load: PageLoad = async () => {
 
 	if (!response.data) throw error(500);
 
-	const posts: BlogPostEntry[] = response.data;
+	const posts = response.data as BlogPostEntry[];
 
 	return { posts };
 };
