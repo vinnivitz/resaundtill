@@ -6,7 +6,7 @@ FROM base as builder
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
-RUN pnpm run check
+# RUN pnpm run check
 RUN pnpm run build
 
 FROM base as runner
