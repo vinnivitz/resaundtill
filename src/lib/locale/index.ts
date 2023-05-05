@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import { Locale } from '$lib/models/user.model';
-import { init, register } from 'svelte-i18n';
+import { init, locale, register } from 'svelte-i18n';
 
 const defaultLocale = Locale.de;
 

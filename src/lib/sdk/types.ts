@@ -1,5 +1,10 @@
 import type { ID } from '@directus/sdk';
 
+export type Departure = {
+	id: ID;
+	date: string;
+};
+
 export type DirectusLocation = {
 	coordinates: number[];
 	type: string;
@@ -22,11 +27,11 @@ export type BlogPostEntry = {
 
 export type DirectusImage = {
 	id: ID;
-	height: number,
-	width: number,
+	height: number;
+	width: number;
 	title?: string;
 	description?: string;
-}
+};
 
 export type BlogPostImage = {
 	id: ID;
@@ -353,8 +358,9 @@ export type DirectusOperations = {
 };
 
 export type CustomDirectusTypes = {
-	resaundtill: BlogPostEntry;
-	resaundtill_support: SupportInfoEntry;
+	posts: BlogPostEntry;
+	support: SupportInfoEntry;
+	departure: Departure;
 	directus_activity: DirectusActivity;
 	directus_collections: DirectusCollections;
 	directus_fields: DirectusFields;

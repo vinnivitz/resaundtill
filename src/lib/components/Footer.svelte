@@ -1,16 +1,3 @@
-<!-- <script lang="ts">
-	import { Footer, FooterCopyright } from 'flowbite-svelte';
-</script>
-
-<Footer footerType="socialmedia">
-	<FooterCopyright
-		href="https://github.com/vinnivitz"
-		target="_blank"
-		by="Vinzenz Fuhrmann."
-		year={new Date().getFullYear()}
-	/>
-</Footer> -->
-
 <script>
 	import { Footer, FooterCopyright, FooterIcon } from 'flowbite-svelte';
 </script>
@@ -20,9 +7,9 @@
 	customClass="bottom-0 footer-wrapper flex items-center justify-center gap-5 fixed inset-x-0 mx-auto bg-white dark:bg-black"
 >
 	<FooterCopyright
-		by="Vinzenz Fuhrmann"
+		by="Vinzenz Fuhrmann."
 		year={new Date().getFullYear()}
-		spanClass="text-slate-400 text-xs md:text-lg"
+		spanClass="text-slate-400 text-xs md:text-md"
 	/>
 
 	<FooterIcon href="https://github.com/vinnivitz" target="_blank" class="text-gray-400 hover:text-gray-900">

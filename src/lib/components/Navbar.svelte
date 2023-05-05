@@ -1,24 +1,21 @@
+<svelte:options accessors={true} />
+
 <script lang="ts">
 	import { PagePath } from '$lib/models/router.model';
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
-	import { _ } from 'svelte-i18n';
+	import { _, locale } from 'svelte-i18n';
 	import clickOutside from '$lib/utils/clickOutside';
 	import { page } from '$app/stores';
-	import BiSolidMoon from 'svelte-icons-pack/bi/BiSolidMoon';
-	import BiSolidSun from 'svelte-icons-pack/bi/BiSolidSun';
-	import { userStore } from '$lib/stores/user.store';
-	import { LayoutTheme } from '$lib/models/user.model';
-	import Icon from 'svelte-icons-pack';
 	import { DarkMode } from 'flowbite-svelte';
+	import FaFlag from 'svelte-icons/fa/FaFlag.svelte';
+	import { Locale } from '$lib/models/user.model';
 
-	let theme = LayoutTheme.light;
+	const toggleLocale = () => locale.update((locale) => (locale === Locale.en ? Locale.de : Locale.en));
+
 	let hidden = true;
-	let themeIconActive = false;
-
-	userStore.subscribe((store) => (theme = store.theme));
 </script>
 
-<Navbar>
+<Navbar navClass="p-2 md:p-0">
 	<NavBrand href="/">
 		<img src="/images/logo2.png" class="mr-3 h-6 sm:h-9 grayscale dark:grayscale-0" alt="Logo" />
 		<span class=" whitespace-nowrap text-2xl font-semibold dark:text-white">
@@ -31,7 +28,7 @@
 	</div>
 
 	<NavUl {hidden}>
-		<!-- <NavLi href={PagePath.home} active={$page.url.pathname === PagePath.home}>
+		<NavLi href={PagePath.home} active={$page.url.pathname === PagePath.home}>
 			<span class="text-md md:text-xl">{$_('nav.map')}</span>
 		</NavLi>
 		<NavLi href={PagePath.travel} active={$page.url.pathname === PagePath.travel}>
@@ -45,11 +42,14 @@
 		</NavLi>
 		<NavLi href={PagePath.legals} active={$page.url.pathname === PagePath.legals}>
 			<span class="text-md md:text-xl">{$_('nav.legals')}</span>
-		</NavLi> -->
+		</NavLi>
 		<NavLi>
-			<DarkMode
-				btnClass={'rounded-lg text-xl p-1 transform scale-150'}
-			/>
+			<DarkMode btnClass={'rounded-lg text-xl p-1 transform scale-150'} />
+		</NavLi>
+		<NavLi on:click={toggleLocale}>
+			<div class="w-6 h-6 cursor-pointer">
+				<FaFlag />
+			</div>
 		</NavLi>
 	</NavUl>
 </Navbar>

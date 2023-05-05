@@ -1,10 +1,12 @@
 import type { PageLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import { SDK } from '$lib/sdk';
+import { SDK, auth } from '$lib/sdk';
 import { BlogPostStatus, type BlogPostEntry } from '$lib/sdk/types';
 
 export const load: PageLoad = async () => {
-	const response = await SDK.items('resaundtill').readByQuery({
+	await auth();
+
+	const response = await SDK.items('posts').readByQuery({
 		limit: -1,
 		filter: { status: BlogPostStatus.public },
 		sort: ['date'],

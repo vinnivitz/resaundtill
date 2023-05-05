@@ -21,7 +21,7 @@
 					});`}
 				>
 					<div
-						class="thumbnail-img absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-b dark:via-transparent dark:from-gray-900 dark:to-gray-900"
+						class="z-[-1] absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-b dark:via-transparent dark:from-gray-900 dark:to-gray-900"
 					/>
 					<div class="absolute top-0 left-0 right-0 flex items-center justify-between mx-5 mt-3">
 						<div class="flex flex-col justify-start text-center dark:text-gray-100">
@@ -45,9 +45,3 @@
 		{/each}
 	</div>
 </div>
-
-<style lang="postcss">
-	.thumbnail-img {
-		z-index: -1;
-	}
-</style>

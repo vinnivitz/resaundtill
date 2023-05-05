@@ -4,8 +4,8 @@ export enum LayoutTheme {
 }
 
 export enum Locale {
-	en = 'en',
-	de = 'de'
+	en = 'en-US',
+	de = 'de-DE'
 }
 
 export type UserPrefs = {

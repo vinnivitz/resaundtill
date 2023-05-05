@@ -24,5 +24,33 @@
 			"title": "Privacy"
 		},
 		"title": "Disclaimer"
+	},
+	"travel": {
+		"header": {
+			"prev-button": {
+				"label": "last entry"
+			},
+			"next-button": {
+				"label": "next entry"
+			}
+		},
+		"gallery-title": "Gallery",
+		"no-entries": "No entries found."
+	},
+	"common": {
+		"map": "Map"
+	},
+	"components": {
+		"map": {
+			"activate-button": {
+				"label": "Activate map"
+			}
+		},
+		"countdown": {
+			"days": "Days",
+			"hours": "Hours",
+			"minutes": "Minutes",
+			"seconds": "Seconds"
+		}
 	}
 }

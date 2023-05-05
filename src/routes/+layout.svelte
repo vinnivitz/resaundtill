@@ -1,17 +1,19 @@
 <script lang="ts">
+	import '../app.postcss';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { browser } from '$app/environment';
 	import '$lib/locale';
 	import { _, locale, waitLocale } from 'svelte-i18n';
-	import type { LayoutData } from './$types';
-	import '../app.postcss';
+	import type { LayoutData, PageData, PageLoad } from './$types';
 	import Footer from '$lib/components/Footer.svelte';
 	import { isLoading } from 'svelte-i18n';
 	import { Spinner } from 'flowbite-svelte';
-	import { page } from '$app/stores';
-	import { PagePath } from '$lib/models/router.model';
 	import { navigating } from '$app/stores';
-	import { fly } from 'svelte/transition';
+	import Countdown from '$lib/components/countdown/Countdown.svelte';
+	import { SDK, auth } from '$lib/sdk';
+	import { error } from '@sveltejs/kit';
+
+	let departure: Date;
 
 	export const load: LayoutData = async () => {
 		if (browser) {
@@ -33,7 +35,7 @@
 	</header>
 
 	<main
-		class="pt-16 md:pt-20 relative z-0 bg-gradient-to-b from-gray-200 to-transparent to-10% dark:from-gray-800 overflow-scroll scrollbar-hide"
+		class="h-screen relative z-0 bg-gradient-to-b from-gray-200 to-transparent to-20% dark:from-gray-800 overflow-scroll scrollbar-hide pb-5"
 	>
 		<slot />
 	</main>
@@ -43,6 +45,6 @@
 
 <style lang="postcss">
 	main {
-		height: calc(100vh - 7rem);
+		padding-top: var(--nav-height);
 	}
 </style>

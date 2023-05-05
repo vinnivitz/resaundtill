@@ -2,12 +2,18 @@
 	import type { PageData } from './$types';
 	import BlogPosts from '$lib/components/BlogPosts.svelte';
 	import { fly } from 'svelte/transition';
+	import { _ } from 'svelte-i18n';
+	import { Button } from 'flowbite-svelte';
 
 	export let data: PageData;
 </script>
 
-<section in:fly={{ y: 50, duration: 1000 }} class="relative z-50 pt-4 md:pt-12 z-50">
+<section in:fly={{ y: 50, duration: 1000 }} class="pt-4 md:pt-12">
 	{#if data.posts}
 		<BlogPosts posts={data.posts} />
+	{:else}
+		<div class="text-center">
+			{$_('travel.no-entries')}
+		</div>
 	{/if}
 </section>
