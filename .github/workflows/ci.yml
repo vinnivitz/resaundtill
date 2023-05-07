@@ -44,3 +44,6 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            "PUBLIC_DIRECTUS_API_TOKEN=${{ secrets.DIRECTUS_AUTH_TOKEN }}"
+            "PUBLIC_DIRECTUS_API_URL=https://api.vinnipedia.org"
