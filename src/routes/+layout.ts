@@ -1,7 +1,7 @@
 import type { LayoutLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { SDK, auth } from '$lib/sdk';
-import { BlogPostStatus } from '$lib/sdk/types';
+import { BlogPostStatus, type BlogPostEntry, type DirectusFiles } from '$lib/sdk/types';
 import { locale, waitLocale } from 'svelte-i18n';
 import { browser } from '$app/environment';
 
@@ -32,7 +32,7 @@ export const load: LayoutLoad = async () => {
 		throw error(500, 'Could not load data. Please try again later.');
 
 	return {
-		posts: postsResult.data,
+		posts: postsResult.data as BlogPostEntry[],
 		departure: departureResult,
 		files: filesResponse.data,
 		supportInfo: supportInfoResponse
