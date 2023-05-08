@@ -3,7 +3,6 @@
 	import BlogPosts from '$lib/components/BlogPosts.svelte';
 	import { fly } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
-	import { Button } from 'flowbite-svelte';
 
 	export let data: PageData;
 </script>

@@ -17,18 +17,10 @@
 
 		return res;
 	};
-	const topFlipStart = () => {
-		topFront = numbers;
-	};
-	const topFlipEnd = () => {
-		topFlip = numbers;
-	};
-	const bottomFlipStart = () => {
-		bottomFlip = numbers;
-	};
-	const bottomFlipEnd = () => {
-		bottomFront = numbers;
-	};
+	const topFlipStart = () => (topFront = numbers);
+	const topFlipEnd = () => (topFlip = numbers);
+	const bottomFlipStart = () => (bottomFlip = numbers);
+	const bottomFlipEnd = () => (bottomFront = numbers);
 	onMount(() => {
 		topFront = numbers;
 		bottomFront = numbers;
@@ -63,7 +55,7 @@
 			</div>
 		</div>
 	{/key}
-	<p class="text-center">{name}</p>
+	<p class="text-center text-9xl text-slate-700">{name}</p>
 </div>
 
 <style lang="postcss">
@@ -74,9 +66,17 @@
 	}
 
 	p {
-		color: var(--grayishBlue);
-		font-size: 0.5rem;
 		letter-spacing: 3px;
+		font-size: 1.5rem !important;
+
+		@media only screen and (min-width: 727px) {
+			color: var(--grayishBlue);
+			text-shadow: 1px 1px 1px black;
+		}
+
+		@media only screen and (max-width: 726px) {
+			font-size: 1rem !important;
+		}
 	}
 	.wrapper {
 		display: flex;

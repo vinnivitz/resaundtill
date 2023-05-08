@@ -1,26 +1,12 @@
 <script lang="ts">
 	import '../app.postcss';
 	import Navbar from '$lib/components/Navbar.svelte';
-	import { browser } from '$app/environment';
 	import '$lib/locale';
-	import { _, locale, waitLocale } from 'svelte-i18n';
-	import type { LayoutData, PageData, PageLoad } from './$types';
+	import { _ } from 'svelte-i18n';
 	import Footer from '$lib/components/Footer.svelte';
 	import { isLoading } from 'svelte-i18n';
 	import { Spinner } from 'flowbite-svelte';
 	import { navigating } from '$app/stores';
-	import Countdown from '$lib/components/countdown/Countdown.svelte';
-	import { SDK, auth } from '$lib/sdk';
-	import { error } from '@sveltejs/kit';
-
-	let departure: Date;
-
-	export const load: LayoutData = async () => {
-		if (browser) {
-			locale.set(window.navigator.language);
-		}
-		await waitLocale();
-	};
 </script>
 
 {#if $isLoading || $navigating}
@@ -46,5 +32,9 @@
 <style lang="postcss">
 	main {
 		padding-top: var(--nav-height);
+
+		@media only screen and (max-width: 726px) {
+			padding-top: var(--nav-height-mobile);
+		}
 	}
 </style>

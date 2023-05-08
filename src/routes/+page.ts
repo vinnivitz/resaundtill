@@ -1,7 +1,7 @@
 import type { PageLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { SDK, auth } from '$lib/sdk';
-import { BlogPostStatus, type BlogPostEntry } from '$lib/sdk/types';
+import { BlogPostStatus } from '$lib/sdk/types';
 
 export const load: PageLoad = async () => {
 	await auth();

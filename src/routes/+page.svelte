@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import Map from '$lib/components/Map.svelte';
 	import Countdown from '$lib/components/countdown/Countdown.svelte';
+	import { PagePath } from '$lib/models/router.model';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -12,11 +13,11 @@
 		const id = data.posts.find(
 			(post) => post.location!.coordinates[0] === coordindates[1] && post.location!.coordinates[1] === coordindates[0]
 		)?.id;
-		goto(`/travel/${id}`);
+		goto(`${PagePath.travel}/${id}`);
 	};
 </script>
 
 <Map {coords} on:activeCoords={(event) => navigate(event)} />
-<div class="absolute z-50 top-[calc(50%-95px)] left-[calc(50%-320px)]">
+<div class="absolute z-50 top-[calc(50%-95px)] left-[calc(50%-192.5px)] md:left-[calc(50%-320px)]">
 	<Countdown date={data.departure} />
 </div>

@@ -37,7 +37,7 @@
 </script>
 
 {#if show}
-	<div class="flex flex-column gap-5 opacity-90">
+	<div class="flex flex-column gap-5 opacity-90 transform scale-[0.85]">
 		<Card callback={handleTick} name={$_('components.countdown.days')} number={time.days} />
 		<Card callback={handleTick} name={$_('components.countdown.hours')} number={time.hours} />
 		<Card callback={handleTick} name={$_('components.countdown.minutes')} number={time.minutes} />

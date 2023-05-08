@@ -41,7 +41,7 @@
 <Masonry animate={true} items={images} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<img
-		class="cursor-pointer xl:transition xl:ease-in-out xl:delay-150 xl:hover:-translate-y-1 xl:hover:scale-110 xl:duration-300"
+		class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
 		src={item.src}
 		alt={item.title}
 		on:click={openModal(idx)}

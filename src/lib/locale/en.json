@@ -1,56 +1,56 @@
 {
-	"nav": {
-		"gallery": "Gallery",
-		"legals": "Disclaimer",
-		"map": "Map",
-		"support-us": "Support us",
-		"travel": "Our journey"
-	},
-	"legals": {
-		"content-liability": {
-			"content": "The contents of our pages were created with great care. \nHowever, we cannot guarantee that the content is correct, complete or up-to-date. \nAs a service provider, we are responsible for our own content on these pages according to Section 7, Paragraph 1 of the German Telemedia Act (TMG). \nAccording to §§ 8 to 10 TMG, however, we as a service provider are not obliged to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity. \nObligations to remove or block the use of information according to general laws remain unaffected. \nHowever, liability in this regard is only possible from the point in time at which knowledge of a specific infringement of the law is known. \nAs soon as we become aware of any violations of the law, we will remove this content immediately.",
-			"title": "Liability for content"
-		},
-		"copyright": {
-			"content": "The content and works on these pages created by the site operators are subject to German copyright law. \nThe duplication, editing, distribution and any kind of exploitation outside the limits of copyright require the written consent of the respective author or creator. \nDownloads and copies of this site are only permitted for private, non-commercial use. \nInsofar as the content on this site was not created by the operator, the copyrights of third parties are observed. \nIn particular contents of third parties are marked as such. \nShould you nevertheless become aware of a copyright infringement, we ask that you inform us accordingly. \nAs soon as we become aware of legal violations, we will remove such content immediately.",
-			"title": "Copyright"
-		},
-		"link-liability": {
-			"content": "Our offer contains links to external third-party websites, the content of which we have no influence on. \nTherefore we cannot assume any liability for this external content. \nThe respective provider or operator of the pages is always responsible for the content of the linked pages. \nThe linked pages were checked for possible legal violations at the time of linking. \nIllegal content was not recognizable at the time of linking. \nHowever, a permanent control of the content of the linked pages is not reasonable without concrete evidence of an infringement. \nAs soon as we become aware of legal violations, we will remove such links immediately.",
-			"title": "Liability for links"
-		},
-		"privacy": {
-			"content": "Our website can usually be used without providing any personal data. \nInsofar as personal data (e.g. name, address or e-mail addresses) is collected on our website, this is always done on a voluntary basis as far as possible. \nThis data will not be passed on to third parties without your express consent. \nWe would like to point out that data transmission on the Internet (e.g. when communicating by e-mail) can have security gaps. \nA complete protection of the data against access by third parties is not possible. \nThe use of contact data published as part of the imprint obligation by third parties for the purpose of sending unsolicited advertising and information material is hereby expressly prohibited. \nThe site operators expressly reserve the right to take legal action in the event of unsolicited advertising being sent, such as spam e-mails.",
-			"title": "Privacy"
-		},
-		"title": "Disclaimer"
-	},
-	"travel": {
-		"header": {
-			"prev-button": {
-				"label": "last entry"
-			},
-			"next-button": {
-				"label": "next entry"
-			}
-		},
-		"gallery-title": "Gallery",
-		"no-entries": "No entries found."
-	},
-	"common": {
-		"map": "Map"
-	},
-	"components": {
-		"map": {
-			"activate-button": {
-				"label": "Activate map"
-			}
-		},
-		"countdown": {
-			"days": "Days",
-			"hours": "Hours",
-			"minutes": "Minutes",
-			"seconds": "Seconds"
-		}
-	}
+  "nav": {
+    "gallery": "Gallery",
+    "legals": "Disclaimer",
+    "map": "Map",
+    "support-us": "Support us",
+    "travel": "Our journey"
+  },
+  "legals": {
+    "content-liability": {
+      "content": "The contents of our pages were created with great care. \nHowever, we cannot guarantee that the content is correct, complete or up-to-date. \nAs a service provider, we are responsible for our own content on these pages according to Section 7, Paragraph 1 of the German Telemedia Act (TMG). \nAccording to §§ 8 to 10 TMG, however, we as a service provider are not obliged to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity. \nObligations to remove or block the use of information according to general laws remain unaffected. \nHowever, liability in this regard is only possible from the point in time at which knowledge of a specific infringement of the law is known. \nAs soon as we become aware of any violations of the law, we will remove this content immediately.",
+      "title": "Liability for content"
+    },
+    "copyright": {
+      "content": "The content and works on these pages created by the site operators are subject to German copyright law. \nThe duplication, editing, distribution and any kind of exploitation outside the limits of copyright require the written consent of the respective author or creator. \nDownloads and copies of this site are only permitted for private, non-commercial use. \nInsofar as the content on this site was not created by the operator, the copyrights of third parties are observed. \nIn particular contents of third parties are marked as such. \nShould you nevertheless become aware of a copyright infringement, we ask that you inform us accordingly. \nAs soon as we become aware of legal violations, we will remove such content immediately.",
+      "title": "Copyright"
+    },
+    "link-liability": {
+      "content": "Our offer contains links to external third-party websites, the content of which we have no influence on. \nTherefore we cannot assume any liability for this external content. \nThe respective provider or operator of the pages is always responsible for the content of the linked pages. \nThe linked pages were checked for possible legal violations at the time of linking. \nIllegal content was not recognizable at the time of linking. \nHowever, a permanent control of the content of the linked pages is not reasonable without concrete evidence of an infringement. \nAs soon as we become aware of legal violations, we will remove such links immediately.",
+      "title": "Liability for links"
+    },
+    "privacy": {
+      "content": "Our website can usually be used without providing any personal data. \nInsofar as personal data (e.g. name, address or e-mail addresses) is collected on our website, this is always done on a voluntary basis as far as possible. \nThis data will not be passed on to third parties without your express consent. \nWe would like to point out that data transmission on the Internet (e.g. when communicating by e-mail) can have security gaps. \nA complete protection of the data against access by third parties is not possible. \nThe use of contact data published as part of the imprint obligation by third parties for the purpose of sending unsolicited advertising and information material is hereby expressly prohibited. \nThe site operators expressly reserve the right to take legal action in the event of unsolicited advertising being sent, such as spam e-mails.",
+      "title": "Privacy"
+    },
+    "title": "Disclaimer"
+  },
+  "travel": {
+    "header": {
+      "prev-button": {
+        "label": "last entry"
+      },
+      "next-button": {
+        "label": "next entry"
+      }
+    },
+    "gallery-title": "Gallery",
+    "no-entries": "No entries found."
+  },
+  "common": {
+    "map": "Map"
+  },
+  "components": {
+    "map": {
+      "activate-button": {
+        "label": "{pre}activate map"
+      }
+    },
+    "countdown": {
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    }
+  }
 }

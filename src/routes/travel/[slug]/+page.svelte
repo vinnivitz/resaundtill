@@ -53,23 +53,25 @@
 		<div class="w-6 h-6"><FaCalendar /></div>
 		<div class="text-sm md:text-lg">{formatDate(new Date(data.post.date))}</div>
 	</div>
-	<p class="pt-8 md:pt-12 text-lg">
+	<p class="pt-8 md:pt-12 text-lg font-normal">
 		{data.post.description ?? ''}
 	</p>
 
-	<Hr />
+	{#if files.length > 0}
+		<Hr />
 
-	<Heading customSize="pt-5 pb-3 text-4xl"><Secondary>{$_('travel.gallery-title')}</Secondary></Heading>
+		<Heading customSize="pt-5 pb-3 text-4xl"><Secondary>{$_('travel.gallery-title')}</Secondary></Heading>
 
-	<div class="m-2">
-		<Gallery {files} />
-	</div>
+		<div class="m-2">
+			<Gallery {files} />
+		</div>
+	{/if}
 
 	{#if coords}
 		<Hr />
 
 		<Heading customSize="pt-5 pb-3 text-4xl"><Secondary>{$_('common.map')}</Secondary></Heading>
 
-		<Map {coords} disableZoom={true} />
+		<Map {coords} deactivated={true} />
 	{/if}
 </section>

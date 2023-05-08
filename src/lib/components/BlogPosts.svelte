@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { env } from '$env/dynamic/public';
+	import { PagePath } from '$lib/models/router.model';
 	import type { BlogPostEntry } from '$lib/sdk/types';
 
 	export let posts: BlogPostEntry[];
@@ -9,7 +10,7 @@
 	<div class="grid grid-cols-1 gap-5 lg:grid-cols-4 sm:grid-cols-2">
 		{#each posts as post}
 			<a
-				href={`/travel/${post.id}`}
+				href={`${PagePath.travel}/${post.id}`}
 				class="xl:transition xl:ease-in-out xl:delay-150 xl:hover:-translate-y-1 xl:hover:scale-110 xl:duration-300"
 			>
 				<div
@@ -17,7 +18,7 @@
 					style={`background-image: url(${
 						post.images && post.images[0]
 							? env.PUBLIC_DIRECTUS_API_URL + '/assets/' + (post.images && post.images[0]?.directus_files_id)
-							: 'images/travel.jpg'
+							: '/images/travel.jpg'
 					});`}
 				>
 					<div
@@ -27,7 +28,7 @@
 						<div class="flex flex-col justify-start text-center dark:text-gray-100">
 							<span
 								class="text-3xl font-semibold leading-none tracking-wide shadow-white"
-								style="filter: drop-shadow(0 0 2px rgb(255 255 255));">{new Date(post.date).getDay()}</span
+								style="filter: drop-shadow(0 0 2px rgb(255 255 255));">{new Date(post.date).getDate()}</span
 							>
 							<span class="leading-none uppercase" style="filter: drop-shadow(0 0 2px rgb(255 255 255));"
 								>{new Date(post.date).toLocaleString('default', { month: 'long' })}</span
@@ -36,7 +37,6 @@
 					</div>
 					<div class="w-full bg-gradient-to-t from-black to-transparent">
 						<h2 class="p-5">
-							<div class="font-medium text-gray-300 text-md dark:text-gray-100" />
 							<div class="font-medium text-gray-300 text-md dark:text-gray-100">{post.title}</div>
 						</h2>
 					</div>

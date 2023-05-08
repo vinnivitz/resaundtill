@@ -8,7 +8,9 @@
 
 	export let coords: number[][];
 	export let zoomOut = 3;
-	export let disableZoom = false;
+	export let deactivated = false;
+
+	const isActivatable = deactivated;
 
 	const dispatch = createEventDispatcher();
 
@@ -23,7 +25,7 @@
 
 		map = L.map('map').setView([coords[coords.length - 1][1], coords[coords.length - 1][0]], 13);
 		map.zoomControl.remove();
-		if (disableZoom) {
+		if (deactivated) {
 			map.touchZoom.disable();
 			map.doubleClickZoom.disable();
 			map.scrollWheelZoom.disable();
@@ -54,21 +56,25 @@
 		}
 	});
 
-	const activateZoom = async () => {
-		map.touchZoom.enable();
-		map.doubleClickZoom.enable();
-		map.scrollWheelZoom.enable();
-		map.keyboard.enable();
-		map.dragging.enable();
-		disableZoom = false;
+	const toggleActivation = async () => {
+		map.touchZoom.enabled() ? map.touchZoom.disable() : map.touchZoom.enable();
+		map.doubleClickZoom.enabled() ? map.doubleClickZoom.disable() : map.doubleClickZoom.enable();
+		map.scrollWheelZoom.enabled() ? map.scrollWheelZoom.disable() : map.scrollWheelZoom.enable();
+		map.keyboard.enabled() ? map.keyboard.disable() : map.keyboard.enable();
+		map.dragging.enabled() ? map.dragging.disable() : map.dragging.enable();
+		deactivated = !deactivated;
 	};
 </script>
 
 <div class="relative wrapper">
 	<div class="absolute top-0 right-0 left-0 opacity-95" id="map" />
-	{#if disableZoom}
-		<div class="map-button absolute bottom-1/3 left-[calc(50%-75px)] z-50 opacity-80">
-			<Button on:click={activateZoom} shadow="blue" pill={true}>{$_('components.map.activate-button.label')}</Button>
+	{#if isActivatable}
+		<div
+			class={`map-button absolute bottom-1/3 left-[calc(50%-75px)] z-50 ${deactivated ? 'opacity-80' : 'opacity-40'}`}
+		>
+			<Button on:click={toggleActivation} shadow="blue" pill={true}
+				>{$_('components.map.activate-button.label', { values: { pre: deactivated ? '' : 'de' } })}</Button
+			>
 		</div>
 	{/if}
 </div>
@@ -77,6 +83,10 @@
 	.wrapper,
 	#map {
 		height: calc(100vh - var(--nav-height) - var(--footer-height));
+
+		@media only screen and (max-width: 726px) {
+			height: calc(100vh - var(--nav-height-mobile) - var(--footer-height-mobile));
+		}
 	}
 
 	:global(.map-button button) {
