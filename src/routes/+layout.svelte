@@ -2,11 +2,18 @@
 	import '../app.postcss';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import '$lib/locale';
-	import { _ } from 'svelte-i18n';
+	import { _, locale } from 'svelte-i18n';
 	import Footer from '$lib/components/Footer.svelte';
 	import { isLoading } from 'svelte-i18n';
 	import { Spinner } from 'flowbite-svelte';
 	import { navigating } from '$app/stores';
+	import { Locale } from '$lib/models/user.model';
+
+	let currentLocale: Locale;
+
+	locale.subscribe((value) => (currentLocale = value as Locale));
+
+	const toggleLocale = () => locale.set(currentLocale === Locale.de ? Locale.en : Locale.de);
 </script>
 
 {#if $isLoading || $navigating}
@@ -17,7 +24,7 @@
 	</div>
 {:else}
 	<header class="fixed z-50 top-0 left-0 right-0">
-		<Navbar />
+		<Navbar on:locale={toggleLocale} />
 	</header>
 
 	<main

@@ -7,10 +7,14 @@
 	import clickOutside from '$lib/utils/clickOutside';
 	import { page } from '$app/stores';
 	import { DarkMode } from 'flowbite-svelte';
+	// @ts-ignore
 	import FaFlag from 'svelte-icons/fa/FaFlag.svelte';
 	import { Locale } from '$lib/models/user.model';
+	import { createEventDispatcher } from 'svelte';
 
-	const toggleLocale = () => locale.update((locale) => (locale === Locale.en ? Locale.de : Locale.en));
+	const dispatch = createEventDispatcher();
+
+	const toggleLocale = () => dispatch('locale');
 
 	let hidden = true;
 </script>
