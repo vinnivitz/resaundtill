@@ -11,7 +11,7 @@
 
 	let currentLocale: Locale;
 
-	locale.subscribe((value) => (currentLocale = value as Locale));
+	locale.subscribe((value) => (currentLocale = value?.includes(Locale.en) ? Locale.en : Locale.de));
 
 	const toggleLocale = () => locale.set(currentLocale === Locale.de ? Locale.en : Locale.de);
 </script>
