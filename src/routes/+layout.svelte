@@ -16,6 +16,10 @@
 	const toggleLocale = () => locale.set(currentLocale === Locale.de ? Locale.en : Locale.de);
 </script>
 
+<svelte:head>
+	<title>Resa und Till</title>
+</svelte:head>
+
 {#if $isLoading || $navigating}
 	<div class="m-12 text-center mt-96 text-center flex flex-col items-center">
 		<div class="flex-1">

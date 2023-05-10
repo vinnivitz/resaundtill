@@ -85,7 +85,7 @@
 		height: calc(100vh - var(--nav-height) - var(--footer-height));
 
 		@media only screen and (max-width: 726px) {
-			height: calc(100vh - var(--nav-height-mobile) - var(--footer-height-mobile));
+			height: calc(100vh - var(--nav-height-mobile) - var(--footer-height));
 		}
 	}
 
