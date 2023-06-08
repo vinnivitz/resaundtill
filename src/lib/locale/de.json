@@ -1,9 +1,9 @@
 {
   "nav": {
-    "gallery": "Gallerie",
+    "gallery": "Galerie",
     "legals": "Impressum",
     "map": "Karte",
-    "support-us": "Unterstütz uns",
+    "support-us": "Über uns",
     "travel": "Unsere Reise"
   },
   "travel": {
@@ -15,7 +15,7 @@
         "label": "nächster Eintrag"
       }
     },
-    "gallery-title": "Bildergallerie",
+    "gallery-title": "Bildergalerie",
     "no-entries": "Keine Einträge gefunden."
   },
   "legals": {

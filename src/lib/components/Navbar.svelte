@@ -21,7 +21,7 @@
 
 <Navbar navClass="p-2 md:p-0">
 	<NavBrand href="/">
-		<img src="/images/logo2.png" class="mr-3 h-6 sm:h-9 grayscale dark:grayscale-0" alt="Logo" />
+		<img src="/images/logo.png" class="mr-3 h-6 sm:h-9 invert dark:invert-0" alt="Logo" />
 		<span class=" whitespace-nowrap text-2xl font-semibold dark:text-white">
 			Resa<span class="text-red-600">&#10084;</span>Till
 		</span>
