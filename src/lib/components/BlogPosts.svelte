@@ -2,6 +2,7 @@
 	import { env } from '$env/dynamic/public';
 	import { PagePath } from '$lib/models/router.model';
 	import type { BlogPostEntry } from '$lib/sdk/types';
+	import { locale } from 'svelte-i18n';
 
 	export let posts: BlogPostEntry[];
 </script>
@@ -25,7 +26,7 @@
 						class="z-[-1] absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-b dark:via-transparent dark:from-gray-900 dark:to-gray-900"
 					/>
 					<div class="absolute top-0 left-0 right-0 flex items-center justify-between mx-5 mt-3">
-						<div class="flex flex-col justify-start text-center dark:text-gray-100">
+						<div class="flex flex-col justify-start text-center dark:text-gray-500">
 							<span
 								class="text-3xl font-semibold leading-none tracking-wide shadow-white"
 								style="filter: drop-shadow(0 0 2px rgb(255 255 255));">{new Date(post.date).getDate()}</span
@@ -37,7 +38,9 @@
 					</div>
 					<div class="w-full bg-gradient-to-t from-black to-transparent">
 						<h2 class="p-5">
-							<div class="font-medium text-gray-300 text-md dark:text-gray-100">{post.title}</div>
+							<div class="font-medium text-gray-300 text-md dark:text-gray-100">
+								{post.translations[$locale === ('de' || 'de-DE') ? 0 : 1].title}
+							</div>
 						</h2>
 					</div>
 				</div>

@@ -7,7 +7,7 @@ import { BlogPostStatus } from '$lib/sdk/types';
 export const load: PageLoad = async ({ params }) => {
 	await auth();
 
-	const response = await SDK.items('posts').readByQuery({
+	const response = await SDK.items('resaundtill_posts').readByQuery({
 		limit: 1,
 		// @ts-ignore
 		fields: '*.*.*',

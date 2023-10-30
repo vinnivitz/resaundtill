@@ -12,18 +12,29 @@ export type DirectusLocation = {
 
 export type SupportInfoEntry = {
 	id: ID;
-	content: string;
+	translations: SupportTranslation[];
 };
 
 export type BlogPostEntry = {
 	id: ID;
 	status: number;
 	date: string;
-	title: string;
-	description?: string;
+	isFlight: boolean;
+	translations: BlogPostTranslation[];
 	location?: DirectusLocation;
 	images?: BlogPostImage[];
 };
+
+export type BlogPostTranslation = {
+	id: ID;
+	title: string;
+	description?: string;
+}
+
+export type SupportTranslation = {
+	id: ID;
+	content: string;
+}
 
 export type DirectusImage = {
 	id: ID;
@@ -358,9 +369,9 @@ export type DirectusOperations = {
 };
 
 export type CustomDirectusTypes = {
-	posts: BlogPostEntry;
-	support: SupportInfoEntry;
-	departure: Departure;
+	resaundtill_posts: BlogPostEntry;
+	resaundtill_support: SupportInfoEntry;
+	resaundtill_departure: Departure;
 	directus_activity: DirectusActivity;
 	directus_collections: DirectusCollections;
 	directus_fields: DirectusFields;

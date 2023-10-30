@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { Button } from 'flowbite-svelte';
-	import type { Map } from 'leaflet';
+	import type { Map, MarkerOptions } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import { createEventDispatcher } from 'svelte';
 	import { onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 
 	export let coords: number[][];
+	export let isFlight: boolean[] = [];
 	export let zoomOut = 3;
 	export let deactivated = false;
 
@@ -48,10 +49,20 @@
 
 		const onClick = (e: any) => dispatch('activeCoords', [e.latlng.lat, e.latlng.lng]);
 
-		const markers = coords.map((coord) => L.marker([coord[1], coord[0]], { icon }).on('click', onClick).addTo(map));
+		const markers = coords.map((coord) => {
+			const markerOptions: MarkerOptions = {};
+			if (coords.indexOf(coord) === coords.length - 1) {
+				markerOptions.icon = icon;
+			}
+			return L.marker([coord[1], coord[0]], markerOptions).on('click', onClick).addTo(map);
+		});
 		if (markers.length > 1) {
 			for (let i = 0; i < markers.length - 1; i++) {
-				L.polyline([markers[i].getLatLng(), markers[i + 1].getLatLng()], { color: 'blue' }).addTo(map);
+				L.polyline([markers[i].getLatLng(), markers[i + 1].getLatLng()], {
+					color: 'blue',
+					dashArray: isFlight[i + 1] ? '6' : '',
+					opacity: 0.5
+				}).addTo(map);
 			}
 		}
 	});

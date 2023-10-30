@@ -14,19 +14,18 @@ export const load: LayoutLoad = async () => {
 
 	await auth();
 
-	const postsResult = await SDK.items('posts').readByQuery({
+	const postsResult = await SDK.items('resaundtill_posts').readByQuery({
 		limit: -1,
 		filter: { status: BlogPostStatus.public },
 		sort: ['date'],
-		//@ts-ignore
 		fields: '*.*'
 	});
 
-	const departureResult = new Date((await SDK.singleton('departure').read())!.date);
+	const departureResult = new Date((await SDK.singleton('resaundtill_departure').read())!.date);
 
 	const filesResponse = await SDK.files.readByQuery();
 
-	const supportInfoResponse = await SDK.singleton('support').read();
+	const supportInfoResponse = await SDK.singleton('resaundtill_support').read({ fields: '*.*'});
 
 	if (!postsResult.data || !departureResult || !filesResponse.data || !supportInfoResponse)
 		throw error(500, 'Could not load data. Please try again later.');

@@ -3,13 +3,12 @@
 <script lang="ts">
 	import { PagePath } from '$lib/models/router.model';
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
-	import { _, locale } from 'svelte-i18n';
+	import { _ } from 'svelte-i18n';
 	import clickOutside from '$lib/utils/clickOutside';
 	import { page } from '$app/stores';
 	import { DarkMode } from 'flowbite-svelte';
 	// @ts-ignore
 	import FaFlag from 'svelte-icons/fa/FaFlag.svelte';
-	import { Locale } from '$lib/models/user.model';
 	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();

@@ -32,8 +32,14 @@
 
 <LightboxGallery bind:programmaticController {arrowsConfig}>
 	{#each images as image}
-		<GalleryImage title={image.title} description={image.description}>
+		<GalleryImage>
 			<img src={image.src} alt={image.title} />
+			{#if image.title}
+				<div>{image.title}</div>
+			{/if}
+			{#if image.description}
+				<div class="image-description">{image.description}</div>
+			{/if}
 		</GalleryImage>
 	{/each}
 </LightboxGallery>
@@ -57,6 +63,9 @@
 		outline: none !important;
 	}
 
+	:global(.svelte-lightbox-footer p) {
+		display: none;
+	}
 	@media only screen and (max-width: 726px) {
 		:global(.next-button) {
 			left: 80% !important;
@@ -71,5 +80,9 @@
 	:global(.previous-button svg) {
 		filter: drop-shadow(-2px -1px 0px #000) drop-shadow(2px -1px 0px #000) drop-shadow(1px 1px 0px #000)
 			drop-shadow(-1px 1px 0px #000);
+	}
+
+	.image-description {
+		font-size: 0.9rem;
 	}
 </style>

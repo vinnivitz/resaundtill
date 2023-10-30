@@ -3,7 +3,7 @@
 	import type { PageData } from './$types';
 	import FaCalendar from 'svelte-icons/fa/FaCalendar.svelte';
 	import { fly } from 'svelte/transition';
-	import { _ } from 'svelte-i18n';
+	import { _, locale } from 'svelte-i18n';
 	import Gallery from '$lib/components/Gallery.svelte';
 	import { formatDate } from '$lib/utils/format-date.util';
 	import type { DirectusImage } from '$lib/sdk/types';
@@ -12,6 +12,17 @@
 	import Map from '$lib/components/Map.svelte';
 
 	export let data: PageData;
+
+	let title: string;
+	let description: string;
+
+	const isPrevPost = () => data.posts.findIndex((post) => post.id === data.post.id) > 0;
+	const isNextPost = () => data.posts.findIndex((post) => post.id === data.post.id) < data.posts.length - 1;
+
+	$: {
+		title = data.post.translations[$locale === ('de' || 'de-DE') ? 0 : 1].title;
+		description = data.post.translations[$locale === ('de' || 'de-DE') ? 0 : 1].description ?? '';
+	}
 
 	const files: DirectusImage[] =
 		data.post.images?.map(
@@ -26,26 +37,46 @@
 	const coords = Array.isArray(data.post.location?.coordinates)
 		? [[data.post.location!.coordinates[0], data.post.location!.coordinates[1]]]
 		: null;
+
+	const getPrevPost = () => {
+		const index = data.posts.findIndex((post) => post.id === data.post.id);
+		if (index > 0) {
+			window.location.href = `/travel/${data.posts[index - 1].id}`;
+		}
+	};
+
+	const getNextPost = () => {
+		const index = data.posts.findIndex((post) => post.id === data.post.id);
+		if (index < data.posts.length - 1) {
+			window.location.href = `/travel/${data.posts[index + 1].id}`;
+		}
+	};
 </script>
 
 <section in:fly={{ y: 50, duration: 1000 }} class="p-3 md:px-12 md:py-4">
-	<!-- <div class="flex mb-3">
+	<div class="flex mb-3">
 		<button
-			on:click={} class="flex bg-gray-200 hover:bg-gray-400 text-gray-800 font-bold pt-2 px-4 rounded-full text-sm leading-6 align-middle"
+			on:click={getPrevPost}
+			disabled={!isPrevPost()}
+			class:opacity-0={!isPrevPost()}
+			class="flex bg-gray-200 hover:bg-gray-400 text-gray-800 font-bold pt-2 px-4 rounded-full text-sm leading-6 align-middle"
 		>
 			<div class="w-5 h-5"><FaArrowLeft /></div>
 			<div class="pl-2">{$_('travel.header.prev-button.label')}</div>
 		</button>
 		<div class="grow" />
 		<button
+			on:click={getNextPost}
+			disabled={!isNextPost()}
+			class:opacity-0={!isNextPost()}
 			class="flex bg-gray-200 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full text-sm leading-6 align-middle"
 		>
 			<div class="pr-2">{$_('travel.header.next-button.label')}</div>
 			<div class="w-6 h-6"><FaArrowRight /></div>
 		</button>
-	</div> -->
+	</div>
 
-	<Heading customSize="text-4xl md:text-5xl"><Secondary>{data.post.title}</Secondary></Heading>
+	<Heading customSize="text-4xl md:text-5xl"><Secondary>{title}</Secondary></Heading>
 	<Hr />
 
 	<div class="flex flex-wrap gap-4 items-center">
@@ -54,7 +85,7 @@
 		<div class="text-sm md:text-lg">{formatDate(new Date(data.post.date))}</div>
 	</div>
 	<p class="pt-8 md:pt-12 text-lg font-normal">
-		{data.post.description ?? ''}
+		{description}
 	</p>
 
 	{#if files.length > 0}
