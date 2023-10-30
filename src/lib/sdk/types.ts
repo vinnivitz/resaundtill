@@ -29,12 +29,12 @@ export type BlogPostTranslation = {
 	id: ID;
 	title: string;
 	description?: string;
-}
+};
 
 export type SupportTranslation = {
 	id: ID;
 	content: string;
-}
+};
 
 export type DirectusImage = {
 	id: ID;

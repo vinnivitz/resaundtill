@@ -25,7 +25,7 @@ export const load: LayoutLoad = async () => {
 
 	const filesResponse = await SDK.files.readByQuery();
 
-	const supportInfoResponse = await SDK.singleton('resaundtill_support').read({ fields: '*.*'});
+	const supportInfoResponse = await SDK.singleton('resaundtill_support').read({ fields: '*.*' });
 
 	if (!postsResult.data || !departureResult || !filesResponse.data || !supportInfoResponse)
 		throw error(500, 'Could not load data. Please try again later.');

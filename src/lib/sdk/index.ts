@@ -9,7 +9,7 @@ export const SDK = new Directus<CustomDirectusTypes>(endpoint!);
 
 export const auth = async () => {
 	try {
-		await SDK.auth.login({email: 'vinzenz.f@gmx.de', password: 'nwpomaDirectus8!'})
+		await SDK.auth.login({ email: 'vinzenz.f@gmx.de', password: 'nwpomaDirectus8!' });
 		// await SDK.auth.static(env.PUBLIC_DIRECTUS_API_TOKEN!);
 	} catch (err) {
 		throw error(500, 'Authentication to Data Server failed. Please try again later.');

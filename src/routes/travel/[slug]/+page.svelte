@@ -1,13 +1,16 @@
 <script lang="ts">
 	import { Heading, Secondary, Hr } from 'flowbite-svelte';
 	import type { PageData } from './$types';
+	// @ts-ignore
 	import FaCalendar from 'svelte-icons/fa/FaCalendar.svelte';
 	import { fly } from 'svelte/transition';
 	import { _, locale } from 'svelte-i18n';
 	import Gallery from '$lib/components/Gallery.svelte';
 	import { formatDate } from '$lib/utils/format-date.util';
 	import type { DirectusImage } from '$lib/sdk/types';
+	// @ts-ignore
 	import FaArrowLeft from 'svelte-icons/fa/FaArrowLeft.svelte';
+	// @ts-ignore
 	import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
 	import Map from '$lib/components/Map.svelte';
 
