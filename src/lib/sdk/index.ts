@@ -2,8 +2,10 @@ import { env } from '$env/dynamic/public';
 import { Directus } from '@directus/sdk';
 import type { CustomDirectusTypes } from './types';
 import { error } from '@sveltejs/kit';
+import { getURL } from '$lib/utils/get-url.util';
 
-const endpoint = env.PUBLIC_DIRECTUS_API_URL;
+const endpoint = getURL();
+
 
 export const SDK = new Directus<CustomDirectusTypes>(endpoint!);
 

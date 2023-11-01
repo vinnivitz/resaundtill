@@ -2,6 +2,7 @@
 	import { env } from '$env/dynamic/public';
 	import { PagePath } from '$lib/models/router.model';
 	import type { BlogPostEntry } from '$lib/sdk/types';
+	import { getURL } from '$lib/utils/get-url.util';
 	import { locale } from 'svelte-i18n';
 
 	export let posts: BlogPostEntry[];
@@ -18,7 +19,7 @@
 					class="relative flex items-end justify-start w-full text-left bg-center bg-cover h-96 dark:bg-gray-500"
 					style={`background-image: url(${
 						post.images && post.images[0]
-							? env.PUBLIC_DIRECTUS_API_URL + '/assets/' + (post.images && post.images[0]?.directus_files_id)
+							? getURL() + '/assets/' + (post.images && post.images[0]?.directus_files_id)
 							: '/images/travel.jpg'
 					});`}
 				>

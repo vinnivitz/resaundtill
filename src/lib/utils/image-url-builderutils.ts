@@ -1,4 +1,9 @@
-import { env } from '$env/dynamic/public';
 import type { ID } from '@directus/sdk';
+import { getURL } from './get-url.util';
 
-export const imageUrlBuilder = (id: ID) => `${env.PUBLIC_DIRECTUS_API_URL}/assets/${id}`;
+/**
+ * Compose the static URL to an image
+ * @param id  The ID of the Directus image
+ * @returns {string} The composed static URL to the image
+ */
+export const imageUrlBuilder = (id: ID): string => `${getURL()}/assets/${id}`;

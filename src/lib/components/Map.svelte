@@ -39,7 +39,15 @@
 			attribution: '© OpenStreetMap'
 		}).addTo(map);
 
-		const icon = L.icon({
+		const iconDefault = L.icon({
+			iconUrl: '/images/marker.png',
+			iconSize: [20, 35],
+			shadowSize: [0, 0],
+			iconAnchor: [10, 35],
+			popupAnchor: [0, 0]
+		});
+
+		const iconResaTill = L.icon({
 			iconUrl: '/images/tillresa_marker.png',
 			iconSize: [38, 95],
 			shadowSize: [50, 64],
@@ -50,11 +58,11 @@
 		const onClick = (e: any) => dispatch('activeCoords', [e.latlng.lat, e.latlng.lng]);
 
 		const markers = coords.map((coord) => {
-			const markerOptions: MarkerOptions = {};
-			if (coords.indexOf(coord) === coords.length - 1) {
-				markerOptions.icon = icon;
-			}
-			return L.marker([coord[1], coord[0]], markerOptions).on('click', onClick).addTo(map);
+			return L.marker([coord[1], coord[0]], {
+				icon: coords.indexOf(coord) === coords.length - 1 ? iconResaTill : iconDefault
+			})
+				.on('click', onClick)
+				.addTo(map);
 		});
 		if (markers.length > 1) {
 			for (let i = 0; i < markers.length - 1; i++) {
