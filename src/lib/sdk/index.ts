@@ -6,7 +6,6 @@ import { getURL } from '$lib/utils/get-url.util';
 
 const endpoint = getURL();
 
-
 export const SDK = new Directus<CustomDirectusTypes>(endpoint!);
 
 export const auth = async () => {
