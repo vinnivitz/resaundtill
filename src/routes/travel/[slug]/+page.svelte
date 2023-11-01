@@ -13,6 +13,7 @@
 	// @ts-ignore
 	import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
 	import Map from '$lib/components/Map.svelte';
+	import { onMount } from 'svelte';
 
 	export let data: PageData;
 
@@ -22,9 +23,13 @@
 	const isPrevPost = () => data.posts.findIndex((post) => post.id === data.post.id) > 0;
 	const isNextPost = () => data.posts.findIndex((post) => post.id === data.post.id) < data.posts.length - 1;
 
+	function getTranslations(locale: string | null | undefined): void {
+		title = data.post.translations[locale === ('de' || 'de-DE') ? 0 : 1].title;
+		description = data.post.translations[locale === ('de' || 'de-DE') ? 0 : 1].description ?? '';
+	}
+
 	$: {
-		title = data.post.translations[$locale === ('de' || 'de-DE') ? 0 : 1].title;
-		description = data.post.translations[$locale === ('de' || 'de-DE') ? 0 : 1].description ?? '';
+		getTranslations($locale);
 	}
 
 	const files: DirectusImage[] =
@@ -54,6 +59,8 @@
 			window.location.href = `/travel/${data.posts[index + 1].id}`;
 		}
 	};
+
+	onMount(() => getTranslations($locale));
 </script>
 
 <section in:fly={{ y: 50, duration: 1000 }} class="p-3 md:px-12 md:py-4">
