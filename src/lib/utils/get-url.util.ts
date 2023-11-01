@@ -7,8 +7,8 @@ import { env } from '$env/dynamic/public';
  */
 export const getURL = (): string => {
 	if (env.PUBLIC_SERVER === 'true') {
-		return browser ? env.PUBLIC_EXTERNAL_DIRECTUS_API_URL : env.PUBLIC_INTERNAL_DIRECTUS_API_URL;
+		return browser ? env.PUBLIC_EXTERNAL_DIRECTUS_API_URL! : env.PUBLIC_INTERNAL_DIRECTUS_API_URL!;
 	} else {
-		return env.PUBLIC_EXTERNAL_DIRECTUS_API_URL;
+		return env.PUBLIC_EXTERNAL_DIRECTUS_API_URL!;
 	}
 };
