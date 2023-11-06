@@ -24,8 +24,8 @@
 	const isNextPost = () => data.posts.findIndex((post) => post.id === data.post.id) < data.posts.length - 1;
 
 	function getTranslations(locale: string | null | undefined): void {
-		title = data.post.translations[locale === ('de' || 'de-DE') ? 0 : 1].title;
-		description = data.post.translations[locale === ('de' || 'de-DE') ? 0 : 1].description ?? '';
+		title = data.post.translations[locale === ('en' || 'en-US') ? 1 : 0].title;
+		description = data.post.translations[locale === ('en' || 'en-US') ? 1 : 0].description ?? '';
 	}
 
 	$: {
@@ -38,7 +38,9 @@
 				({
 					id: image.directus_files_id.id,
 					title: image.directus_files_id.title,
-					description: image.directus_files_id.description
+					description: image.directus_files_id.description,
+					width: image.directus_files_id.width,
+					height: image.directus_files_id.height
 				} as DirectusImage)
 		) || [];
 

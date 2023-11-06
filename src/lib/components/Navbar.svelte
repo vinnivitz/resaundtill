@@ -50,7 +50,7 @@
 			<DarkMode btnClass={'rounded-lg text-xl p-1 transform scale-150'} />
 		</NavLi>
 		<NavLi on:click={toggleLocale}>
-			<div class="w-6 h-6 cursor-pointer">
+			<div class="mt-1 w-6 h-6 cursor-pointer">
 				<FaFlag />
 			</div>
 		</NavLi>

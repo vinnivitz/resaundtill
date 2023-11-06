@@ -18,7 +18,7 @@
 					class="relative flex items-end justify-start w-full text-left bg-center bg-cover h-96 dark:bg-gray-500"
 					style={`background-image: url(${
 						post.images && post.images[0]
-							? getURL() + '/assets/' + (post.images && post.images[0]?.directus_files_id)
+							? getURL() + '/assets/' + (post.images && post.images[0]?.directus_files_id) + '?key=resaundtill-webp'
 							: '/images/travel.jpg'
 					});`}
 				>

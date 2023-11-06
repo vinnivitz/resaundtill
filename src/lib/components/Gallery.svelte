@@ -6,14 +6,19 @@
 	import type { GalleryImageItem } from '$lib/models/gallery-image-item.model';
 	import type { LightboxController } from '$lib/models/lightbox-controller.model';
 	import type { GalleryArrowsConfig } from 'svelte-lightbox/dist/Types';
+	import { Spinner } from 'flowbite-svelte';
 
 	export let files: DirectusImage[];
 
 	const images: GalleryImageItem[] = files.map((file, id) => ({
 		id,
-		src: imageUrlBuilder(file.id),
+		src: imageUrlBuilder(file.id)!,
+		thumb: imageUrlBuilder(file.id, true)!,
 		title: file.title,
-		description: file.description
+		description: file.description,
+		width: file.width,
+		height: file.height,
+		loaded: false
 	}));
 
 	let programmaticController: LightboxController;
@@ -33,24 +38,40 @@
 <LightboxGallery bind:programmaticController {arrowsConfig}>
 	{#each images as image}
 		<GalleryImage>
-			<img src={image.src} alt={image.title} />
+			{#if !image.loaded}
+				<div
+					class="flex justify-center items-center h-screen"
+					style:width={`${image.width}px`}
+					style:height={`${image.height}px`}
+				>
+					<div>
+						<Spinner size="24" />
+					</div>
+				</div>
+			{/if}
+			<img
+				src={image.src}
+				alt={image.title}
+				style:display={image.loaded ? 'block' : 'none'}
+				on:load={() => (image.loaded = true)}
+			/>
 			{#if image.title}
-				<div>{image.title}</div>
+				<div class="text-gray-100">{image.title}</div>
 			{/if}
 			{#if image.description}
-				<div class="image-description">{image.description}</div>
+				<div class="text-sm text-gray-100">{image.description}</div>
 			{/if}
 		</GalleryImage>
 	{/each}
 </LightboxGallery>
 
 <Masonry animate={true} items={images} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<img
 		class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
-		src={item.src}
+		src={item.thumb}
 		alt={item.title}
 		on:click={openModal(idx)}
+		on:keydown={() => null}
 	/>
 </Masonry>
 
@@ -80,9 +101,5 @@
 	:global(.previous-button svg) {
 		filter: drop-shadow(-2px -1px 0px #000) drop-shadow(2px -1px 0px #000) drop-shadow(1px 1px 0px #000)
 			drop-shadow(-1px 1px 0px #000);
-	}
-
-	.image-description {
-		font-size: 0.9rem;
 	}
 </style>
