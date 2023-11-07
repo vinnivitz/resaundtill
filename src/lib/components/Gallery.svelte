@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { DirectusImage } from '$lib/sdk/types';
 	import Masonry from 'svelte-bricks';
-	import { imageUrlBuilder } from '$lib/utils/image-url-builderutils';
 	import { GalleryImage, LightboxGallery } from 'svelte-lightbox';
 	import type { GalleryImageItem } from '$lib/models/gallery-image-item.model';
 	import type { LightboxController } from '$lib/models/lightbox-controller.model';
 	import type { GalleryArrowsConfig } from 'svelte-lightbox/dist/Types';
 	import { Spinner } from 'flowbite-svelte';
+	import { imageUrlBuilder } from '$lib/utils';
 
 	export let files: DirectusImage[];
 

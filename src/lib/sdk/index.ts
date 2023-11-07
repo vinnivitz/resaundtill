@@ -2,7 +2,7 @@ import { env } from '$env/dynamic/public';
 import { Directus } from '@directus/sdk';
 import type { CustomDirectusTypes } from './types';
 import { error } from '@sveltejs/kit';
-import { getURL } from '$lib/utils/get-url.util';
+import { getURL } from '$lib/utils';
 
 const endpoint = getURL();
 

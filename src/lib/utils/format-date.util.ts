@@ -1,12 +1,13 @@
-import { getLocaleCode } from './get-locale.util';
+import type { FormatDateOptions } from '$lib/models';
+import { getLocaleCode } from './locale.util';
 
-export type FormatDateOptions = {
-	w?: boolean;
-	d?: boolean;
-	m?: boolean;
-	y?: boolean;
-};
-
+/**
+ * Format a date to a formatted string depending on the locale
+ * @param date date to format
+ * @param locale locale code
+ * @param options options to format the date
+ * @returns {string} The formatted date
+ */
 export const formatDate = (
 	date: Date,
 	locale: string | null | undefined,

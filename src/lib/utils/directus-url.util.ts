@@ -1,0 +1,25 @@
+import { browser } from '$app/environment';
+import { env } from '$env/dynamic/public';
+import type { ID } from '@directus/sdk';
+
+/**
+ * Get the URL of the Directus API depending on the environment
+ * @returns {string} The URL of the Directus API
+ */
+export function getURL(): string {
+	return env.PUBLIC_SERVER === 'true'
+		? browser
+			? env.PUBLIC_EXTERNAL_DIRECTUS_API_URL!
+			: env.PUBLIC_INTERNAL_DIRECTUS_API_URL!
+		: env.PUBLIC_EXTERNAL_DIRECTUS_API_URL!;
+}
+
+/**
+ * Compose the static URL to an image
+ * @param id  The ID of the Directus image
+ * @param asThumbnail  Whether to return the thumbnail version of the image
+ * @returns {string | null} The composed static URL to the image or `null` if no ID was provided
+ */
+export function imageUrlBuilder(id: ID, asThumbnail = false): string | null {
+	return id ? `${getURL()}/assets/${id}?key=resaundtill-${asThumbnail ? 'thumbnail' : 'webp'}` : null;
+}

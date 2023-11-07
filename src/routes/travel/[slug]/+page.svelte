@@ -13,7 +13,7 @@
 	// @ts-ignore
 	import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
 	import Map from '$lib/components/Map.svelte';
-	import { getTranslationIdx } from '$lib/utils/get-translation-idx.util';
+	import { getTranslationIdx } from '$lib/utils';
 
 	export let data: PageData;
 

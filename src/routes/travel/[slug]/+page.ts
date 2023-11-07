@@ -1,5 +1,4 @@
 import type { PageLoad } from './$types';
-
 import { SDK, auth } from '$lib/sdk';
 import { error } from '@sveltejs/kit';
 import { BlogPostStatus } from '$lib/sdk/types';

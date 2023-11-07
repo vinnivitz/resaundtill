@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { onInterval } from '$lib/utils/onInterval.util';
+	import { onInterval } from '$lib/utils/on-interval.util';
 	export let callback: () => void;
 	export let number: number;
 	export let name: string;

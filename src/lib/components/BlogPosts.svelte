@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { PagePath } from '$lib/models/router.model';
+	import { PagePath } from '$lib/models';
 	import type { BlogPostEntry, DirectusImage } from '$lib/sdk/types';
-	import { getTranslationIdx } from '$lib/utils/get-translation-idx.util';
-	import { imageUrlBuilder } from '$lib/utils/image-url-builderutils';
+	import { getTranslationIdx, imageUrlBuilder } from '$lib/utils';
 	import type { ID } from '@directus/sdk';
 	import { locale } from 'svelte-i18n';
 

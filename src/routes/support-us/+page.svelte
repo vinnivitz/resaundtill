@@ -2,7 +2,7 @@
 	import { fly } from 'svelte/transition';
 	import type { PageData } from './$types';
 	import { locale } from 'svelte-i18n';
-	import { getTranslationIdx } from '$lib/utils/get-translation-idx.util';
+	import { getTranslationIdx } from '$lib/utils';
 
 	export let data: PageData;
 </script>

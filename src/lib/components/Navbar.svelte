@@ -4,12 +4,12 @@
 	import { PagePath } from '$lib/models/router.model';
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
 	import { _ } from 'svelte-i18n';
-	import clickOutside from '$lib/utils/clickOutside';
 	import { page } from '$app/stores';
 	import { DarkMode } from 'flowbite-svelte';
 	// @ts-ignore
 	import FaFlag from 'svelte-icons/fa/FaFlag.svelte';
 	import { createEventDispatcher } from 'svelte';
+	import { clickOutside } from '$lib/utils';
 
 	const dispatch = createEventDispatcher();
 

@@ -8,7 +8,7 @@
 	import { Spinner } from 'flowbite-svelte';
 	import { navigating } from '$app/stores';
 	import { Locale } from '$lib/models/user.model';
-	import { getLocale } from '$lib/utils/get-locale.util';
+	import { getLocale } from '$lib/utils/locale.util';
 
 	const toggleLocale = () => locale.set(getLocale($locale) === Locale.de ? Locale.en : Locale.de);
 </script>
