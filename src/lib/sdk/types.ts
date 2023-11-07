@@ -44,9 +44,9 @@ export type DirectusImage = {
 	description?: string;
 };
 
-export type BlogPostImage = {
+export type BlogPostImage<T = ID | DirectusImage> = {
 	id: ID;
-	directus_files_id: DirectusImage;
+	directus_files_id: T;
 	resaundtill_id: BlogPostEntry;
 };
 

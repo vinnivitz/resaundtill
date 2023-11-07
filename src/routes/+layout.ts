@@ -2,14 +2,9 @@ import type { LayoutLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { SDK, auth } from '$lib/sdk';
 import { BlogPostStatus, type BlogPostEntry } from '$lib/sdk/types';
-import { locale, waitLocale } from 'svelte-i18n';
-import { browser } from '$app/environment';
+import { waitLocale } from 'svelte-i18n';
 
 export const load: LayoutLoad = async () => {
-	if (browser) {
-		locale.set(window.navigator.language);
-	}
-
 	await waitLocale();
 
 	await auth();

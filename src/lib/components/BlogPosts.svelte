@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { PagePath } from '$lib/models/router.model';
-	import type { BlogPostEntry } from '$lib/sdk/types';
-	import { getURL } from '$lib/utils/get-url.util';
+	import type { BlogPostEntry, DirectusImage } from '$lib/sdk/types';
+	import { getTranslationIdx } from '$lib/utils/get-translation-idx.util';
+	import { imageUrlBuilder } from '$lib/utils/image-url-builderutils';
+	import type { ID } from '@directus/sdk';
 	import { locale } from 'svelte-i18n';
 
 	export let posts: BlogPostEntry[];
+
+	const asDirectusID = (image: ID | DirectusImage) => image as ID;
 </script>
 
 <div class="max-w-screen-xl p-5 mx-auto dark:text-gray-100">
@@ -18,7 +22,7 @@
 					class="relative flex items-end justify-start w-full text-left bg-center bg-cover h-96 dark:bg-gray-500"
 					style={`background-image: url(${
 						post.images && post.images[0]
-							? getURL() + '/assets/' + (post.images && post.images[0]?.directus_files_id) + '?key=resaundtill-webp'
+							? imageUrlBuilder(post.images && asDirectusID(post.images[0]?.directus_files_id), true)
 							: '/images/travel.jpg'
 					});`}
 				>
@@ -38,7 +42,7 @@
 					<div class="w-full bg-gradient-to-t from-black to-transparent">
 						<h2 class="p-5">
 							<div class="font-medium text-gray-300 text-md">
-								{post.translations[$locale === ('de' || 'de-DE') ? 0 : 1].title}
+								{post.translations[getTranslationIdx($locale)].title}
 							</div>
 						</h2>
 					</div>

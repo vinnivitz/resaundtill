@@ -13,34 +13,22 @@
 	// @ts-ignore
 	import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
 	import Map from '$lib/components/Map.svelte';
-	import { onMount } from 'svelte';
+	import { getTranslationIdx } from '$lib/utils/get-translation-idx.util';
 
 	export let data: PageData;
 
-	let title: string;
-	let description: string;
-
 	const isPrevPost = () => data.posts.findIndex((post) => post.id === data.post.id) > 0;
 	const isNextPost = () => data.posts.findIndex((post) => post.id === data.post.id) < data.posts.length - 1;
-
-	function getTranslations(locale: string | null | undefined): void {
-		title = data.post.translations[locale === ('en' || 'en-US') ? 1 : 0].title;
-		description = data.post.translations[locale === ('en' || 'en-US') ? 1 : 0].description ?? '';
-	}
-
-	$: {
-		getTranslations($locale);
-	}
 
 	const files: DirectusImage[] =
 		data.post.images?.map(
 			(image) =>
 				({
-					id: image.directus_files_id.id,
-					title: image.directus_files_id.title,
-					description: image.directus_files_id.description,
-					width: image.directus_files_id.width,
-					height: image.directus_files_id.height
+					id: (image.directus_files_id as DirectusImage).id,
+					title: (image.directus_files_id as DirectusImage).title,
+					description: (image.directus_files_id as DirectusImage).description,
+					width: (image.directus_files_id as DirectusImage).width,
+					height: (image.directus_files_id as DirectusImage).height
 				} as DirectusImage)
 		) || [];
 
@@ -61,8 +49,6 @@
 			window.location.href = `/travel/${data.posts[index + 1].id}`;
 		}
 	};
-
-	onMount(() => getTranslations($locale));
 </script>
 
 <section in:fly={{ y: 50, duration: 1000 }} class="p-3 md:px-12 md:py-4">
@@ -88,16 +74,18 @@
 		</button>
 	</div>
 
-	<Heading customSize="text-4xl md:text-5xl"><Secondary>{title}</Secondary></Heading>
+	<Heading customSize="text-4xl md:text-5xl"
+		><Secondary>{data.post.translations[getTranslationIdx($locale)].title}</Secondary></Heading
+	>
 	<Hr />
 
 	<div class="flex flex-wrap gap-4 items-center">
 		<div class="grow" />
 		<div class="w-6 h-6"><FaCalendar /></div>
-		<div class="text-sm md:text-lg">{formatDate(new Date(data.post.date))}</div>
+		<div class="text-sm md:text-lg">{formatDate(new Date(data.post.date), $locale)}</div>
 	</div>
 	<p class="pt-8 md:pt-12 text-lg font-normal">
-		{description}
+		{data.post.translations[getTranslationIdx($locale)].description}
 	</p>
 
 	{#if files.length > 0}

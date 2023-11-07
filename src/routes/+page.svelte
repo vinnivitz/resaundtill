@@ -7,6 +7,7 @@
 
 	export let data: PageData;
 	export let coords = data.posts.map((post) => post.location!.coordinates);
+
 	const isFlight = data.posts.map((post) => post.isFlight);
 
 	const navigate = (event: CustomEvent) => {
