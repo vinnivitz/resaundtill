@@ -32,7 +32,10 @@
 		<NavHamburger on:click={() => (hidden = !hidden)} />
 	</div>
 
-	<NavUl {hidden}>
+	<NavUl
+		{hidden}
+		ulClass="flex flex-col py-4 px-2 lg:p-4 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium"
+	>
 		<NavLi href={PagePath.home} active={$page.url.pathname === PagePath.home}>
 			<span class="text-md md:text-xl">{$_('nav.map')}</span>
 		</NavLi>
