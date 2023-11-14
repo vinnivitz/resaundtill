@@ -18,4 +18,3 @@ export function clickOutside(node: Node): { destroy: () => void } {
 		}
 	};
 }
-
