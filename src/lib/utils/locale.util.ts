@@ -1,3 +1,4 @@
+import { browser } from '$app/environment';
 import { Locale } from '$lib/models/user.model';
 
 /**
@@ -6,7 +7,7 @@ import { Locale } from '$lib/models/user.model';
  * @returns {Locale} The locale
  */
 export function getLocale(value: string | null | undefined): Locale {
-	return value === 'en' || value === 'en-US' ? Locale.en : Locale.de;
+	return value === 'en' || value === 'en-US' ? Locale.EN : Locale.DE;
 }
 
 /**
@@ -15,7 +16,7 @@ export function getLocale(value: string | null | undefined): Locale {
  * @returns {string} The locale code
  */
 export function getLocaleCode(value: string | null | undefined): string {
-	return getLocale(value) === Locale.de ? 'de-DE' : 'en-US';
+	return getLocale(value) === Locale.DE ? 'de-DE' : 'en-US';
 }
 
 /**
@@ -24,5 +25,19 @@ export function getLocaleCode(value: string | null | undefined): string {
  * @returns {number} The array index of the directus translation
  */
 export function getTranslationIdx(value: string | null | undefined): number {
-	return getLocale(value) === Locale.de ? 0 : 1;
+	return getLocale(value) === Locale.DE ? 0 : 1;
+}
+
+/**
+ * Determines the current locale and saves it to local storage
+ * @returns The current locale
+ */
+export function determineLocale(): Locale {
+	const locale = browser
+		? getLocale(localStorage.getItem('locale')) || getLocale(window.navigator.language) || Locale.DE
+		: Locale.DE;
+	if (browser) {
+		localStorage.setItem('locale', locale);
+	}
+	return locale;
 }

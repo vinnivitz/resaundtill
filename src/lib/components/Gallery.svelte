@@ -7,13 +7,14 @@
 	import type { GalleryArrowsConfig } from 'svelte-lightbox/dist/Types';
 	import { Spinner } from 'flowbite-svelte';
 	import { imageUrlBuilder } from '$lib/utils';
+	import { DirectusImageTransformation } from '$lib/models/directus-images-transformation.enum';
 
 	export let files: DirectusImage[];
 
 	const images: GalleryImageItem[] = files.map((file, id) => ({
 		id,
 		src: imageUrlBuilder(file.id)!,
-		thumb: imageUrlBuilder(file.id, true)!,
+		thumb: imageUrlBuilder(file.id, DirectusImageTransformation.THUMBNAIL)!,
 		title: file.title,
 		description: file.description,
 		width: file.width,

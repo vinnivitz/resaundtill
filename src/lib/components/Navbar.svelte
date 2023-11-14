@@ -5,15 +5,17 @@
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
-	import { DarkMode } from 'flowbite-svelte';
-	// @ts-ignore
-	import FaFlag from 'svelte-icons/fa/FaFlag.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import { clickOutside } from '$lib/utils';
+	import ThemeSwitcher from './ThemeSwitcher.svelte';
+	import LocaleSwitcher from './LocaleSwitcher.svelte';
+
+	export let isDark: boolean;
 
 	const dispatch = createEventDispatcher();
 
 	const toggleLocale = () => dispatch('locale');
+	const toggleTheme = () => dispatch('theme');
 
 	let hidden = true;
 </script>
@@ -46,13 +48,13 @@
 		<NavLi href={PagePath.legals} active={$page.url.pathname === PagePath.legals}>
 			<span class="text-md md:text-xl">{$_('nav.legals')}</span>
 		</NavLi>
-		<NavLi>
-			<DarkMode btnClass={'rounded-lg text-xl p-1 transform scale-150'} />
+		<NavLi on:click={toggleTheme}>
+			<div class="mt-2">
+				<ThemeSwitcher {isDark} />
+			</div>
 		</NavLi>
 		<NavLi on:click={toggleLocale}>
-			<div class="mt-1 w-6 h-6 cursor-pointer">
-				<FaFlag />
-			</div>
+			<LocaleSwitcher />
 		</NavLi>
 	</NavUl>
 </Navbar>

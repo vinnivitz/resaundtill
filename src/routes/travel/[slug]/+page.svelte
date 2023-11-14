@@ -14,6 +14,7 @@
 	import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
 	import Map from '$lib/components/Map.svelte';
 	import { getTranslationIdx } from '$lib/utils';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 
@@ -39,14 +40,14 @@
 	const getPrevPost = () => {
 		const index = data.posts.findIndex((post) => post.id === data.post.id);
 		if (index > 0) {
-			window.location.href = `/travel/${data.posts[index - 1].id}`;
+			goto(`/travel/${data.posts[index - 1].id}`);
 		}
 	};
 
 	const getNextPost = () => {
 		const index = data.posts.findIndex((post) => post.id === data.post.id);
 		if (index < data.posts.length - 1) {
-			window.location.href = `/travel/${data.posts[index + 1].id}`;
+			goto(`/travel/${data.posts[index + 1].id}`);
 		}
 	};
 </script>

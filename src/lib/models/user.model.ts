@@ -1,11 +1,11 @@
 export enum LayoutTheme {
-	light = 'light',
-	dark = 'dark'
+	LIGHT = 'light',
+	DARK = 'dark'
 }
 
 export enum Locale {
-	en = 'en',
-	de = 'de'
+	EN = 'en',
+	DE = 'de'
 }
 
 export type UserPrefs = {

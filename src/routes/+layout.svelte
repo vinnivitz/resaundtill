@@ -7,10 +7,30 @@
 	import { isLoading } from 'svelte-i18n';
 	import { Spinner } from 'flowbite-svelte';
 	import { navigating } from '$app/stores';
-	import { Locale } from '$lib/models/user.model';
+	import { LayoutTheme, Locale } from '$lib/models/user.model';
 	import { getLocale } from '$lib/utils/locale.util';
+	import { onMount } from 'svelte';
 
-	const toggleLocale = () => locale.set(getLocale($locale) === Locale.de ? Locale.en : Locale.de);
+	let toggleTheme: () => void;
+	let toggleLocale: () => void;
+	let isDark: boolean;
+
+	onMount(() => {
+		isDark =
+			localStorage.getItem('color-theme') === LayoutTheme.DARK ||
+			(!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+		isDark
+			? window.document.documentElement.classList.add(LayoutTheme.DARK)
+			: window.document.documentElement.classList.remove(LayoutTheme.DARK);
+		toggleTheme = () => {
+			isDark = window.document.documentElement.classList.toggle('dark');
+			localStorage.setItem('color-theme', isDark ? LayoutTheme.DARK : LayoutTheme.LIGHT);
+		};
+		toggleLocale = () => {
+			locale.set(getLocale($locale) === Locale.DE ? Locale.EN : Locale.DE);
+			localStorage.setItem('locale', getLocale($locale));
+		};
+	});
 </script>
 
 <svelte:head>
@@ -25,7 +45,7 @@
 	</div>
 {:else}
 	<header class="fixed z-50 top-0 left-0 right-0">
-		<Navbar on:locale={toggleLocale} />
+		<Navbar {isDark} on:locale={toggleLocale} on:theme={toggleTheme} />
 	</header>
 
 	<main

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { PagePath } from '$lib/models';
+	import { DirectusImageTransformation } from '$lib/models/directus-images-transformation.enum';
 	import type { BlogPostEntry, DirectusImage } from '$lib/sdk/types';
 	import { getTranslationIdx, imageUrlBuilder } from '$lib/utils';
 	import type { ID } from '@directus/sdk';
@@ -21,7 +22,10 @@
 					class="relative flex items-end justify-start w-full text-left bg-center bg-cover h-96 dark:bg-gray-500"
 					style={`background-image: url(${
 						post.images && post.images[0]
-							? imageUrlBuilder(post.images && asDirectusID(post.images[0]?.directus_files_id), true)
+							? imageUrlBuilder(
+									post.images && asDirectusID(post.images[0]?.directus_files_id),
+									DirectusImageTransformation.PREVIEW
+							  )
 							: '/images/travel.jpg'
 					});`}
 				>

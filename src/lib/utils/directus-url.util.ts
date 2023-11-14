@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { env } from '$env/dynamic/public';
+import { DirectusImageTransformation } from '$lib/models/directus-images-transformation.enum';
 import type { ID } from '@directus/sdk';
 
 /**
@@ -20,6 +21,14 @@ export function getURL(): string {
  * @param asThumbnail  Whether to return the thumbnail version of the image
  * @returns {string | null} The composed static URL to the image or `null` if no ID was provided
  */
-export function imageUrlBuilder(id: ID, asThumbnail = false): string | null {
-	return id ? `${getURL()}/assets/${id}?key=resaundtill-${asThumbnail ? 'thumbnail' : 'webp'}` : null;
+export function imageUrlBuilder(id: ID, transformation = DirectusImageTransformation.DEFAULT): string | null {
+	return id
+		? `${getURL()}/assets/${id}?key=resaundtill-${
+				transformation === DirectusImageTransformation.THUMBNAIL
+					? 'thumbnail'
+					: transformation === DirectusImageTransformation.PREVIEW
+					? 'preview'
+					: 'webp'
+		  }`
+		: null;
 }
