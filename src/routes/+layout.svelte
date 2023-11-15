@@ -49,7 +49,7 @@
 	</header>
 
 	<main
-		class="h-screen relative z-0 bg-gradient-to-b from-gray-200 to-transparent to-20% dark:from-gray-800 overflow-scroll scrollbar-hide pb-5"
+		class="h-screen relative z-0 bg-gradient-to-b from-gray-200 to-20% dark:from-gray-800 overflow-scroll scrollbar-hide pb-5"
 	>
 		<slot />
 	</main>
