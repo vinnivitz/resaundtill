@@ -6,9 +6,20 @@
 	import type { PageData } from './$types';
 
 	export let data: PageData;
-	export let coords = data.posts.map((post) => post.location!.coordinates);
 
-	const isFlight = data.posts.map((post) => post.isFlight);
+	function getIndexesOfCertainValue<T>(arr: T[], value: T) {
+		const indexes: number[] = [];
+		for (const item of arr) {
+			if (item === value) {
+				indexes.push(arr.indexOf(item));
+			}
+		}
+		return indexes;
+	}
+
+	const coords = data.posts.map((post) => post.location && post.location.coordinates).filter((coord) => coord) as number[][];
+	const postsWithoutLocation = getIndexesOfCertainValue(coords, undefined || null);
+	const isFlight = data.posts.map((post) => post.isFlight).filter((_, index) => !postsWithoutLocation.includes(index));
 
 	const navigate = (event: CustomEvent) => {
 		const coordindates = event.detail;

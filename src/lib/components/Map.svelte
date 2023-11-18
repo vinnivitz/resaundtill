@@ -6,7 +6,7 @@
 	import { onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 
-	export let coords: number[][];
+	export let coords: number[][] = [];
 	export let isFlight: boolean[] = [];
 	export let zoomOut = 3;
 	export let deactivated = false;
