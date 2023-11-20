@@ -2,12 +2,10 @@
 	import type { DirectusImage } from '$lib/sdk/types';
 	import Masonry from 'svelte-bricks';
 	import { GalleryImage, LightboxGallery } from 'svelte-lightbox';
-	import type { GalleryImageItem } from '$lib/models/gallery-image-item.model';
-	import type { LightboxController } from '$lib/models/lightbox-controller.model';
 	import type { GalleryArrowsConfig } from 'svelte-lightbox/dist/Types';
 	import { Spinner } from 'flowbite-svelte';
 	import { imageUrlBuilder } from '$lib/utils';
-	import { DirectusImageTransformation } from '$lib/models/directus-images-transformation.enum';
+	import { DirectusImageTransformation, type GalleryImageItem, type LightboxController } from '$lib/models';
 
 	export let files: DirectusImage[];
 

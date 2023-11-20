@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { PagePath } from '$lib/models';
-	import { DirectusImageTransformation } from '$lib/models/directus-images-transformation.enum';
+	import { DirectusImageTransformation, PagePath } from '$lib/models';
 	import type { BlogPostEntry, DirectusImage } from '$lib/sdk/types';
 	import { getTranslationIdx, imageUrlBuilder } from '$lib/utils';
 	import type { ID } from '@directus/sdk';

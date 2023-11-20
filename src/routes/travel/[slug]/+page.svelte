@@ -6,15 +6,15 @@
 	import { fly } from 'svelte/transition';
 	import { _, locale } from 'svelte-i18n';
 	import Gallery from '$lib/components/Gallery.svelte';
-	import { formatDate } from '$lib/utils/format-date.util';
 	import type { DirectusImage } from '$lib/sdk/types';
 	// @ts-ignore
 	import FaArrowLeft from 'svelte-icons/fa/FaArrowLeft.svelte';
 	// @ts-ignore
 	import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
 	import Map from '$lib/components/Map.svelte';
-	import { getTranslationIdx } from '$lib/utils';
+	import { formatDate, getTranslationIdx } from '$lib/utils';
 	import { goto } from '$app/navigation';
+	import { PagePath, type MapItem } from '$lib/models';
 
 	export let data: PageData;
 
@@ -33,21 +33,26 @@
 				} as DirectusImage)
 		) || [];
 
-	const coords = Array.isArray(data.post.location?.coordinates)
-		? [[data.post.location!.coordinates[0], data.post.location!.coordinates[1]]]
+	const mapItems = Array.isArray(data.post.location?.coordinates)
+		? ([
+				{
+					coords: [data.post.location!.coordinates[0], data.post.location!.coordinates[1]] as number[],
+					isFlight: data.post.isFlight
+				}
+		  ] as MapItem[])
 		: null;
 
 	const getPrevPost = () => {
 		const index = data.posts.findIndex((post) => post.id === data.post.id);
 		if (index > 0) {
-			goto(`/travel/${data.posts[index - 1].id}`);
+			goto(`${PagePath.travel}/${data.posts[index - 1].id}`);
 		}
 	};
 
 	const getNextPost = () => {
 		const index = data.posts.findIndex((post) => post.id === data.post.id);
 		if (index < data.posts.length - 1) {
-			goto(`/travel/${data.posts[index + 1].id}`);
+			goto(`${PagePath.travel}/${data.posts[index + 1].id}`);
 		}
 	};
 </script>
@@ -99,11 +104,11 @@
 		</div>
 	{/if}
 
-	{#if coords}
+	{#if mapItems}
 		<Hr />
 
 		<Heading customSize="pt-5 pb-3 text-4xl"><Secondary>{$_('common.map')}</Secondary></Heading>
 
-		<Map {coords} deactivated={true} />
+		<Map items={mapItems} deactivated={true} />
 	{/if}
 </section>

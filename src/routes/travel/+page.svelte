@@ -6,7 +6,7 @@
 
 	export let data: PageData;
 
-	const posts = data.posts.reverse();
+	const posts = [...data.posts].reverse();
 </script>
 
 <section in:fly={{ y: 50, duration: 1000 }} class="pt-4 md:pt-12">

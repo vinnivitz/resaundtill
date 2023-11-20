@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import { env } from '$env/dynamic/public';
-import { DirectusImageTransformation } from '$lib/models/directus-images-transformation.enum';
+import { DirectusImageTransformation } from '$lib/models';
 import type { ID } from '@directus/sdk';
 
 /**

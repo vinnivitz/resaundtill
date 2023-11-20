@@ -1,13 +1,12 @@
 <script lang="ts">
+	import type { MapItem } from '$lib/models';
 	import { Button } from 'flowbite-svelte';
-	import type { Map, MarkerOptions } from 'leaflet';
+	import type { Map } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
-	import { createEventDispatcher } from 'svelte';
-	import { onMount } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 
-	export let coords: number[][] = [];
-	export let isFlight: boolean[] = [];
+	export let items: MapItem[] = [];
 	export let zoomOut = 3;
 	export let deactivated = false;
 
@@ -19,6 +18,9 @@
 
 	onMount(async () => {
 		const L = await import('leaflet');
+
+		let coords = items.map((item) => item.coords);
+		const isFlight = items.map((item) => item.isFlight);
 
 		if (coords.length < 1 || coords[0].length !== 2) {
 			coords = [[51.053719, 13.737908]];
@@ -55,7 +57,10 @@
 			popupAnchor: [-3, -76]
 		});
 
-		const onClick = (e: any) => dispatch('activeCoords', [e.latlng.lat, e.latlng.lng]);
+		const onClick = (e: any) => {
+			console.log('click', e);
+			dispatch('activeCoords', [e.latlng.lat, e.latlng.lng]);
+		};
 
 		const markers = coords.map((coord) => {
 			return L.marker([coord[1], coord[0]], {

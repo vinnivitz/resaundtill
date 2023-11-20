@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { Locale } from '$lib/models/user.model';
+import { Locale } from '$lib/models';
 
 /**
  * Returns the locale in `Locale` format

@@ -1,7 +1,6 @@
 <svelte:options accessors={true} />
 
 <script lang="ts">
-	import { PagePath } from '$lib/models/router.model';
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
@@ -9,6 +8,7 @@
 	import { clickOutside } from '$lib/utils';
 	import ThemeSwitcher from './ThemeSwitcher.svelte';
 	import LocaleSwitcher from './LocaleSwitcher.svelte';
+	import { PagePath } from '$lib/models';
 
 	export let isDark: boolean;
 
