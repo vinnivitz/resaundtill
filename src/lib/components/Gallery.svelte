@@ -137,7 +137,7 @@
 
 {#if galleryImagesFiltered.length === 0}
 	<div class="flex justify-center">
-		<div class="text-gray-800">{$_('components.gallery.no_results')}</div>
+		<div>{$_('components.gallery.no_results')}</div>
 	</div>
 {/if}
 
