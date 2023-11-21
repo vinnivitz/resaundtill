@@ -39,6 +39,7 @@
 		"eslint-plugin-svelte3": "^4.0.0",
 		"flowbite": "^1.6.5",
 		"flowbite-svelte": "^0.34.12",
+		"husky": "^8.0.3",
 		"leaflet": "^1.9.3",
 		"postcss": "^8.4.23",
 		"postcss-load-config": "^4.0.1",

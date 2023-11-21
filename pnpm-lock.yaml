@@ -68,6 +68,9 @@ devDependencies:
   flowbite-svelte:
     specifier: ^0.34.12
     version: 0.34.12(@algolia/client-search@4.20.0)(@popperjs/core@2.11.8)(classnames@2.3.2)(flowbite@1.8.1)(search-insights@2.9.0)(svelte@3.59.2)
+  husky:
+    specifier: ^8.0.3
+    version: 8.0.3
   leaflet:
     specifier: ^1.9.3
     version: 1.9.4
@@ -2380,6 +2383,12 @@ packages:
     engines: {node: '>= 0.4'}
     dependencies:
       function-bind: 1.1.2
+    dev: true
+
+  /husky@8.0.3:
+    resolution: {integrity: sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==}
+    engines: {node: '>=14'}
+    hasBin: true
     dev: true
 
   /ignore@5.2.4:
