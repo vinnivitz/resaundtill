@@ -3,7 +3,6 @@ import { error } from '@sveltejs/kit';
 import { SDK, auth } from '$lib/sdk';
 import { BlogPostStatus, type BlogPostEntry } from '$lib/sdk/types';
 import { waitLocale } from 'svelte-i18n';
-import type { ID } from '@directus/sdk';
 
 export const load: LayoutLoad = async () => {
 	await waitLocale();
@@ -18,6 +17,7 @@ export const load: LayoutLoad = async () => {
 	});
 
 	const files = [];
+
 	for (const post of postsResult.data as BlogPostEntry[]) {
 		if (post.images) {
 			files.push(...post.images);

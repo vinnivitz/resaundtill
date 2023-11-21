@@ -1,16 +1,22 @@
 <script lang="ts">
 	import type { DirectusImage } from '$lib/sdk/types';
 	import Masonry from 'svelte-bricks';
+	// @ts-ignore
 	import { GalleryImage, LightboxGallery } from 'svelte-lightbox';
 	import type { GalleryArrowsConfig } from 'svelte-lightbox/dist/Types';
 	import { Spinner } from 'flowbite-svelte';
 	import { imageUrlBuilder } from '$lib/utils';
 	import { DirectusImageTransformation, type GalleryImageItem, type LightboxController } from '$lib/models';
+	import { imageCache } from '$lib/stores';
+	import type { ID } from '@directus/sdk';
 
 	export let images: DirectusImage[] = [];
+	export let enableCaching = true;
 
-	const galleryImages: GalleryImageItem[] = images.map((file, id) => ({
-		id,
+	let cachedImages = new Map<ID, HTMLImageElement>();
+
+	const galleryImages: GalleryImageItem[] = images.map((file) => ({
+		id: file.id,
 		src: imageUrlBuilder(file.id)!,
 		thumb: imageUrlBuilder(file.id, DirectusImageTransformation.THUMBNAIL)!,
 		title: file.title,
@@ -29,31 +35,63 @@
 	};
 
 	const openModal = (idx: number): null => {
+		if (enableCaching) {
+			void cacheImages();
+		}
 		programmaticController.openImage(idx);
 		return null;
 	};
+
+	async function cacheImages() {
+		imageCache.update((cache) => {
+			cachedImages = cache;
+			galleryImages.forEach((image) => {
+				const img = new Image();
+
+				img.onload = () => {
+					if (!cache.has(image.id)) {
+						cache.set(image.id, img);
+						cachedImages.set(image.id, img);
+					}
+				};
+				img.src = image.src;
+			});
+			return cache;
+		});
+	}
 </script>
 
 <LightboxGallery bind:programmaticController {arrowsConfig}>
 	{#each galleryImages as image}
 		<GalleryImage>
-			{#if !image.loaded}
-				<div
-					class="flex justify-center items-center h-screen"
-					style:width={`${image.width}px`}
-					style:height={`${image.height}px`}
-				>
-					<div>
-						<Spinner size="24" />
+			{#if cachedImages.has(image.id)}
+				<img
+					src={cachedImages.get(image.id)?.src}
+					width={`${image.width}px`}
+					height={`${image.height}px`}
+					alt={image.title}
+				/>
+			{:else}
+				{#if !image.loaded}
+					<div
+						class="flex justify-center items-center h-screen"
+						style:width={`${image.width}px`}
+						style:height={`${image.height}px`}
+					>
+						<div>
+							<Spinner size="24" />
+						</div>
 					</div>
-				</div>
+				{/if}
+				<img
+					src={image.src}
+					alt={image.title}
+					style:opacity={image.loaded ? '1' : '0'}
+					class="transition-opacity duration-100"
+					on:load={() => (image.loaded = true)}
+				/>
 			{/if}
-			<img
-				src={image.src}
-				alt={image.title}
-				style:display={image.loaded ? 'block' : 'none'}
-				on:load={() => (image.loaded = true)}
-			/>
+
 			{#if image.title}
 				<div class="text-gray-100">{image.title}</div>
 			{/if}

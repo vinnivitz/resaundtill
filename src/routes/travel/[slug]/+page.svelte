@@ -18,11 +18,13 @@
 
 	export let data: PageData;
 
-	const isPrevPost = () => data.posts.findIndex((post) => post.id === data.post.id) > 0;
-	const isNextPost = () => data.posts.findIndex((post) => post.id === data.post.id) < data.posts.length - 1;
+	const postItem = data.posts.find((post) => post.id === data.postID)!;
 
-	const files: DirectusImage[] =
-		data.post.images?.map(
+	const isPrevPost = () => data.posts.findIndex((post) => post.id === postItem.id) > 0;
+	const isNextPost = () => data.posts.findIndex((post) => post.id === postItem.id) < data.posts.length - 1;
+
+	const images: DirectusImage[] =
+		postItem.images?.map(
 			(image) =>
 				({
 					id: image.directus_files_id.id,
@@ -33,24 +35,24 @@
 				} as DirectusImage)
 		) || [];
 
-	const mapItems = Array.isArray(data.post.location?.coordinates)
+	const mapItems = Array.isArray(postItem.location?.coordinates)
 		? ([
 				{
-					coords: [data.post.location!.coordinates[0], data.post.location!.coordinates[1]] as number[],
-					isFlight: data.post.isFlight
+					coords: [postItem.location!.coordinates[0], postItem.location!.coordinates[1]] as number[],
+					isFlight: postItem.isFlight
 				}
 		  ] as MapItem[])
 		: null;
 
 	const getPrevPost = () => {
-		const index = data.posts.findIndex((post) => post.id === data.post.id);
+		const index = data.posts.findIndex((post) => post.id === postItem.id);
 		if (index > 0) {
 			goto(`${PagePath.travel}/${data.posts[index - 1].id}`);
 		}
 	};
 
 	const getNextPost = () => {
-		const index = data.posts.findIndex((post) => post.id === data.post.id);
+		const index = data.posts.findIndex((post) => post.id === postItem.id);
 		if (index < data.posts.length - 1) {
 			goto(`${PagePath.travel}/${data.posts[index + 1].id}`);
 		}
@@ -81,26 +83,26 @@
 	</div>
 
 	<Heading customSize="text-4xl md:text-5xl"
-		><Secondary>{data.post.translations[getTranslationIdx($locale)].title}</Secondary></Heading
+		><Secondary>{postItem.translations[getTranslationIdx($locale)].title}</Secondary></Heading
 	>
 	<Hr />
 
 	<div class="flex flex-wrap gap-4 items-center">
 		<div class="grow" />
 		<div class="w-6 h-6"><FaCalendar /></div>
-		<div class="text-sm md:text-lg">{formatDate(new Date(data.post.date), $locale)}</div>
+		<div class="text-sm md:text-lg">{formatDate(new Date(postItem.date), $locale)}</div>
 	</div>
 	<p class="pt-8 md:pt-12 text-lg font-normal">
-		{data.post.translations[getTranslationIdx($locale)].description}
+		{postItem.translations[getTranslationIdx($locale)].description}
 	</p>
 
-	{#if files.length > 0}
+	{#if images.length > 0}
 		<Hr />
 
 		<Heading customSize="pt-5 pb-3 text-4xl"><Secondary>{$_('travel.gallery-title')}</Secondary></Heading>
 
 		<div class="m-2">
-			<Gallery images={files} />
+			<Gallery {images} />
 		</div>
 	{/if}
 

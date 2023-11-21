@@ -1,5 +1,7 @@
+import type { ID } from '@directus/sdk';
+
 export type GalleryImageItem = {
-	id: number;
+	id: ID;
 	title?: string;
 	description?: string;
 	src: string;
