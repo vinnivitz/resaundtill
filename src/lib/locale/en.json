@@ -51,6 +51,12 @@
 			"hours": "Hours",
 			"minutes": "Minutes",
 			"seconds": "Seconds"
+		},
+		"gallery": {
+			"searchbar": {
+				"placeholder": "Search..."
+			},
+			"no_results": "No images found with the keyword."
 		}
 	}
 }

@@ -51,6 +51,12 @@
 			"hours": "Stunden",
 			"minutes": "Minuten",
 			"seconds": "Sekunden"
+		},
+		"gallery": {
+			"searchbar": {
+				"placeholder": "Suchen..."
+			},
+			"no_results": "Keine Bilder mit dem Stichwort gefunden."
 		}
 	}
 }

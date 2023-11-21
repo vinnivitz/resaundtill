@@ -4,14 +4,21 @@
 	// @ts-ignore
 	import { GalleryImage, LightboxGallery } from 'svelte-lightbox';
 	import type { GalleryArrowsConfig } from 'svelte-lightbox/dist/Types';
-	import { Spinner } from 'flowbite-svelte';
+	import { Input, Spinner } from 'flowbite-svelte';
 	import { imageUrlBuilder } from '$lib/utils';
 	import { DirectusImageTransformation, type GalleryImageItem, type LightboxController } from '$lib/models';
 	import { imageCache } from '$lib/stores';
 	import type { ID } from '@directus/sdk';
+	// @ts-ignore
+	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
+	// @ts-ignore
+	import { _ } from 'svelte-i18n';
 
 	export let images: DirectusImage[] = [];
-	export let enableCaching = true;
+	export let caching = true;
+	export let searchable = false;
+
+	let searchTerm = '';
 
 	let cachedImages = new Map<ID, HTMLImageElement>();
 
@@ -26,6 +33,8 @@
 		loaded: false
 	}));
 
+	let galleryImagesFiltered = galleryImages;
+
 	let programmaticController: LightboxController;
 
 	const arrowsConfig: GalleryArrowsConfig = {
@@ -35,12 +44,20 @@
 	};
 
 	const openModal = (idx: number): null => {
-		if (enableCaching) {
+		if (caching) {
 			void cacheImages();
 		}
 		programmaticController.openImage(idx);
 		return null;
 	};
+
+	$: galleryImagesFiltered = searchTerm
+		? galleryImages.filter(
+				(image) =>
+					image.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+					image.description?.toLowerCase().includes(searchTerm.toLowerCase())
+		  )
+		: galleryImages;
 
 	async function cacheImages() {
 		imageCache.update((cache) => {
@@ -61,8 +78,22 @@
 	}
 </script>
 
+{#if searchable}
+	<div class="relative w-full md:w-72 mb-5">
+		<div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none h-10 w-10">
+			<FaSearch />
+		</div>
+		<Input
+			id="search-navbar"
+			class="pl-14"
+			placeholder={$_('components.gallery.searchbar.placeholder')}
+			bind:value={searchTerm}
+		/>
+	</div>
+{/if}
+
 <LightboxGallery bind:programmaticController {arrowsConfig}>
-	{#each galleryImages as image}
+	{#each galleryImagesFiltered as image}
 		<GalleryImage>
 			{#if cachedImages.has(image.id)}
 				<img
@@ -86,6 +117,8 @@
 				<img
 					src={image.src}
 					alt={image.title}
+					width={`${image.width}px`}
+					height={`${image.height}px`}
 					style:opacity={image.loaded ? '1' : '0'}
 					class="transition-opacity duration-100"
 					on:load={() => (image.loaded = true)}
@@ -102,7 +135,13 @@
 	{/each}
 </LightboxGallery>
 
-<Masonry animate={true} items={galleryImages} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
+{#if galleryImagesFiltered.length === 0}
+	<div class="flex justify-center">
+		<div class="text-gray-800">{$_('components.gallery.no_results')}</div>
+	</div>
+{/if}
+
+<Masonry animate={true} items={galleryImagesFiltered} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
 	<img
 		class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
 		src={item.thumb}
