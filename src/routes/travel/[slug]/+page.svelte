@@ -25,11 +25,11 @@
 		data.post.images?.map(
 			(image) =>
 				({
-					id: (image.directus_files_id as DirectusImage).id,
-					title: (image.directus_files_id as DirectusImage).title,
-					description: (image.directus_files_id as DirectusImage).description,
-					width: (image.directus_files_id as DirectusImage).width,
-					height: (image.directus_files_id as DirectusImage).height
+					id: image.directus_files_id.id,
+					title: image.directus_files_id.title,
+					description: image.directus_files_id.description,
+					width: image.directus_files_id.width,
+					height: image.directus_files_id.height
 				} as DirectusImage)
 		) || [];
 
@@ -100,7 +100,7 @@
 		<Heading customSize="pt-5 pb-3 text-4xl"><Secondary>{$_('travel.gallery-title')}</Secondary></Heading>
 
 		<div class="m-2">
-			<Gallery {files} />
+			<Gallery images={files} />
 		</div>
 	{/if}
 

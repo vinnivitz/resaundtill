@@ -7,9 +7,9 @@
 	import { imageUrlBuilder } from '$lib/utils';
 	import { DirectusImageTransformation, type GalleryImageItem, type LightboxController } from '$lib/models';
 
-	export let files: DirectusImage[];
+	export let images: DirectusImage[] = [];
 
-	const images: GalleryImageItem[] = files.map((file, id) => ({
+	const galleryImages: GalleryImageItem[] = images.map((file, id) => ({
 		id,
 		src: imageUrlBuilder(file.id)!,
 		thumb: imageUrlBuilder(file.id, DirectusImageTransformation.THUMBNAIL)!,
@@ -35,7 +35,7 @@
 </script>
 
 <LightboxGallery bind:programmaticController {arrowsConfig}>
-	{#each images as image}
+	{#each galleryImages as image}
 		<GalleryImage>
 			{#if !image.loaded}
 				<div
@@ -64,7 +64,7 @@
 	{/each}
 </LightboxGallery>
 
-<Masonry animate={true} items={images} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
+<Masonry animate={true} items={galleryImages} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
 	<img
 		class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
 		src={item.thumb}

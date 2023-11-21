@@ -57,10 +57,7 @@
 			popupAnchor: [-3, -76]
 		});
 
-		const onClick = (e: any) => {
-			console.log('click', e);
-			dispatch('activeCoords', [e.latlng.lat, e.latlng.lng]);
-		};
+		const onClick = (e: any) => dispatch('activeCoords', [e.latlng.lat, e.latlng.lng]);
 
 		const markers = coords.map((coord) => {
 			return L.marker([coord[1], coord[0]], {

@@ -21,10 +21,7 @@
 					class="relative flex items-end justify-start w-full text-left bg-center bg-cover h-96 dark:bg-gray-500"
 					style={`background-image: url(${
 						post.images && post.images[0]
-							? imageUrlBuilder(
-									post.images && asDirectusID(post.images[0]?.directus_files_id),
-									DirectusImageTransformation.PREVIEW
-							  )
+							? imageUrlBuilder(post.images[0]?.directus_files_id.id, DirectusImageTransformation.PREVIEW)
 							: '/images/travel.jpg'
 					});`}
 				>

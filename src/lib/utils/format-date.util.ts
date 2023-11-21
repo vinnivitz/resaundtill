@@ -15,7 +15,7 @@ export const formatDate = (
 ) => {
 	return `${options.w ? date.toLocaleString(getLocaleCode(locale), { weekday: 'long' }) : ''}, ${
 		options.d ? (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) : ''
-	}.${options.m ? date.toLocaleString(getLocaleCode(locale), { month: 'long' }) : ''}.${
+	}. ${options.m ? date.toLocaleString(getLocaleCode(locale), { month: 'long' }) : ''} ${
 		options.y ? date.getFullYear() : ''
 	}`;
 };
