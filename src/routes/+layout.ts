@@ -1,7 +1,7 @@
 import type { LayoutLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { SDK, auth } from '$lib/sdk';
-import { BlogPostStatus, type BlogPostEntry } from '$lib/sdk/types';
+import { BlogPostStatus, type BlogPostEntry, type SupportInfoEntry } from '$lib/sdk/types';
 import { waitLocale } from 'svelte-i18n';
 
 export const load: LayoutLoad = async () => {
@@ -28,6 +28,11 @@ export const load: LayoutLoad = async () => {
 
 	const supportInfoResponse = await SDK.singleton('resaundtill_support').read({ fields: '*.*' });
 
+	// @ts-ignore
+	const galleryShufflePercentage = await SDK.singleton('resaundtill_gallery_shuffle_percentage').read({
+		fields: '*.*'
+	});
+
 	if (!postsResult.data || !departureResult || !supportInfoResponse)
 		throw error(500, 'Could not load data. Please try again later.');
 
@@ -35,6 +40,7 @@ export const load: LayoutLoad = async () => {
 		posts: postsResult.data as BlogPostEntry[],
 		departure: departureResult,
 		files,
-		supportInfo: supportInfoResponse
+		supportInfo: supportInfoResponse as any as SupportInfoEntry,
+		galleryShufflePercentage
 	};
 };

@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { Locale } from '$lib/models';
+import type { BlogPostTranslation, SupportTranslation } from '$lib/sdk/types';
 
 /**
  * Returns the locale in `Locale` format
@@ -19,13 +20,16 @@ export function getLocaleCode(value: string | null | undefined): string {
 	return getLocale(value) === Locale.DE ? 'de-DE' : 'en-US';
 }
 
-/**
- * Returns the array index of the directus translation depnding on the locale
- * @param value locale code
- * @returns {number} The array index of the directus translation
- */
-export function getTranslationIdx(value: string | null | undefined): number {
-	return getLocale(value) === Locale.DE ? 0 : 1;
+export function getTranslation<T = SupportTranslation | BlogPostTranslation>(
+	translations: (SupportTranslation | BlogPostTranslation)[],
+	locale: string | null | undefined
+): T | undefined {
+	const result = translations.find(
+		(translation) =>
+			(translation as BlogPostTranslation).languages_code.code === getLocaleCode(locale) ||
+			translation.languages_code === getLocaleCode(locale)
+	) as T;
+	return result;
 }
 
 /**

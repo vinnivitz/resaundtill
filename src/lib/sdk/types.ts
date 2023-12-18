@@ -1,4 +1,5 @@
 import type { ID } from '@directus/sdk';
+import type { Gallery } from 'flowbite-svelte';
 
 export type Departure = {
 	id: ID;
@@ -8,6 +9,11 @@ export type Departure = {
 export type DirectusLocation = {
 	coordinates: number[];
 	type: string;
+};
+
+export type GalleryShufflePercentage = {
+	id: ID;
+	value: number;
 };
 
 export type SupportInfoEntry = {
@@ -29,15 +35,18 @@ export type BlogPostTranslation = {
 	id: ID;
 	title: string;
 	description?: string;
+	languages_code: { code: string; name: string };
 };
 
 export type SupportTranslation = {
 	id: ID;
 	content: string;
+	languages_code: string;
 };
 
 export type DirectusImage = {
 	id: ID;
+	uploaded_on: string;
 	height: number;
 	width: number;
 	title?: string;
@@ -372,6 +381,7 @@ export type CustomDirectusTypes = {
 	resaundtill_posts: BlogPostEntry;
 	resaundtill_support: SupportInfoEntry;
 	resaundtill_departure: Departure;
+	resaundtill_gallery_shuffle_percentage: GalleryShufflePercentage;
 	directus_activity: DirectusActivity;
 	directus_collections: DirectusCollections;
 	directus_fields: DirectusFields;

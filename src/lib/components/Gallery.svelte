@@ -11,18 +11,18 @@
 	import type { ID } from '@directus/sdk';
 	// @ts-ignore
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
-	// @ts-ignore
 	import { _ } from 'svelte-i18n';
 
 	export let images: DirectusImage[] = [];
 	export let caching = true;
 	export let searchable = false;
+	export let randomizePercentage = 0;
 
 	let searchTerm = '';
-
 	let cachedImages = new Map<ID, HTMLImageElement>();
+	let programmaticController: LightboxController;
 
-	const galleryImages: GalleryImageItem[] = images.map((file) => ({
+	let galleryImages: GalleryImageItem[] = images.map((file) => ({
 		id: file.id,
 		src: imageUrlBuilder(file.id)!,
 		thumb: imageUrlBuilder(file.id, DirectusImageTransformation.THUMBNAIL)!,
@@ -33,9 +33,11 @@
 		loaded: false
 	}));
 
-	let galleryImagesFiltered = galleryImages;
+	if (randomizePercentage > 0) {
+		galleryImages = partialShuffleImageOrder(randomizePercentage);
+	}
 
-	let programmaticController: LightboxController;
+	let galleryImagesFiltered = galleryImages;
 
 	const arrowsConfig: GalleryArrowsConfig = {
 		character: 'loop',
@@ -45,35 +47,75 @@
 
 	const openModal = (idx: number): null => {
 		if (caching) {
-			void cacheImages();
+			cacheImages();
 		}
 		programmaticController.openImage(idx);
 		return null;
 	};
 
-	$: galleryImagesFiltered = searchTerm
-		? galleryImages.filter(
-				(image) =>
-					image.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-					image.description?.toLowerCase().includes(searchTerm.toLowerCase())
-		  )
-		: galleryImages;
+	$: galleryImagesFiltered = searchTerm ? filterImagesBySearchTerm(galleryImages, searchTerm) : galleryImages;
 
-	async function cacheImages() {
+	function partialShuffleImageOrder(percentage: number): GalleryImageItem[] {
+		const totalElements = galleryImages.length;
+		const elementsToShuffle = Math.round(totalElements * (percentage / 100));
+		let selectedIndices = new Set<number>();
+
+		while (selectedIndices.size < elementsToShuffle) {
+			const randomIndex = Math.floor(Math.random() * totalElements);
+			selectedIndices.add(randomIndex);
+		}
+
+		let elements = Array.from(selectedIndices).map((index) => galleryImages[index]);
+
+		for (let i = elements.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[elements[i], elements[j]] = [elements[j], elements[i]];
+		}
+
+		const shuffledArray = [...galleryImages];
+		let shuffledIndex = 0;
+		selectedIndices.forEach((index) => {
+			shuffledArray[index] = elements[shuffledIndex++];
+		});
+
+		return shuffledArray;
+	}
+
+	function filterImagesBySearchTerm(images: GalleryImageItem[], term: string) {
+		const lowerCaseTerm = term.toLowerCase();
+		return images.filter(
+			(image) =>
+				image.title?.toLowerCase().includes(lowerCaseTerm) || image.description?.toLowerCase().includes(lowerCaseTerm)
+		);
+	}
+
+	function cacheImages() {
 		imageCache.update((cache) => {
 			cachedImages = cache;
-			galleryImages.forEach((image) => {
-				const img = new Image();
-
-				img.onload = () => {
-					if (!cache.has(image.id)) {
-						cache.set(image.id, img);
-						cachedImages.set(image.id, img);
-					}
-				};
-				img.src = image.src;
-			});
+			cacheImagesSequentially(cache);
 			return cache;
+		});
+	}
+
+	async function cacheImagesSequentially(cache: Map<ID, HTMLImageElement>) {
+		for (let i = 0; i < galleryImages.length; i++) {
+			const img = await loadImage(galleryImages[i]);
+			if (!cache.has(galleryImages[i].id)) {
+				cache.set(galleryImages[i].id, img);
+				cachedImages.set(galleryImages[i].id, img);
+			}
+		}
+	}
+
+	async function loadImage(imageItem: GalleryImageItem): Promise<HTMLImageElement> {
+		return new Promise((resolve, reject) => {
+			const img = new Image();
+
+			img.onload = () => resolve(img);
+
+			img.onerror = reject;
+
+			img.src = imageItem.src;
 		});
 	}
 </script>
@@ -97,6 +139,7 @@
 		<GalleryImage>
 			{#if cachedImages.has(image.id)}
 				<img
+					class="m-auto"
 					src={cachedImages.get(image.id)?.src}
 					width={`${image.width}px`}
 					height={`${image.height}px`}
@@ -120,16 +163,16 @@
 					width={`${image.width}px`}
 					height={`${image.height}px`}
 					style:opacity={image.loaded ? '1' : '0'}
-					class="transition-opacity duration-100"
+					class="m-auto transition-opacity duration-100"
 					on:load={() => (image.loaded = true)}
 				/>
 			{/if}
 
 			{#if image.title}
-				<div class="text-gray-100">{image.title}</div>
+				<div class="text-gray-100 m-1">{image.title}</div>
 			{/if}
 			{#if image.description}
-				<div class="text-sm text-gray-100">{image.description}</div>
+				<div class="text-sm text-gray-100 m-1">{image.description}</div>
 			{/if}
 		</GalleryImage>
 	{/each}
@@ -141,15 +184,28 @@
 	</div>
 {/if}
 
-<Masonry animate={true} items={galleryImagesFiltered} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
-	<img
-		class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
-		src={item.thumb}
-		alt={item.title}
-		on:click={openModal(idx)}
-		on:keydown={() => null}
-	/>
-</Masonry>
+<div class="hidden md:block">
+	<Masonry animate={true} items={galleryImagesFiltered} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
+		<img
+			class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
+			src={item.thumb}
+			alt={item.title}
+			on:click={openModal(idx)}
+			on:keydown={() => null}
+		/>
+	</Masonry>
+</div>
+<div class="block md:hidden">
+	<Masonry animate={true} items={galleryImagesFiltered} minColWidth={150} maxColWidth={800} gap={10} let:item let:idx>
+		<img
+			class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
+			src={item.thumb}
+			alt={item.title}
+			on:click={openModal(idx)}
+			on:keydown={() => null}
+		/>
+	</Masonry>
+</div>
 
 <style lang="postcss">
 	:global(.previous-button) {
@@ -178,4 +234,5 @@
 		filter: drop-shadow(-2px -1px 0px #000) drop-shadow(2px -1px 0px #000) drop-shadow(1px 1px 0px #000)
 			drop-shadow(-1px 1px 0px #000);
 	}
+	:global(.) ;
 </style>

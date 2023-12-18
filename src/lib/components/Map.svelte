@@ -18,29 +18,49 @@
 
 	onMount(async () => {
 		const L = await import('leaflet');
+		initializeMap(L);
+	});
 
-		let coords = items.map((item) => item.coords);
-		const isFlight = items.map((item) => item.isFlight);
-
-		if (coords.length < 1 || coords[0].length !== 2) {
-			coords = [[51.053719, 13.737908]];
-		}
-
-		map = L.map('map').setView([coords[coords.length - 1][1], coords[coords.length - 1][0]], 13);
-		map.zoomControl.remove();
+	function initializeMap(L: any) {
+		const coords = getValidCoords();
+		map = L.map('map');
+		createMap(L, coords);
 		if (deactivated) {
-			map.touchZoom.disable();
-			map.doubleClickZoom.disable();
-			map.scrollWheelZoom.disable();
-			map.keyboard.disable();
-			map.dragging.disable();
+			disableMapInteractions();
 		}
-		map.zoomOut(zoomOut);
+		addMarkersToMap(L, coords);
+	}
+
+	function getValidCoords() {
+		if (items.length < 1 || !isValidCoord(items[0].coords)) {
+			return [[51.053719, 13.737908]]; // Default coordinates
+		}
+		return items.map((item) => item.coords);
+	}
+
+	function isValidCoord(coord: number[]) {
+		return coord && coord.length === 2;
+	}
+
+	function createMap(L: any, coords: number[][]) {
+		map.setView([coords[coords.length - 1][1], coords[coords.length - 1][0]], 13);
+		map.zoomControl.remove();
 		L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
 			attribution: '© OpenStreetMap'
 		}).addTo(map);
+		map.zoomOut(zoomOut);
+	}
 
+	function disableMapInteractions() {
+		map.touchZoom.disable();
+		map.doubleClickZoom.disable();
+		map.scrollWheelZoom.disable();
+		map.keyboard.disable();
+		map.dragging.disable();
+	}
+
+	function addMarkersToMap(L: any, coords: number[][]): void {
 		const iconDefault = L.icon({
 			iconUrl: '/images/marker.png',
 			iconSize: [20, 35],
@@ -57,38 +77,40 @@
 			popupAnchor: [-3, -76]
 		});
 
-		const onClick = (e: any) => dispatch('activeCoords', [e.latlng.lat, e.latlng.lng]);
-
-		const markers = coords.map((coord) => {
+		const markers = coords.map((coord, index) => {
 			return L.marker([coord[1], coord[0]], {
-				icon: coords.indexOf(coord) === coords.length - 1 ? iconResaTill : iconDefault
+				icon: index === coords.length - 1 ? iconResaTill : iconDefault
 			})
-				.on('click', onClick)
+				.on('click', (e: any) => dispatch('activeCoords', [e.latlng.lat, e.latlng.lng]))
 				.addTo(map);
 		});
-		if (markers.length > 1) {
-			for (let i = 0; i < markers.length - 1; i++) {
-				L.polyline([markers[i].getLatLng(), markers[i + 1].getLatLng()], {
-					color: 'blue',
-					dashArray: isFlight[i + 1] ? '6' : '',
-					opacity: 0.5
-				}).addTo(map);
-			}
-		}
-	});
 
-	const toggleActivation = async () => {
+		if (markers.length > 1) {
+			markers.forEach((marker, index) => {
+				if (index < markers.length - 1) {
+					const nextMarker = markers[index + 1];
+					L.polyline([marker.getLatLng(), nextMarker.getLatLng()], {
+						color: 'blue',
+						dashArray: items[index + 1].isFlight ? '6' : '',
+						opacity: 0.5
+					}).addTo(map);
+				}
+			});
+		}
+	}
+
+	async function toggleActivation() {
 		map.touchZoom.enabled() ? map.touchZoom.disable() : map.touchZoom.enable();
 		map.doubleClickZoom.enabled() ? map.doubleClickZoom.disable() : map.doubleClickZoom.enable();
 		map.scrollWheelZoom.enabled() ? map.scrollWheelZoom.disable() : map.scrollWheelZoom.enable();
 		map.keyboard.enabled() ? map.keyboard.disable() : map.keyboard.enable();
 		map.dragging.enabled() ? map.dragging.disable() : map.dragging.enable();
 		deactivated = !deactivated;
-	};
+	}
 </script>
 
 <div class="relative wrapper">
-	<div class="absolute top-0 right-0 left-0 opacity-95" id="map" />
+	<div id="map" class="absolute top-0 right-0 left-0 opacity-95" />
 	{#if isActivatable}
 		<div
 			class={`map-button absolute bottom-1/3 left-[calc(50%-75px)] z-50 ${deactivated ? 'opacity-80' : 'opacity-40'}`}

@@ -2,6 +2,6 @@ export enum PagePath {
 	home = '/',
 	travel = '/travel',
 	gallery = '/gallery',
-	support = '/support-us',
+	support = '/about',
 	legals = '/legals'
 }

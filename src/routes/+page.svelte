@@ -7,30 +7,31 @@
 
 	export let data: PageData;
 
-	const mapItems: MapItem[] = [];
+	$: showCountdown = (data.departure.getTime() - new Date().getTime()) / 1000 > 0;
+	const mapItems: MapItem[] = data.posts
+		.filter((post) => post.location)
+		.map((post) => ({
+			coords: post.location!.coordinates,
+			isFlight: post.isFlight
+		}));
 
-	for (const post of data.posts) {
-		if (post.location) {
-			mapItems.push({
-				coords: post.location.coordinates,
-				isFlight: post.isFlight
-			});
+	function navigate(event: CustomEvent) {
+		const coordinates: number[] = event.detail;
+		const matchedPost = data.posts.find(
+			(post) =>
+				post.location &&
+				post.location.coordinates[0] === coordinates[1] &&
+				post.location.coordinates[1] === coordinates[0]
+		);
+
+		if (matchedPost) {
+			goto(`${PagePath.travel}/${matchedPost.id}`);
 		}
 	}
-
-	const navigate = (event: CustomEvent) => {
-		const coordindates = event.detail;
-		const id = data.posts.find(
-			(post) => post.location!.coordinates[0] === coordindates[1] && post.location!.coordinates[1] === coordindates[0]
-		)?.id;
-		goto(`${PagePath.travel}/${id}`);
-	};
-
-	const showCountdown = () => (data.departure.getTime() - new Date().getTime()) / 1000 > 0;
 </script>
 
 <Map items={mapItems} on:activeCoords={(event) => navigate(event)} />
-{#if showCountdown()}
+{#if showCountdown}
 	<div class="absolute z-50 top-[calc(50%-95px)] left-[calc(50%-192.5px)] md:left-[calc(50%-320px)]">
 		<Countdown date={data.departure} />
 	</div>

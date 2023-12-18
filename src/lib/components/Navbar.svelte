@@ -13,11 +13,13 @@
 	export let isDark: boolean;
 
 	const dispatch = createEventDispatcher();
+	let hidden = true;
 
 	const toggleLocale = () => dispatch('locale');
 	const toggleTheme = () => dispatch('theme');
 
-	let hidden = true;
+	$: activePath = $page.url.pathname;
+	$: isActive = (path: string) => activePath === path;
 </script>
 
 <Navbar navClass="p-2 md:p-0">
@@ -36,19 +38,19 @@
 		{hidden}
 		ulClass="flex flex-col py-4 px-2 lg:p-4 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium"
 	>
-		<NavLi href={PagePath.home} active={$page.url.pathname === PagePath.home}>
+		<NavLi href={PagePath.home} active={isActive(PagePath.home)}>
 			<span class="text-md md:text-xl">{$_('nav.map')}</span>
 		</NavLi>
-		<NavLi href={PagePath.travel} active={$page.url.pathname === PagePath.travel}>
+		<NavLi href={PagePath.travel} active={isActive(PagePath.travel)}>
 			<span class="text-md md:text-xl">{$_('nav.travel')}</span>
 		</NavLi>
-		<NavLi href={PagePath.gallery} active={$page.url.pathname === PagePath.gallery}>
+		<NavLi href={PagePath.gallery} active={isActive(PagePath.gallery)}>
 			<span class="text-md md:text-xl">{$_('nav.gallery')}</span>
 		</NavLi>
-		<NavLi href={PagePath.support} active={$page.url.pathname === PagePath.support}>
-			<span class="text-md md:text-xl">{$_('nav.support-us')}</span>
+		<NavLi href={PagePath.support} active={isActive(PagePath.support)}>
+			<span class="text-md md:text-xl">{$_('nav.about')}</span>
 		</NavLi>
-		<NavLi href={PagePath.legals} active={$page.url.pathname === PagePath.legals}>
+		<NavLi href={PagePath.legals} active={isActive(PagePath.legals)}>
 			<span class="text-md md:text-xl">{$_('nav.legals')}</span>
 		</NavLi>
 		<NavLi on:click={toggleTheme}>
