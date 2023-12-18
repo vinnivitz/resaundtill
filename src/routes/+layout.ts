@@ -28,8 +28,8 @@ export const load: LayoutLoad = async () => {
 
 	const supportInfoResponse = await SDK.singleton('resaundtill_support').read({ fields: '*.*' });
 
-	// @ts-ignore
 	const galleryShufflePercentage = await SDK.singleton('resaundtill_gallery_shuffle_percentage').read({
+		// @ts-ignore
 		fields: '*.*'
 	});
 
