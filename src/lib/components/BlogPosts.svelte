@@ -1,22 +1,29 @@
 <script lang="ts">
 	import { DirectusImageTransformation, PagePath } from '$lib/models';
-	import type { BlogPostEntry, BlogPostTranslation } from '$lib/sdk/types';
-	import { getLatestImageofArray, getTranslation, imageUrlBuilder } from '$lib/utils';
+	import type { BlogPostEntry, BlogPostImage, BlogPostTranslation } from '$lib/sdk/types';
+	import { getTranslation, imageUrlBuilder } from '$lib/utils';
+	import type { ID } from '@directus/sdk';
 	import { locale } from 'svelte-i18n';
 
 	export let posts: BlogPostEntry[];
+	export let thumbnails: Map<ID, BlogPostImage>;
 
-	$: postItems = posts.map((post) => ({
-		...post,
-		imageUrl:
-			post.images && getLatestImageofArray(post.images)
-				? imageUrlBuilder(getLatestImageofArray(post.images)!.directus_files_id.id, DirectusImageTransformation.PREVIEW)
-				: '/images/travel.jpg',
-		formattedDate: {
-			day: new Date(post.date).getDate(),
-			month: new Date(post.date).toLocaleString('default', { month: 'long' })
-		}
-	}));
+	$: postItems = posts.map((post) => {
+		const { id, images, date } = post;
+		const imageUrl =
+			images && images.length! > 0
+				? imageUrlBuilder(thumbnails.get(id)!.directus_files_id.id, DirectusImageTransformation.PREVIEW)
+				: '/images/travel.jpg';
+		const postDate = new Date(date);
+		return {
+			...post,
+			imageUrl,
+			formattedDate: {
+				day: postDate.getDate(),
+				month: postDate.toLocaleString('default', { month: 'long' })
+			}
+		};
+	});
 
 	function getBlogPostTranslation(
 		translations: BlogPostTranslation[],

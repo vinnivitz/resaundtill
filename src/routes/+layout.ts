@@ -1,8 +1,9 @@
 import type { LayoutLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { SDK, auth } from '$lib/sdk';
-import { BlogPostStatus, type BlogPostEntry, type SupportInfoEntry } from '$lib/sdk/types';
+import { BlogPostStatus, type BlogPostEntry, type SupportInfoEntry, type BlogPostImage } from '$lib/sdk/types';
 import { waitLocale } from 'svelte-i18n';
+import type { ID } from '@directus/sdk';
 
 export const load: LayoutLoad = async () => {
 	await waitLocale();
@@ -17,10 +18,12 @@ export const load: LayoutLoad = async () => {
 	});
 
 	const files = [];
+	const blogPostThumbnailMap = new Map<ID, BlogPostImage>();
 
 	for (const post of postsResult.data as BlogPostEntry[]) {
 		if (post.images) {
 			files.push(...post.images);
+			blogPostThumbnailMap.set(post.id, post.images[0]);
 		}
 	}
 
@@ -41,6 +44,7 @@ export const load: LayoutLoad = async () => {
 		departure: departureResult,
 		files,
 		supportInfo: supportInfoResponse as any as SupportInfoEntry,
-		galleryShufflePercentage
+		galleryShufflePercentage,
+		blogPostThumbnailMap
 	};
 };
