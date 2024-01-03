@@ -8,12 +8,11 @@ import type { ID } from '@directus/sdk';
  * @returns {string} The URL of the Directus API
  */
 export function getURL(): string {
-	// return env.PUBLIC_SERVER === 'true'
-	// 	? browser
-	// 		? env.PUBLIC_EXTERNAL_DIRECTUS_API_URL!
-	// 		: env.PUBLIC_INTERNAL_DIRECTUS_API_URL!
-	// 	: env.PUBLIC_EXTERNAL_DIRECTUS_API_URL!;
-	return env.PUBLIC_EXTERNAL_DIRECTUS_API_URL!;
+	return env.PUBLIC_SERVER === 'true'
+		? browser
+			? env.PUBLIC_EXTERNAL_DIRECTUS_API_URL!
+			: env.PUBLIC_INTERNAL_DIRECTUS_API_URL!
+		: env.PUBLIC_EXTERNAL_DIRECTUS_API_URL!;
 }
 
 /**

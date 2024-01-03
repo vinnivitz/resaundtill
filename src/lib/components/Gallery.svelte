@@ -12,6 +12,8 @@
 	// @ts-ignore
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 	import { _ } from 'svelte-i18n';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 
 	export let images: DirectusImage[] = [];
 	export let caching = true;
@@ -184,28 +186,34 @@
 	</div>
 {/if}
 
-<div class="hidden md:block">
-	<Masonry animate={true} items={galleryImagesFiltered} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
-		<img
-			class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
-			src={item.thumb}
-			alt={item.title}
-			on:click={openModal(idx)}
-			on:keydown={() => null}
-		/>
-	</Masonry>
-</div>
-<div class="block md:hidden">
-	<Masonry animate={true} items={galleryImagesFiltered} minColWidth={150} maxColWidth={800} gap={10} let:item let:idx>
-		<img
-			class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
-			src={item.thumb}
-			alt={item.title}
-			on:click={openModal(idx)}
-			on:keydown={() => null}
-		/>
-	</Masonry>
-</div>
+{#if browser}
+	<div class="hidden md:block">
+		<Masonry animate={true} items={galleryImagesFiltered} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
+			<img
+				class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
+				src={item.thumb}
+				alt={item.title}
+				on:click={openModal(idx)}
+				on:keydown={() => null}
+			/>
+		</Masonry>
+	</div>
+	<div class="block md:hidden">
+		<Masonry animate={true} items={galleryImagesFiltered} minColWidth={150} maxColWidth={800} gap={10} let:item let:idx>
+			<img
+				class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
+				src={item.thumb}
+				alt={item.title}
+				on:click={openModal(idx)}
+				on:keydown={() => null}
+			/>
+		</Masonry>
+	</div>
+{:else}
+	<div class="flex justify-center">
+		<Spinner size="24" />
+	</div>
+{/if}
 
 <style lang="postcss">
 	:global(.previous-button) {
