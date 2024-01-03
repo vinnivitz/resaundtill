@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { DirectusImageTransformation, PagePath } from '$lib/models';
 	import type { BlogPostEntry, BlogPostTranslation } from '$lib/sdk/types';
-	import { getTranslation, imageUrlBuilder } from '$lib/utils';
+	import { getLatestImageofArray, getTranslation, imageUrlBuilder } from '$lib/utils';
 	import { locale } from 'svelte-i18n';
 
 	export let posts: BlogPostEntry[];
@@ -9,8 +9,8 @@
 	$: postItems = posts.map((post) => ({
 		...post,
 		imageUrl:
-			post.images && post.images[0]
-				? imageUrlBuilder(post.images[0]?.directus_files_id.id, DirectusImageTransformation.PREVIEW)
+			post.images && getLatestImageofArray(post.images)
+				? imageUrlBuilder(getLatestImageofArray(post.images)!.directus_files_id.id, DirectusImageTransformation.PREVIEW)
 				: '/images/travel.jpg',
 		formattedDate: {
 			day: new Date(post.date).getDate(),

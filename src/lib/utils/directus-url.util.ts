@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import { env } from '$env/dynamic/public';
 import { DirectusImageTransformation } from '$lib/models';
+import type { BlogPostImage } from '$lib/sdk/types';
 import type { ID } from '@directus/sdk';
 
 /**
@@ -31,4 +32,15 @@ export function imageUrlBuilder(id: ID, transformation = DirectusImageTransforma
 					: 'webp'
 		  }`
 		: null;
+}
+
+export function getLatestImageofArray(images: BlogPostImage[]): BlogPostImage | null {
+	if (images.length === 0) {
+		return null;
+	}
+	return images.reduce((latest, current) => {
+		const latestDate = new Date(current.directus_files_id.uploaded_on).getTime();
+		const currentDate = new Date(latest.directus_files_id.uploaded_on).getTime();
+		return currentDate > latestDate ? current : latest;
+	});
 }
