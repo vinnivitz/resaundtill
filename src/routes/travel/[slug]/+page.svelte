@@ -111,7 +111,7 @@
 			<div class="text-sm md:text-lg">{formatDate(new Date(postItem.date), $locale)}</div>
 		</div>
 		<!-- svelte-ignore missing-declaration -->
-		<p class="pt-8 md:pt-12 text-lg font-normal">
+		<p class="pt-8 md:pt-12 text-lg font-normal whitespace-pre-wrap">
 			{translatedDescription}
 		</p>
 
