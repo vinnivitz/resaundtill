@@ -1,15 +1,15 @@
 <script lang="ts">
-	import '../app.postcss';
-	import Navbar from '$lib/components/Navbar.svelte';
 	import '$lib/locale';
-	import { _, locale } from 'svelte-i18n';
-	import Footer from '$lib/components/Footer.svelte';
-	import { isLoading } from 'svelte-i18n';
-	import { Spinner } from 'flowbite-svelte';
-	import { navigating } from '$app/stores';
 	import { LayoutTheme, Locale } from '$lib/models/user.model';
-	import { getLocale } from '$lib/utils/locale.util';
+	import { getLocale } from '$lib/utils';
 	import { onMount } from 'svelte';
+	import { isLoading, locale } from 'svelte-i18n';
+	import '../app.pcss';
+	import { Spinner } from 'flowbite-svelte';
+	import { navigating, page } from '$app/stores';
+	import { browser } from '$app/environment';
+	import Navbar from '$lib/components/Navbar.svelte';
+	import Footer from '$lib/components/Footer.svelte';
 
 	let toggleTheme: () => void;
 	let toggleLocale: () => void;
@@ -37,32 +37,37 @@
 	<title>Resa und Till</title>
 </svelte:head>
 
-{#if $isLoading || $navigating}
-	<div class="m-12 text-center mt-96 text-center flex flex-col items-center">
-		<div class="flex-1">
-			<Spinner size="24" />
-		</div>
+{#if $isLoading || (browser && $navigating)}
+	<div class="flex h-screen items-center justify-center">
+		<Spinner size="24" color="blue" />
 	</div>
 {:else}
-	<header class="fixed z-50 top-0 left-0 right-0">
+	<header class="fixed left-0 right-0 top-0 z-50">
 		<Navbar {isDark} on:locale={toggleLocale} on:theme={toggleTheme} />
 	</header>
 
-	<main
-		class="h-screen relative z-0 bg-gradient-to-b from-gray-200 to-20% dark:from-gray-800 overflow-scroll scrollbar-hide pb-5"
-	>
+	<main class="relative z-0 h-screen overflow-scroll bg-gradient-to-b from-gray-200 to-20% pb-5 dark:from-gray-800">
 		<slot />
 	</main>
 
-	<Footer />
+	<div class="fixed bottom-[17.5px] left-0 right-0">
+		<Footer />
+	</div>
 {/if}
 
 <style lang="postcss">
 	main {
-		padding-top: var(--nav-height);
+		padding-top: calc(var(--nav-height));
+
+		-ms-overflow-style: none;
+		scrollbar-width: none;
 
 		@media only screen and (max-width: 726px) {
 			padding-top: var(--nav-height-mobile);
 		}
+	}
+
+	main::-webkit-scrollbar {
+		display: none;
 	}
 </style>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { MapItem } from '$lib/models';
-	import { Button } from 'flowbite-svelte';
+	import { Button, Spinner } from 'flowbite-svelte';
 	import type { Map } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import { createEventDispatcher, onMount } from 'svelte';
@@ -15,8 +15,12 @@
 	const dispatch = createEventDispatcher();
 
 	let map: Map;
+	let mapElement: HTMLDivElement;
+	let spinnerElement: HTMLElement;
 
 	onMount(async () => {
+		mapElement.style.opacity = '0';
+		spinnerElement.style.display = 'block';
 		const L = await import('leaflet');
 		initializeMap(L);
 	});
@@ -29,6 +33,8 @@
 			disableMapInteractions();
 		}
 		addMarkersToMap(L, coords);
+		mapElement.style.opacity = '1';
+		spinnerElement.style.display = 'none';
 	}
 
 	function getValidCoords() {
@@ -62,7 +68,7 @@
 
 	function addMarkersToMap(L: any, coords: number[][]): void {
 		const iconDefault = L.icon({
-			iconUrl: '/images/marker.png',
+			iconUrl: '/images/map/marker.png',
 			iconSize: [20, 35],
 			shadowSize: [0, 0],
 			iconAnchor: [10, 35],
@@ -70,7 +76,7 @@
 		});
 
 		const iconResaTill = L.icon({
-			iconUrl: '/images/tillresa_marker.png',
+			iconUrl: '/images/map/tillresa_marker.png',
 			iconSize: [38, 95],
 			shadowSize: [50, 64],
 			iconAnchor: [22, 94],
@@ -109,13 +115,16 @@
 	}
 </script>
 
-<div class="relative wrapper">
-	<div id="map" class="absolute top-0 right-0 left-0 opacity-95" />
+<div class="wrapper relative">
+	<div class="absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 transform" bind:this={spinnerElement}>
+		<Spinner size="24" color="blue" />
+	</div>
+	<div bind:this={mapElement} id="map" class="absolute left-0 right-0 top-0 opacity-95" />
 	{#if isActivatable}
 		<div
 			class={`map-button absolute bottom-1/3 left-[calc(50%-75px)] z-50 ${deactivated ? 'opacity-80' : 'opacity-40'}`}
 		>
-			<Button on:click={toggleActivation} shadow="blue" pill={true}
+			<Button on:click={toggleActivation} color="blue" pill={true}
 				>{$_('components.map.activate-button.label', { values: { pre: deactivated ? '' : 'de' } })}</Button
 			>
 		</div>

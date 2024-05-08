@@ -3,7 +3,7 @@
 	import { fly } from 'svelte/transition';
 </script>
 
-<section in:fly={{ y: 50, duration: 1000 }} class="p-5 md:p-10 font-normal">
+<section in:fly={{ y: 50, duration: 1000 }} class="p-5 font-normal md:p-10">
 	<h1 class="text-3xl">{$_('legals.title')}</h1>
 	<h3 class=" mt-5 text-xl">{$_('legals.content-liability.title')}</h3>
 	<p class="mt-3">

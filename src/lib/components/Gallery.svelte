@@ -1,28 +1,81 @@
 <script lang="ts">
-	import type { DirectusImage } from '$lib/sdk/types';
-	import Masonry from 'svelte-bricks';
 	// @ts-ignore
 	import { GalleryImage, LightboxGallery } from 'svelte-lightbox';
-	import type { GalleryArrowsConfig } from 'svelte-lightbox/dist/Types';
 	import { Input, Spinner } from 'flowbite-svelte';
-	import { imageUrlBuilder } from '$lib/utils';
-	import { DirectusImageTransformation, type GalleryImageItem, type LightboxController } from '$lib/models';
+	import { formatDate, imageUrlBuilder } from '$lib/utils';
+	import {
+		DirectusImageTransformation,
+		PagePath,
+		type BlogPostEntry,
+		type DirectusImage,
+		type GalleryImageItem,
+		type LightboxController
+	} from '$lib/models';
 	import { imageCache } from '$lib/stores';
-	import type { ID } from '@directus/sdk';
 	// @ts-ignore
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
-	import { _ } from 'svelte-i18n';
-	import { onMount } from 'svelte';
+	import { _, locale } from 'svelte-i18n';
 	import { browser } from '$app/environment';
+	import { createEventDispatcher, onMount, tick } from 'svelte';
+	import { t } from 'svelte-i18n';
+	import { goto } from '$app/navigation';
+	import Masonry from 'svelte-bricks';
+	// @ts-ignore
+	import FaCalendar from 'svelte-icons/fa/FaCalendar.svelte';
 
 	export let images: DirectusImage[] = [];
 	export let caching = true;
 	export let searchable = false;
+	export let showPostLink = false;
 	export let randomizePercentage = 0;
+	export let posts: BlogPostEntry[] = [];
 
+	type GalleryArrowCharacter = '' | 'hide' | 'loop';
+
+	interface GalleryArrowsConfig {
+		color: string;
+		character: GalleryArrowCharacter;
+		enableKeyboardControl: boolean;
+	}
+
+	const dispatch = createEventDispatcher();
+	let MasonryComponent: typeof Masonry;
+	let intersectionObserver: IntersectionObserver;
 	let searchTerm = '';
-	let cachedImages = new Map<ID, HTMLImageElement>();
+	let cachedImages = new Map<string, HTMLImageElement>();
 	let programmaticController: LightboxController;
+	let timeoutId: NodeJS.Timeout;
+
+	const debouncedSearch = debounce(async () => {
+		dispatch('loading', true);
+		galleryImagesFiltered = filterImagesBySearchTerm(galleryImages, searchTerm);
+		await tick();
+		dispatch('loading', false);
+	}, 300);
+
+	$: {
+		if (browser && searchTerm) {
+			debouncedSearch();
+		}
+	}
+
+	$: {
+		if (browser && galleryImagesFiltered.length > 0) {
+			// Wait for the next microtask to ensure the DOM is updated
+			queueMicrotask(() => {
+				setupObservers();
+			});
+		}
+	}
+
+	function debounce(func: Function, delay: number) {
+		return () => {
+			clearTimeout(timeoutId);
+			timeoutId = setTimeout(() => {
+				func();
+			}, delay);
+		};
+	}
 
 	let galleryImages: GalleryImageItem[] = images.map((file) => ({
 		id: file.id,
@@ -32,6 +85,7 @@
 		description: file.description,
 		width: file.width,
 		height: file.height,
+		date: file.uploaded_on,
 		loaded: false
 	}));
 
@@ -47,15 +101,34 @@
 		enableKeyboardControl: true
 	};
 
-	const openModal = (idx: number): null => {
+	function openModal(idx: number): null {
+		const image = galleryImages[idx];
 		if (caching) {
 			cacheImages();
 		}
 		programmaticController.openImage(idx);
+		setTimeout(() => {
+			const footer = document.querySelector('.svelte-lightbox-footer');
+			if (footer) {
+				footer.innerHTML = `
+					<div class="mt-2 px-2 mx-auto flex flex-row items-start justify-between gap-4">
+						<div>
+							<div class="text-gray-100">
+								${image.title}
+							</div>
+						</div>
+						<div class="flex flex-row items-center gap-2">
+							<div class="mt-1 text-sm text-nowrap">${formatDate(getPostDateByImageId(image.id, image.date), $locale)}</div>
+						</div>
+					</div>
+					<div class="mt-3 px-2 text-sm text-gray-100">
+						${image.description}
+					</div>
+				`;
+			}
+		});
 		return null;
-	};
-
-	$: galleryImagesFiltered = searchTerm ? filterImagesBySearchTerm(galleryImages, searchTerm) : galleryImages;
+	}
 
 	function partialShuffleImageOrder(percentage: number): GalleryImageItem[] {
 		const totalElements = galleryImages.length;
@@ -99,7 +172,7 @@
 		});
 	}
 
-	async function cacheImagesSequentially(cache: Map<ID, HTMLImageElement>) {
+	async function cacheImagesSequentially(cache: Map<string, HTMLImageElement>) {
 		for (let i = 0; i < galleryImages.length; i++) {
 			const img = await loadImage(galleryImages[i]);
 			if (!cache.has(galleryImages[i].id)) {
@@ -120,11 +193,62 @@
 			img.src = imageItem.src;
 		});
 	}
+
+	function handleIntersection(entries: IntersectionObserverEntry[]) {
+		entries.forEach((entry) => {
+			if (entry.isIntersecting) {
+				const placeholder = entry.target;
+				if (placeholder) {
+					const image = placeholder.firstElementChild as HTMLImageElement;
+					if (image) {
+						image.src = image.dataset.src!;
+					}
+				}
+			}
+		});
+	}
+
+	function setupObservers() {
+		if (intersectionObserver) {
+			intersectionObserver.disconnect();
+		}
+
+		intersectionObserver = new IntersectionObserver(handleIntersection, {
+			root: null,
+			rootMargin: '0px',
+			threshold: 0
+		});
+
+		const placeholders = document.querySelectorAll('.placeholder');
+		placeholders.forEach((placeholder) => {
+			intersectionObserver.observe(placeholder);
+		});
+	}
+
+	async function gotoPost(id: string) {
+		const post = posts?.find((post) => post.images?.find((image) => image.directus_files_id.id === id));
+		if (post) {
+			await goto(`${PagePath.travel}/${post.id}`);
+		}
+	}
+
+	function getPostDateByImageId(id: string, fallback: string) {
+		const post = posts?.find((post) => post.images?.find((image) => image.directus_files_id.id === id));
+		return new Date(post?.date || fallback);
+	}
+
+	onMount(async () => {
+		const masonryModule = await import('svelte-bricks');
+		MasonryComponent = masonryModule.default;
+		await tick();
+		setupObservers();
+		dispatch('loading', false);
+	});
 </script>
 
 {#if searchable}
-	<div class="relative w-full md:w-72 mb-5">
-		<div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none h-10 w-10">
+	<div class="relative mb-5 w-full md:w-72">
+		<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
 			<FaSearch />
 		</div>
 		<Input
@@ -136,49 +260,58 @@
 	</div>
 {/if}
 
-<LightboxGallery bind:programmaticController {arrowsConfig}>
-	{#each galleryImagesFiltered as image}
-		<GalleryImage>
-			{#if cachedImages.has(image.id)}
-				<img
-					class="m-auto"
-					src={cachedImages.get(image.id)?.src}
-					width={`${image.width}px`}
-					height={`${image.height}px`}
-					alt={image.title}
-				/>
-			{:else}
-				{#if !image.loaded}
-					<div
-						class="flex justify-center items-center h-screen"
-						style:width={`${image.width}px`}
-						style:height={`${image.height}px`}
-					>
-						<div>
-							<Spinner size="24" />
+{#if browser}
+	<div class:has-post-link={showPostLink}>
+		<LightboxGallery bind:programmaticController {arrowsConfig}>
+			{#each galleryImagesFiltered as image}
+				<GalleryImage>
+					{#if showPostLink && (cachedImages.has(image.id) || image.loaded)}
+						<div class="absolute left-0 top-0 mt-[-36px] flex justify-center pb-3">
+							<!-- svelte-ignore a11y-no-static-element-interactions -->
+							<!-- svelte-ignore a11y-click-events-have-key-events -->
+							<div
+								on:click={() => gotoPost(image.id)}
+								class="cursor-pointer rounded-full bg-gray-200 px-2 py-1 text-gray-800 hover:bg-gray-400"
+							>
+								{$t('components.gallery.lightbox.post-button')}
+							</div>
 						</div>
-					</div>
-				{/if}
-				<img
-					src={image.src}
-					alt={image.title}
-					width={`${image.width}px`}
-					height={`${image.height}px`}
-					style:opacity={image.loaded ? '1' : '0'}
-					class="m-auto transition-opacity duration-100"
-					on:load={() => (image.loaded = true)}
-				/>
-			{/if}
-
-			{#if image.title}
-				<div class="text-gray-100 m-1">{image.title}</div>
-			{/if}
-			{#if image.description}
-				<div class="text-sm text-gray-100 m-1">{image.description}</div>
-			{/if}
-		</GalleryImage>
-	{/each}
-</LightboxGallery>
+					{/if}
+					{#if cachedImages.has(image.id)}
+						<img
+							class="m-auto"
+							src={cachedImages.get(image.id)?.src}
+							width={`${image.width}px`}
+							height={`${image.height}px`}
+							alt={image.title}
+						/>
+					{:else}
+						{#if !image.loaded}
+							<div
+								class="flex h-screen items-center justify-center"
+								style:width={`${image.width}px`}
+								style:height={`${image.height}px`}
+							>
+								<div>
+									<Spinner size="24" color="blue" />
+								</div>
+							</div>
+						{/if}
+						<img
+							src={image.src}
+							alt={image.title}
+							width={`${image.width}px`}
+							height={`${image.height}px`}
+							style:opacity={image.loaded ? '1' : '0'}
+							class="m-auto transition-opacity duration-100"
+							on:load={() => (image.loaded = true)}
+						/>
+					{/if}
+				</GalleryImage>
+			{/each}
+		</LightboxGallery>
+	</div>
+{/if}
 
 {#if galleryImagesFiltered.length === 0}
 	<div class="flex justify-center">
@@ -188,30 +321,56 @@
 
 {#if browser}
 	<div class="hidden md:block">
-		<Masonry animate={true} items={galleryImagesFiltered} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
-			<img
-				class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
-				src={item.thumb}
-				alt={item.title}
-				on:click={openModal(idx)}
-				on:keydown={() => null}
-			/>
-		</Masonry>
+		<svelte:component
+			this={MasonryComponent}
+			animate={true}
+			items={galleryImagesFiltered}
+			minColWidth={200}
+			maxColWidth={800}
+			gap={20}
+			let:item
+			let:idx
+		>
+			<div class="placeholder relative w-full bg-gray-500" style="padding-bottom: {(item.height / item.width) * 100}%;">
+				<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+				<img
+					class="absolute left-0 top-0 cursor-pointer transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02]"
+					src="/images/gallery/placeholder-transparent.webp"
+					data-src={item.src}
+					alt={item.title}
+					width={item.width}
+					height={item.height}
+					on:click={openModal(idx)}
+					on:keydown={() => null}
+				/>
+			</div>
+		</svelte:component>
 	</div>
 	<div class="block md:hidden">
-		<Masonry animate={true} items={galleryImagesFiltered} minColWidth={150} maxColWidth={800} gap={10} let:item let:idx>
-			<img
-				class="cursor-pointer transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02] duration-300"
-				src={item.thumb}
-				alt={item.title}
-				on:click={openModal(idx)}
-				on:keydown={() => null}
-			/>
-		</Masonry>
-	</div>
-{:else}
-	<div class="flex justify-center">
-		<Spinner size="24" />
+		<svelte:component
+			this={MasonryComponent}
+			animate={true}
+			items={galleryImagesFiltered}
+			minColWidth={150}
+			maxColWidth={800}
+			gap={10}
+			let:item
+			let:idx
+		>
+			<div class="placeholder relative w-full bg-gray-500" style="padding-bottom: {(item.height / item.width) * 100}%;">
+				<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+				<img
+					class="absolute left-0 top-0 cursor-pointer transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02]"
+					src="/images/gallery/placeholder-transparent.webp"
+					data-src={item.src}
+					alt={item.title}
+					width={item.width}
+					height={item.height}
+					on:click={openModal(idx)}
+					on:keydown={() => null}
+				/>
+			</div>
+		</svelte:component>
 	</div>
 {/if}
 
@@ -219,18 +378,20 @@
 	:global(.previous-button) {
 		outline: none !important;
 	}
+
 	:global(.next-button) {
-		left: 90% !important;
+		display: flex;
+		align-items: center;
+		justify-content: end;
 		outline: none !important;
 	}
 
-	:global(.svelte-lightbox-footer p) {
-		display: none;
+	:global(.has-post-link.next-button) {
+		margin-top: 30px;
 	}
-	@media only screen and (max-width: 726px) {
-		:global(.next-button) {
-			left: 80% !important;
-		}
+
+	:global(.has-post-link.previous-button) {
+		margin-top: 30px;
 	}
 
 	:global(.next-button svg) {
@@ -242,5 +403,4 @@
 		filter: drop-shadow(-2px -1px 0px #000) drop-shadow(2px -1px 0px #000) drop-shadow(1px 1px 0px #000)
 			drop-shadow(-1px 1px 0px #000);
 	}
-	:global(.) ;
 </style>

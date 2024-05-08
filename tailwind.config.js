@@ -1,15 +1,8 @@
 /** @type {import('tailwindcss').Config} */
-const config = {
-	darkMode: 'class',
-	content: ['./src/**/*.{html,svelte,ts}', './node_modules/flowbite-svelte/**/*.{html,js,svelte,ts}'],
+export default {
+	content: ['./src/**/*.{html,svelte,ts}', './node_modules/flowbite-svelte/**/*.{html,svelte,ts}'],
 	theme: {
-		extend: {
-			padding: {
-				'p-18': '4.5rem'
-			}
-		}
+		extend: {}
 	},
-	plugins: [require('flowbite/plugin'), require('tailwind-scrollbar-hide')]
+	plugins: [require('flowbite/plugin')]
 };
-
-export default config;

@@ -56,7 +56,10 @@
 			"searchbar": {
 				"placeholder": "Suchen..."
 			},
-			"no_results": "Keine Bilder mit dem Stichwort gefunden."
+			"no_results": "Keine Bilder mit dem Stichwort gefunden.",
+			"lightbox": {
+				"post-button": "Zum Post"
+			}
 		}
 	}
 }

@@ -7,9 +7,9 @@
 	export let isDark: boolean;
 </script>
 
-<div class="relative h-4 w-12 rounded-full bg-gray-300 cursor-pointer">
+<div class="relative h-4 w-12 cursor-pointer rounded-full bg-gray-300">
 	<div
-		class="absolute h-8 w-8 -top-2 bg-gray-200 rounded-full bg-white p-[0.1rem] shadow-xl shadow-inner text-amber-300 dark:bg-gray-800 dark:text-gray-200 transition-all duration-300"
+		class="absolute -top-2 h-8 w-8 rounded-full bg-gray-200 p-[0.1rem] text-amber-300 shadow-xl transition-all duration-300 dark:bg-gray-800 dark:text-gray-200"
 		class:left-0={!isDark}
 		class:left-4={isDark}
 	>

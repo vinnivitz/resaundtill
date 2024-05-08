@@ -56,7 +56,10 @@
 			"searchbar": {
 				"placeholder": "Search..."
 			},
-			"no_results": "No images found with the keyword."
+			"no_results": "No images found with the keyword.",
+			"lightbox": {
+				"post-button": "Go to post"
+			}
 		}
 	}
 }

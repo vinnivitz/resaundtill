@@ -1,7 +1,5 @@
-import type { ID } from '@directus/sdk';
-
 export type GalleryImageItem = {
-	id: ID;
+	id: string;
 	title?: string;
 	description?: string;
 	src: string;
@@ -9,4 +7,5 @@ export type GalleryImageItem = {
 	loaded: boolean;
 	height: number;
 	width: number;
+	date: string;
 };

@@ -1,50 +1,58 @@
 import type { LayoutLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import { SDK, auth } from '$lib/sdk';
-import { BlogPostStatus, type BlogPostEntry, type SupportInfoEntry, type BlogPostImage } from '$lib/sdk/types';
+import SDK from '$lib/sdk';
 import { waitLocale } from 'svelte-i18n';
-import type { ID } from '@directus/sdk';
+import { readItems, readSingleton } from '@directus/sdk';
+import {
+	type BlogPostEntry,
+	BlogPostStatus,
+	type BlogPostImage,
+	type Departure,
+	type SupportInfoEntry,
+	type GalleryShufflePercentage
+} from '$lib/models';
 
 export const load: LayoutLoad = async () => {
 	await waitLocale();
 
-	await auth();
+	const postsResult = await SDK.request<BlogPostEntry[]>(
+		readItems('resaundtill_posts', {
+			limit: -1,
+			filter: { status: { _eq: BlogPostStatus.public } },
+			sort: ['date'],
+			fields: ['id', 'status', 'date', 'isFlight', 'translations.*', 'images.*.*', 'location']
+		})
+	);
 
-	const postsResult = await SDK.items('resaundtill_posts').readByQuery({
-		limit: -1,
-		filter: { status: BlogPostStatus.public },
-		sort: ['date'],
-		fields: '*.*.*'
-	});
+	const departureResult = await SDK.request<Departure>(readSingleton('resaundtill_departure'));
+	const supportInfoResult = await SDK.request<SupportInfoEntry>(
+		// @ts-ignore
+		readSingleton('resaundtill_support', { fields: ['id', 'translations.*'] })
+	);
+	const galleryShufflePercentageResult = await SDK.request<GalleryShufflePercentage>(
+		readSingleton('resaundtill_gallery_shuffle_percentage')
+	);
+
+	if (!postsResult || !departureResult || !supportInfoResult || !galleryShufflePercentageResult) {
+		throw error(500, 'Could not load data. Please try again later.');
+	}
 
 	const files = [];
-	const blogPostThumbnailMap = new Map<ID, BlogPostImage>();
+	const blogPostThumbnailMap = new Map<string, BlogPostImage>();
 
-	for (const post of postsResult.data as BlogPostEntry[]) {
+	for (const post of postsResult) {
 		if (post.images) {
 			files.push(...post.images);
 			blogPostThumbnailMap.set(post.id, post.images[0]);
 		}
 	}
 
-	const departureResult = new Date((await SDK.singleton('resaundtill_departure').read())!.date);
-
-	const supportInfoResponse = await SDK.singleton('resaundtill_support').read({ fields: '*.*' });
-
-	const galleryShufflePercentage = await SDK.singleton('resaundtill_gallery_shuffle_percentage').read({
-		// @ts-ignore
-		fields: '*.*'
-	});
-
-	if (!postsResult.data || !departureResult || !supportInfoResponse)
-		throw error(500, 'Could not load data. Please try again later.');
-
 	return {
-		posts: postsResult.data as BlogPostEntry[],
-		departure: departureResult,
-		files,
-		supportInfo: supportInfoResponse as any as SupportInfoEntry,
-		galleryShufflePercentage,
-		blogPostThumbnailMap
+		posts: postsResult,
+		departure: new Date(departureResult.date),
+		supportInfo: supportInfoResult,
+		galleryShufflePercentage: galleryShufflePercentageResult.value,
+		blogPostThumbnailMap,
+		files
 	};
 };

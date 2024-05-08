@@ -32,7 +32,7 @@
 
 <Map items={mapItems} on:activeCoords={(event) => navigate(event)} />
 {#if showCountdown}
-	<div class="absolute z-50 top-[calc(50%-95px)] left-[calc(50%-192.5px)] md:left-[calc(50%-320px)]">
+	<div class="absolute left-[calc(50%-192.5px)] top-[calc(50%-95px)] z-50 md:left-[calc(50%-320px)]">
 		<Countdown date={data.departure} />
 	</div>
 {/if}

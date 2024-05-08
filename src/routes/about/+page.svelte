@@ -3,7 +3,7 @@
 	import type { PageData } from '../about/$types';
 	import { locale } from 'svelte-i18n';
 	import { getTranslation } from '$lib/utils';
-	import type { SupportTranslation } from '$lib/sdk/types';
+	import type { SupportTranslation } from '$lib/models';
 
 	export let data: PageData;
 
@@ -15,6 +15,6 @@
 	}
 </script>
 
-<section in:fly={{ y: 50, duration: 1000 }} class="pt-12 pl-5 pr-5 md:pl-12 md:pr-12 pb-5 md:pb-12 text-lg font-normal">
+<section in:fly={{ y: 50, duration: 1000 }} class="pb-5 pl-5 pr-5 pt-12 text-lg font-normal md:pb-12 md:pl-12 md:pr-12">
 	{@html getSupportTranslation(data.supportInfo.translations, $locale)?.content}
 </section>
