@@ -101,16 +101,18 @@
 		enableKeyboardControl: true
 	};
 
-	function openModal(idx: number): null {
+	function openModal(idx: number) {
 		const image = galleryImages[idx];
 		if (caching) {
 			cacheImages();
 		}
 		programmaticController.openImage(idx);
-		setTimeout(() => {
-			const footer = document.querySelector('.svelte-lightbox-footer');
-			if (footer) {
-				footer.innerHTML = `
+	}
+
+	function renderFooter(image: GalleryImageItem) {
+		const footer = document.querySelector('.svelte-lightbox-footer');
+		if (footer) {
+			footer.innerHTML = `
 					<div class="mt-2 px-2 mx-auto flex flex-row items-start justify-between gap-4">
 						<div>
 							<div class="text-gray-100">
@@ -125,9 +127,7 @@
 						${image.description}
 					</div>
 				`;
-			}
-		});
-		return null;
+		}
 	}
 
 	function partialShuffleImageOrder(percentage: number): GalleryImageItem[] {
@@ -237,6 +237,15 @@
 		return new Date(post?.date || fallback);
 	}
 
+	function getPlaceholderImage(image: GalleryImageItem) {
+		const canvas = document.createElement('canvas');
+		canvas.width = image.width;
+		canvas.height = image.height;
+		const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+		ctx.clearRect(0, 0, image.width, image.height);
+		return canvas.toDataURL('image/png');
+	}
+
 	onMount(async () => {
 		const masonryModule = await import('svelte-bricks');
 		MasonryComponent = masonryModule.default;
@@ -278,33 +287,23 @@
 						</div>
 					{/if}
 					{#if cachedImages.has(image.id)}
-						<img
-							class="m-auto"
-							src={cachedImages.get(image.id)?.src}
-							width={`${image.width}px`}
-							height={`${image.height}px`}
-							alt={image.title}
-						/>
+						<img class="m-auto" src={cachedImages.get(image.id)?.src} alt={image.title} />
 					{:else}
 						{#if !image.loaded}
-							<div
-								class="flex h-screen items-center justify-center"
-								style:width={`${image.width}px`}
-								style:height={`${image.height}px`}
-							>
-								<div>
-									<Spinner size="24" color="blue" />
-								</div>
+							<div class="absolute z-10 flex items-center justify-center" style="width: 100vw; height: 100vh;">
+								<Spinner size="24" color="blue" />
 							</div>
+							<img class="m-auto" id={image.id} src={getPlaceholderImage(image)} alt={image.title} />
 						{/if}
 						<img
 							src={image.src}
 							alt={image.title}
-							width={`${image.width}px`}
-							height={`${image.height}px`}
 							style:opacity={image.loaded ? '1' : '0'}
 							class="m-auto transition-opacity duration-100"
-							on:load={() => (image.loaded = true)}
+							on:load={() => {
+								image.loaded = true;
+								renderFooter(image);
+							}}
 						/>
 					{/if}
 				</GalleryImage>
@@ -340,7 +339,7 @@
 					alt={item.title}
 					width={item.width}
 					height={item.height}
-					on:click={openModal(idx)}
+					on:click={() => openModal(idx)}
 					on:keydown={() => null}
 				/>
 			</div>
@@ -366,7 +365,7 @@
 					alt={item.title}
 					width={item.width}
 					height={item.height}
-					on:click={openModal(idx)}
+					on:click={() => openModal(idx)}
 					on:keydown={() => null}
 				/>
 			</div>
