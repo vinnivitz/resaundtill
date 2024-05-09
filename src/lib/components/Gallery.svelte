@@ -287,7 +287,12 @@
 						</div>
 					{/if}
 					{#if cachedImages.has(image.id)}
-						<img class="m-auto" src={cachedImages.get(image.id)?.src} alt={image.title} />
+						<img
+							class="m-auto"
+							src={cachedImages.get(image.id)?.src}
+							alt={image.title}
+							on:load={() => renderFooter(image)}
+						/>
 					{:else}
 						{#if !image.loaded}
 							<div class="absolute z-10 flex items-center justify-center" style="width: 100vw; height: 100vh;">
