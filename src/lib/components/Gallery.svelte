@@ -45,6 +45,7 @@
 	let cachedImages = new Map<string, HTMLImageElement>();
 	let programmaticController: LightboxController;
 	let timeoutId: NodeJS.Timeout;
+	let initImg: string;
 
 	const debouncedSearch = debounce(async () => {
 		dispatch('loading', true);
@@ -124,7 +125,7 @@
 						</div>
 					</div>
 					<div class="mt-3 px-2 text-sm text-gray-100">
-						${image.description}
+						${image.description && image.description.length < 60 ? image.description : ''}
 					</div>
 				`;
 		}
@@ -243,10 +244,20 @@
 		canvas.height = image.height;
 		const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 		ctx.clearRect(0, 0, image.width, image.height);
-		return canvas.toDataURL('image/png');
+		return canvas.toDataURL('image/webp');
+	}
+
+	function createInitImage() {
+		const canvas = document.createElement('canvas');
+		canvas.width = 1;
+		canvas.height = 1;
+		const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+		ctx.clearRect(0, 0, 1, 1);
+		return canvas.toDataURL('image/webp');
 	}
 
 	onMount(async () => {
+		initImg = createInitImage();
 		const masonryModule = await import('svelte-bricks');
 		MasonryComponent = masonryModule.default;
 		await tick();
@@ -311,6 +322,9 @@
 							}}
 						/>
 					{/if}
+					{#if image.description && image.description.length >= 60}
+						<div class="text-shadow absolute bottom-0 left-1 right-1 text-sm text-gray-100">{image.description}</div>
+					{/if}
 				</GalleryImage>
 			{/each}
 		</LightboxGallery>
@@ -337,15 +351,15 @@
 		>
 			<div class="placeholder relative w-full bg-gray-500" style="padding-bottom: {(item.height / item.width) * 100}%;">
 				<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<img
 					class="absolute left-0 top-0 cursor-pointer transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02]"
-					src="/images/gallery/placeholder-transparent.webp"
+					src={initImg}
 					data-src={item.src}
 					alt={item.title}
 					width={item.width}
 					height={item.height}
 					on:click={() => openModal(idx)}
-					on:keydown={() => null}
 				/>
 			</div>
 		</svelte:component>
@@ -363,15 +377,15 @@
 		>
 			<div class="placeholder relative w-full bg-gray-500" style="padding-bottom: {(item.height / item.width) * 100}%;">
 				<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<img
 					class="absolute left-0 top-0 cursor-pointer transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02]"
-					src="/images/gallery/placeholder-transparent.webp"
+					src={initImg}
 					data-src={item.src}
 					alt={item.title}
 					width={item.width}
 					height={item.height}
 					on:click={() => openModal(idx)}
-					on:keydown={() => null}
 				/>
 			</div>
 		</svelte:component>
@@ -406,5 +420,11 @@
 	:global(.previous-button svg) {
 		filter: drop-shadow(-2px -1px 0px #000) drop-shadow(2px -1px 0px #000) drop-shadow(1px 1px 0px #000)
 			drop-shadow(-1px 1px 0px #000);
+	}
+
+	.text-shadow {
+		text-shadow:
+			0 0 5px rgba(0, 0, 0, 0.5),
+			0 0 10px rgb(0, 0, 0);
 	}
 </style>
