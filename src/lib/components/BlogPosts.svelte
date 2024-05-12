@@ -17,17 +17,16 @@
 	let observer: IntersectionObserver;
 
 	$: postItems = posts.map((post) => {
-		const { id, date } = post;
-		const placeholderUrl = '/images/gallery/placeholder.webp';
+		const { id, date, translations } = post;
 		const thumbnail = thumbnails.get(id);
 		const imageUrl = thumbnail
 			? imageUrlBuilder(thumbnail.directus_files_id.id, DirectusImageTransformation.PREVIEW)
 			: '/images/gallery/travel.jpg';
 		const postDate = new Date(date);
 		return {
-			...post,
+			id,
+			translations,
 			imageUrl,
-			placeholderUrl,
 			formattedDate: {
 				day: postDate.getDate(),
 				month: postDate.toLocaleString('default', { month: 'long' })
@@ -86,7 +85,7 @@
 					class="relative flex h-96 w-full items-end justify-start bg-cover bg-center text-left dark:bg-gray-500"
 					data-bg-url={post.imageUrl}
 					use:registerObserver
-					style={`background-image: url(${post.placeholderUrl});`}
+					style={`background-color: #6c7380;`}
 				>
 					<div
 						class="absolute bottom-0 left-0 right-0 top-0 z-[-1] bg-gradient-to-b dark:from-gray-900 dark:via-transparent dark:to-gray-900"

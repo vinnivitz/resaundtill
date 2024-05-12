@@ -337,7 +337,7 @@
 				<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<img
-					class="absolute left-0 top-0 cursor-pointer transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02]"
+					class="absolute left-0 top-0 cursor-pointer transition delay-150 duration-300 ease-in-out hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02]"
 					decoding="async"
 					src={initImg}
 					data-src={item.src}
