@@ -18,7 +18,6 @@ export const load: LayoutLoad = async () => {
 	const postsResult = await SDK.request<BlogPostEntry[]>(
 		readItems('resaundtill_posts', {
 			limit: -1,
-			filter: { status: { _eq: BlogPostStatus.public } },
 			sort: ['date'],
 			fields: ['id', 'status', 'date', 'isFlight', 'translations.*', 'images.*.*', 'location']
 		})

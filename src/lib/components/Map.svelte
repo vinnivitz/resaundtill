@@ -33,7 +33,7 @@
 			disableMapInteractions();
 		}
 		addMarkersToMap(L, coords);
-		mapElement.style.opacity = '1';
+		mapElement.style.removeProperty('opacity');
 		spinnerElement.style.display = 'none';
 	}
 
@@ -119,14 +119,14 @@
 	<div class="absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 transform" bind:this={spinnerElement}>
 		<Spinner size="24" color="blue" />
 	</div>
-	<div bind:this={mapElement} id="map" class="absolute left-0 right-0 top-0 opacity-95" />
+	<div bind:this={mapElement} id="map" class="absolute left-0 right-0 top-0 opacity-95" style="opacity: 0;" />
 	{#if isActivatable}
 		<div
 			class={`map-button absolute bottom-1/3 left-[calc(50%-75px)] z-50 ${deactivated ? 'opacity-80' : 'opacity-40'}`}
 		>
 			<Button on:click={toggleActivation} color="blue" pill={true}
-				>{$_('components.map.activate-button.label', { values: { pre: deactivated ? '' : 'de' } })}</Button
-			>
+				>{$_('components.map.activate-button.label', { values: { pre: deactivated ? '' : 'de' } })}
+			</Button>
 		</div>
 	{/if}
 </div>

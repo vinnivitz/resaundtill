@@ -100,9 +100,8 @@
 
 	<div in:fly={{ y: 50, duration: 1000 }}>
 		<Heading customSize="text-4xl md:text-5xl">
-			<!-- svelte-ignore missing-declaration -->
-			<Secondary>{translatedTitle}</Secondary></Heading
-		>
+			<Secondary>{translatedTitle}</Secondary>
+		</Heading>
 		<Hr />
 
 		<div class="flex flex-wrap items-center gap-4">
@@ -110,7 +109,6 @@
 			<div class="h-6 w-6"><FaCalendar /></div>
 			<div class="text-sm md:text-lg">{formatDate(new Date(postItem.date), $locale)}</div>
 		</div>
-		<!-- svelte-ignore missing-declaration -->
 		<p class="whitespace-pre-wrap pt-8 text-lg font-normal md:pt-12">
 			{translatedDescription}
 		</p>

@@ -2,7 +2,7 @@
 	// @ts-ignore
 	import { GalleryImage, LightboxGallery } from 'svelte-lightbox';
 	import { Input, Spinner } from 'flowbite-svelte';
-	import { formatDate, imageUrlBuilder } from '$lib/utils';
+	import { debounce, formatDate, imageUrlBuilder } from '$lib/utils';
 	import {
 		DirectusImageTransformation,
 		PagePath,
@@ -20,8 +20,6 @@
 	import { t } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
 	import Masonry from 'svelte-bricks';
-	// @ts-ignore
-	import FaCalendar from 'svelte-icons/fa/FaCalendar.svelte';
 
 	export let images: DirectusImage[] = [];
 	export let caching = true;
@@ -41,41 +39,21 @@
 	const dispatch = createEventDispatcher();
 	let MasonryComponent: typeof Masonry;
 	let intersectionObserver: IntersectionObserver;
-	let searchTerm = '';
+	let searchTerm: string;
 	let cachedImages = new Map<string, HTMLImageElement>();
 	let programmaticController: LightboxController;
-	let timeoutId: NodeJS.Timeout;
 	let initImg: string;
 
 	const debouncedSearch = debounce(async () => {
 		dispatch('loading', true);
 		galleryImagesFiltered = filterImagesBySearchTerm(galleryImages, searchTerm);
 		await tick();
+		setupObservers();
 		dispatch('loading', false);
 	}, 300);
 
-	$: {
-		if (browser && searchTerm) {
-			debouncedSearch();
-		}
-	}
-
-	$: {
-		if (browser && galleryImagesFiltered.length > 0) {
-			// Wait for the next microtask to ensure the DOM is updated
-			queueMicrotask(() => {
-				setupObservers();
-			});
-		}
-	}
-
-	function debounce(func: Function, delay: number) {
-		return () => {
-			clearTimeout(timeoutId);
-			timeoutId = setTimeout(() => {
-				func();
-			}, delay);
-		};
+	$: if (browser && searchTerm !== undefined) {
+		debouncedSearch();
 	}
 
 	let galleryImages: GalleryImageItem[] = images.map((file) => ({
@@ -103,7 +81,6 @@
 	};
 
 	function openModal(idx: number) {
-		const image = galleryImages[idx];
 		if (caching) {
 			cacheImages();
 		}
@@ -175,7 +152,7 @@
 
 	async function cacheImagesSequentially(cache: Map<string, HTMLImageElement>) {
 		for (let i = 0; i < galleryImages.length; i++) {
-			const img = await loadImage(galleryImages[i]);
+			const img = await loadDetailImage(galleryImages[i]);
 			if (!cache.has(galleryImages[i].id)) {
 				cache.set(galleryImages[i].id, img);
 				cachedImages.set(galleryImages[i].id, img);
@@ -183,7 +160,7 @@
 		}
 	}
 
-	async function loadImage(imageItem: GalleryImageItem): Promise<HTMLImageElement> {
+	async function loadDetailImage(imageItem: GalleryImageItem): Promise<HTMLImageElement> {
 		return new Promise((resolve, reject) => {
 			const img = new Image();
 
@@ -198,15 +175,21 @@
 	function handleIntersection(entries: IntersectionObserverEntry[]) {
 		entries.forEach((entry) => {
 			if (entry.isIntersecting) {
-				const placeholder = entry.target;
-				if (placeholder) {
-					const image = placeholder.firstElementChild as HTMLImageElement;
-					if (image) {
-						image.src = image.dataset.src!;
-					}
-				}
+				const placeholder = entry.target as HTMLDivElement;
+				const image = placeholder.firstElementChild as HTMLImageElement;
+				image.onload = () => (placeholder.dataset.loaded = 'true');
+				image.src = image.dataset.src!;
+				intersectionObserver.unobserve(placeholder);
+				observeNextImage();
 			}
 		});
+	}
+
+	function observeNextImage() {
+		const placeholders = document.querySelectorAll('.placeholder:not([data-loaded])');
+		if (placeholders.length > 0) {
+			intersectionObserver.observe(placeholders[0]);
+		}
 	}
 
 	function setupObservers() {
@@ -224,6 +207,7 @@
 		placeholders.forEach((placeholder) => {
 			intersectionObserver.observe(placeholder);
 		});
+		observeNextImage();
 	}
 
 	async function gotoPost(id: string) {
@@ -316,10 +300,7 @@
 							alt={image.title}
 							style:opacity={image.loaded ? '1' : '0'}
 							class="m-auto transition-opacity duration-100"
-							on:load={() => {
-								image.loaded = true;
-								renderFooter(image);
-							}}
+							on:load={() => renderFooter(image)}
 						/>
 					{/if}
 					{#if image.description && image.description.length >= 60}
@@ -341,7 +322,7 @@
 	<div class="hidden md:block">
 		<svelte:component
 			this={MasonryComponent}
-			animate={true}
+			animate={false}
 			items={galleryImagesFiltered}
 			minColWidth={200}
 			maxColWidth={800}
@@ -354,6 +335,7 @@
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<img
 					class="absolute left-0 top-0 cursor-pointer transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02]"
+					decoding="async"
 					src={initImg}
 					data-src={item.src}
 					alt={item.title}
@@ -367,7 +349,7 @@
 	<div class="block md:hidden">
 		<svelte:component
 			this={MasonryComponent}
-			animate={true}
+			animate={false}
 			items={galleryImagesFiltered}
 			minColWidth={150}
 			maxColWidth={800}
@@ -380,6 +362,7 @@
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<img
 					class="absolute left-0 top-0 cursor-pointer transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02]"
+					decoding="async"
 					src={initImg}
 					data-src={item.src}
 					alt={item.title}
