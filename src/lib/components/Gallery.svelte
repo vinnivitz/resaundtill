@@ -300,7 +300,10 @@
 							alt={image.title}
 							style:opacity={image.loaded ? '1' : '0'}
 							class="m-auto transition-opacity duration-100"
-							on:load={() => renderFooter(image)}
+							on:load={() => {
+								renderFooter(image);
+								image.loaded = true;
+							}}
 						/>
 					{/if}
 					{#if image.description && image.description.length >= 60}
