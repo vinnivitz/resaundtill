@@ -98,7 +98,7 @@
 					L.polyline([marker.getLatLng(), nextMarker.getLatLng()], {
 						color: 'blue',
 						dashArray: items[index + 1].isFlight ? '6' : '',
-						opacity: 0.5
+						opacity: items[index + 1].isFlight ? 0.2 : 0.5
 					}).addTo(map);
 				}
 			});
