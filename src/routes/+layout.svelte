@@ -6,7 +6,7 @@
 	import { isLoading, locale } from 'svelte-i18n';
 	import '../app.pcss';
 	import { Spinner } from 'flowbite-svelte';
-	import { navigating, page } from '$app/stores';
+	import { navigating } from '$app/stores';
 	import { browser } from '$app/environment';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';

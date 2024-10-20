@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { Heading, Secondary, Hr } from 'flowbite-svelte';
 	import type { PageData } from './$types';
-	// @ts-ignore
+	// @ts-expect-error - Ignore this error
 	import FaCalendar from 'svelte-icons/fa/FaCalendar.svelte';
 	import { fly } from 'svelte/transition';
 	import { _, locale } from 'svelte-i18n';
 	import Gallery from '$lib/components/Gallery.svelte';
-	// @ts-ignore
+	// @ts-expect-error - Ignore this error
 	import FaArrowLeft from 'svelte-icons/fa/FaArrowLeft.svelte';
-	// @ts-ignore
+	// @ts-expect-error - Ignore this error
 	import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
 	import Map from '$lib/components/Map.svelte';
 	import { formatDate, getTranslation } from '$lib/utils';

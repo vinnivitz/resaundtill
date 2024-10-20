@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { MapItem } from '$lib/models';
 	import { Button, Spinner } from 'flowbite-svelte';
-	import type { Map } from 'leaflet';
+	import type { Map, LeafletMouseEvent } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
@@ -25,7 +25,7 @@
 		initializeMap(L);
 	});
 
-	function initializeMap(L: any) {
+	function initializeMap(L: typeof import('leaflet')) {
 		const coords = getValidCoords();
 		map = L.map('map');
 		createMap(L, coords);
@@ -48,7 +48,7 @@
 		return coord && coord.length === 2;
 	}
 
-	function createMap(L: any, coords: number[][]) {
+	function createMap(L: typeof import('leaflet'), coords: number[][]) {
 		map.setView([coords[coords.length - 1][1], coords[coords.length - 1][0]], 13);
 		map.zoomControl.remove();
 		L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -66,7 +66,7 @@
 		map.dragging.disable();
 	}
 
-	function addMarkersToMap(L: any, coords: number[][]): void {
+	function addMarkersToMap(L: typeof import('leaflet'), coords: number[][]): void {
 		const iconDefault = L.icon({
 			iconUrl: '/images/map/marker.png',
 			iconSize: [20, 35],
@@ -87,7 +87,7 @@
 			return L.marker([coord[1], coord[0]], {
 				icon: index === coords.length - 1 ? iconResaTill : iconDefault
 			})
-				.on('click', (e: any) => dispatch('activeCoords', [e.latlng.lat, e.latlng.lng]))
+				.on('click', (e: LeafletMouseEvent) => dispatch('activeCoords', [e.latlng.lat, e.latlng.lng]))
 				.addTo(map);
 		});
 

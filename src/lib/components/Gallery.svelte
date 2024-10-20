@@ -1,5 +1,4 @@
 <script lang="ts">
-	// @ts-ignore
 	import { GalleryImage, LightboxGallery } from 'svelte-lightbox';
 	import { Input, Spinner } from 'flowbite-svelte';
 	import { debounce, formatDate, imageUrlBuilder } from '$lib/utils';
@@ -12,7 +11,7 @@
 		type LightboxController
 	} from '$lib/models';
 	import { imageCache } from '$lib/stores';
-	// @ts-ignore
+	// @ts-expect-error - Ignore this error
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 	import { _, locale } from 'svelte-i18n';
 	import { browser } from '$app/environment';

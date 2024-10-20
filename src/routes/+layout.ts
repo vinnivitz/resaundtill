@@ -5,7 +5,6 @@ import { waitLocale } from 'svelte-i18n';
 import { readItems, readSingleton } from '@directus/sdk';
 import {
 	type BlogPostEntry,
-	BlogPostStatus,
 	type BlogPostImage,
 	type Departure,
 	type SupportInfoEntry,
@@ -25,7 +24,7 @@ export const load: LayoutLoad = async () => {
 
 	const departureResult = await SDK.request<Departure>(readSingleton('resaundtill_departure'));
 	const supportInfoResult = await SDK.request<SupportInfoEntry>(
-		// @ts-ignore
+		// @ts-expect-error - Directus SDK typings are incorrect
 		readSingleton('resaundtill_support', { fields: ['id', 'translations.*'] })
 	);
 	const galleryShufflePercentageResult = await SDK.request<GalleryShufflePercentage>(

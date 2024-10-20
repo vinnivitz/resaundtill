@@ -22,5 +22,9 @@ module.exports = {
 				parser: '@typescript-eslint/parser'
 			}
 		}
-	]
+	],
+	rules: {
+		'svelte/no-at-html-tags': 'off',
+		'no-global-assign': 'off'
+	}
 };
