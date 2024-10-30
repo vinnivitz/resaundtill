@@ -6,3 +6,4 @@ export * from './user.model';
 export * from './posts.model';
 export * from './directus-images-transformation.enum';
 export * from './directus.model';
+export * from './geojson.model';

@@ -1,14 +1,15 @@
 <script lang="ts">
-	import type { MapItem } from '$lib/models';
+	import { type GeoFeatureCollection, type MapItem } from '$lib/models';
 	import { Button, Spinner } from 'flowbite-svelte';
-	import type { Map, LeafletMouseEvent } from 'leaflet';
+	import type { Map, LeafletMouseEvent, LatLngBounds } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 
 	export let items: MapItem[] = [];
-	export let zoomOut = 3;
+	export let zoomOut = 10;
 	export let deactivated = false;
+	export let countryCode: string | undefined = undefined;
 
 	const isActivatable = deactivated;
 
@@ -17,12 +18,17 @@
 	let map: Map;
 	let mapElement: HTMLDivElement;
 	let spinnerElement: HTMLElement;
+	let countries: GeoFeatureCollection;
+	let boundaryLayer: LatLngBounds;
 
 	onMount(async () => {
 		mapElement.style.opacity = '0';
 		spinnerElement.style.display = 'block';
 		const L = await import('leaflet');
 		initializeMap(L);
+		if (countryCode) {
+			await setCountryBoundaries(L, countryCode);
+		}
 	});
 
 	function initializeMap(L: typeof import('leaflet')) {
@@ -55,7 +61,7 @@
 			maxZoom: 19,
 			attribution: '© OpenStreetMap'
 		}).addTo(map);
-		map.zoomOut(zoomOut);
+		map.setZoom(zoomOut);
 	}
 
 	function disableMapInteractions() {
@@ -64,6 +70,27 @@
 		map.scrollWheelZoom.disable();
 		map.keyboard.disable();
 		map.dragging.disable();
+	}
+
+	async function setCountryBoundaries(L: typeof import('leaflet'), code: string | undefined): Promise<void> {
+		if (!code) {
+			return;
+		}
+		const result = await fetch('/json/countries.geojson');
+		countries = await result.json();
+		const country = countries.features.find(
+			(feature) => feature.properties.ISO_A2.toLowerCase() === code.toLowerCase()
+		);
+		if (country) {
+			L.geoJSON(country, {
+				style: {
+					fillColor: 'transparent',
+					color: 'black',
+					weight: 2,
+					opacity: 0.5
+				}
+			}).addTo(map);
+		}
 	}
 
 	function addMarkersToMap(L: typeof import('leaflet'), coords: number[][]): void {
@@ -80,7 +107,8 @@
 			iconSize: [38, 95],
 			shadowSize: [50, 64],
 			iconAnchor: [22, 94],
-			popupAnchor: [-3, -76]
+			popupAnchor: [-3, -76],
+			className: 'resa-till-marker'
 		});
 
 		const markers = coords.map((coord, index) => {

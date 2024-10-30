@@ -45,6 +45,7 @@
 	"dependencies": {
 		"@directus/sdk": "^15.1.0",
 		"@popperjs/core": "^2.11.8",
+		"flag-icons": "^7.2.3",
 		"flowbite": "^2.3.0",
 		"flowbite-svelte": "^0.46.1",
 		"leaflet": "^1.9.4",

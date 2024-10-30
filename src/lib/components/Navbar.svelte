@@ -44,6 +44,9 @@
 		<NavLi href={PagePath.travel} active={isActive(PagePath.travel)}>
 			<span class="text-xl">{$_('nav.travel')}</span>
 		</NavLi>
+		<NavLi href={PagePath.countries} active={isActive(PagePath.countries)}>
+			<span class="text-xl">{$_('nav.countries')}</span>
+		</NavLi>
 		<NavLi href={PagePath.gallery} active={isActive(PagePath.gallery)}>
 			<span class="text-xl">{$_('nav.gallery')}</span>
 		</NavLi>

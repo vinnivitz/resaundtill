@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '$lib/locale';
-	import { LayoutTheme, Locale } from '$lib/models/user.model';
+	import { LayoutTheme, Locale } from '$lib/models';
 	import { getLocale } from '$lib/utils';
 	import { onMount } from 'svelte';
 	import { isLoading, locale } from 'svelte-i18n';
@@ -10,6 +10,7 @@
 	import { browser } from '$app/environment';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import "/node_modules/flag-icons/css/flag-icons.min.css";
 
 	let toggleTheme: () => void;
 	let toggleLocale: () => void;

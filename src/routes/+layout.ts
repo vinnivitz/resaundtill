@@ -8,7 +8,8 @@ import {
 	type BlogPostImage,
 	type Departure,
 	type SupportInfoEntry,
-	type GalleryShufflePercentage
+	type GalleryShufflePercentage,
+	type CountryEntry
 } from '$lib/models';
 
 export const load: LayoutLoad = async () => {
@@ -22,6 +23,9 @@ export const load: LayoutLoad = async () => {
 		})
 	);
 
+	const countryResult = await SDK.request<CountryEntry[]>(
+		readItems('resaundtill_countries', { fields: ['id', 'code', 'thumbnail', 'translations.*', 'entries.*'] })
+	);
 	const departureResult = await SDK.request<Departure>(readSingleton('resaundtill_departure'));
 	const supportInfoResult = await SDK.request<SupportInfoEntry>(
 		// @ts-expect-error - Directus SDK typings are incorrect
@@ -31,7 +35,7 @@ export const load: LayoutLoad = async () => {
 		readSingleton('resaundtill_gallery_shuffle_percentage')
 	);
 
-	if (!postsResult || !departureResult || !supportInfoResult || !galleryShufflePercentageResult) {
+	if (!postsResult || !countryResult || !departureResult || !supportInfoResult || !galleryShufflePercentageResult) {
 		throw error(500, 'Could not load data. Please try again later.');
 	}
 
@@ -47,6 +51,7 @@ export const load: LayoutLoad = async () => {
 
 	return {
 		posts: postsResult,
+		countries: countryResult,
 		departure: new Date(departureResult.date),
 		supportInfo: supportInfoResult,
 		galleryShufflePercentage: galleryShufflePercentageResult.value,

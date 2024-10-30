@@ -1,3 +1,7 @@
+export type Translations = {
+	languages_code: string;
+};
+
 export type Departure = {
 	id: string;
 	date: string;
@@ -28,18 +32,36 @@ export type BlogPostEntry = {
 	images?: BlogPostImage[];
 };
 
-export type BlogPostTranslation = {
+export type CountryEntry = {
+	id: string;
+	translations: CountryEntryTranslation[];
+	code: string;
+	thumbnail?: string;
+	entries: CountryEntryBlogPost[];
+};
+
+export type CountryEntryTranslation = Translations & {
+	id: string;
+	name: string;
+	description?: string;
+};
+
+export type BlogPostTranslation = Translations & {
 	id: string;
 	title: string;
 	description?: string;
-	languages_code: { code: string; name: string };
 };
 
-export type SupportTranslation = {
+export type SupportTranslation = Translations & {
 	id: string;
 	content: string;
-	languages_code: string;
 };
+
+export type CountryEntryBlogPost = {
+	id: string;
+	resaundtill_countries_id: string;
+	resaundtill_posts_id: string;
+}
 
 export type DirectusImage = {
 	id: string;
@@ -63,6 +85,7 @@ export enum BlogPostStatus {
 
 export type Collections = {
 	resaundtill_posts: BlogPostEntry[];
+	resaundtill_countries: CountryEntry[];
 	resaundtill_departure: Departure;
 	resaundtill_support: SupportInfoEntry;
 	resaundtill_gallery_shuffle_percentage: GalleryShufflePercentage;

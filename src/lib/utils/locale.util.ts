@@ -1,5 +1,11 @@
 import { browser } from '$app/environment';
-import { Locale, type BlogPostTranslation, type SupportTranslation } from '$lib/models';
+import {
+	Locale,
+	type BlogPostTranslation,
+	type CountryEntryTranslation,
+	type SupportTranslation,
+	type Translations
+} from '$lib/models';
 
 /**
  * Returns the locale in `Locale` format
@@ -19,16 +25,11 @@ export function getLocaleCode(value: string | null | undefined): string {
 	return getLocale(value) === Locale.DE ? 'de-DE' : 'en-US';
 }
 
-export function getTranslation<T = SupportTranslation | BlogPostTranslation>(
-	translations: (SupportTranslation | BlogPostTranslation)[],
+export function getTranslation<T = Translations>(
+	translations: Translations[],
 	locale: string | null | undefined
 ): T | undefined {
-	const result = translations.find(
-		(translation) =>
-			(translation as BlogPostTranslation).languages_code.code === getLocaleCode(locale) ||
-			translation.languages_code === getLocaleCode(locale)
-	) as T;
-	return result;
+	return translations.find((translation) => translation.languages_code === getLocaleCode(locale)) as T;
 }
 
 /**

@@ -46,6 +46,16 @@
 		});
 	}
 
+	function registerObserver(node: HTMLDivElement) {
+		observers.push(node);
+		observer?.observe(node);
+		return {
+			destroy() {
+				observer.unobserve(node);
+			}
+		};
+	}
+
 	function getBlogPostTranslation(
 		translations: BlogPostTranslation[],
 		locale: string | null | undefined
@@ -62,16 +72,6 @@
 
 		observers.forEach((obs) => observer.observe(obs));
 	});
-
-	function registerObserver(node: HTMLDivElement) {
-		observers.push(node);
-		observer?.observe(node);
-		return {
-			destroy() {
-				observer.unobserve(node);
-			}
-		};
-	}
 </script>
 
 <div class="mx-auto max-w-screen-xl p-5 dark:text-gray-100">
