@@ -4,19 +4,28 @@
 		PagePath,
 		type BlogPostEntry,
 		type BlogPostImage,
+		type BlogPostItem,
 		type BlogPostTranslation
 	} from '$lib/models';
-	import { getTranslation, imageUrlBuilder } from '$lib/utils';
-	import { onMount } from 'svelte';
+	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
+	import { Input } from 'flowbite-svelte';
+	import { onMount, tick } from 'svelte';
 	import { locale } from 'svelte-i18n';
+	// @ts-expect-error - Ignore this error
+	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
+	import { t } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 
 	export let posts: BlogPostEntry[];
 	export let thumbnails: Map<string, BlogPostImage>;
+	export let searchable = false;
 
 	const observers: HTMLDivElement[] = [];
 	let observer: IntersectionObserver;
+	let searchTerm: string;
+	let postItemsFiltered: BlogPostItem[] = [];
 
-	$: postItems = posts.map((post) => {
+	$: postItems = postItemsFiltered = posts.map((post) => {
 		const { id, date, translations } = post;
 		const thumbnail = thumbnails.get(id);
 		const imageUrl = thumbnail
@@ -31,8 +40,24 @@
 				day: postDate.getDate(),
 				month: postDate.toLocaleString('default', { month: 'long' })
 			}
-		};
+		} as BlogPostItem;
 	});
+
+	const debouncedSearch = debounce(async () => {
+		postItemsFiltered = filterBlogPostsBySearchTerm(postItems, searchTerm);
+		await tick();
+	}, 300);
+
+	$: if (browser && searchTerm !== undefined) {
+		debouncedSearch();
+	}
+
+	function filterBlogPostsBySearchTerm(posts: BlogPostItem[], term: string) {
+		const lowerCaseTerm = term.toLowerCase();
+		return posts.filter((post) =>
+			getBlogPostTranslation(post.translations, $locale)?.title?.toLowerCase().includes(lowerCaseTerm)
+		);
+	}
 
 	function lazyLoadBackground(entries: IntersectionObserverEntry[]) {
 		entries.forEach((entry) => {
@@ -75,8 +100,21 @@
 </script>
 
 <div class="mx-auto max-w-screen-xl p-5 dark:text-gray-100">
+	{#if searchable}
+		<div class="relative mb-5 w-full md:w-72">
+			<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
+				<FaSearch />
+			</div>
+			<Input
+				id="search-navbar"
+				class="pl-14"
+				placeholder={$t('components.gallery.searchbar.placeholder')}
+				bind:value={searchTerm}
+			/>
+		</div>
+	{/if}
 	<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-		{#each postItems as post}
+		{#each postItemsFiltered as post}
 			<a
 				href={`${PagePath.travel}/${post.id}`}
 				class="xl:transition xl:delay-150 xl:duration-300 xl:ease-in-out xl:hover:-translate-y-1 xl:hover:scale-110"

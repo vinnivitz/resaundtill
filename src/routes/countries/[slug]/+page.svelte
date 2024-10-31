@@ -6,7 +6,7 @@
 	import Map from '$lib/components/Map.svelte';
 	import { getTranslation } from '$lib/utils';
 	import {
-	PagePath,
+		PagePath,
 		type BlogPostEntry,
 		type CountryEntryTranslation,
 		type GeoFeatureCollection,
@@ -46,7 +46,7 @@
 		if (matchedPost) {
 			goto(`${PagePath.travel}/${matchedPost.id}`);
 		}
-	}	
+	}
 
 	onMount(async () => {
 		const result = await fetch('/json/countries.geojson');

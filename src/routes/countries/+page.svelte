@@ -1,24 +1,46 @@
 <script lang="ts">
-	import { DirectusImageTransformation, PagePath, type CountryEntryTranslation } from '$lib/models';
+	import { DirectusImageTransformation, PagePath, type CountryEntryTranslation, type CountryItem } from '$lib/models';
 
 	import { fly } from 'svelte/transition';
 	import type { PageData } from '../$types';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { locale, t } from 'svelte-i18n';
-	import { getTranslation, imageUrlBuilder } from '$lib/utils';
+	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
+	// @ts-expect-error - Ignore this error
+	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
+	import { Input } from 'flowbite-svelte';
+	import { browser } from '$app/environment';
 
 	export let data: PageData;
 
-	$: countries = data.countries.map((country) => {
+	const observers: HTMLDivElement[] = [];
+	let observer: IntersectionObserver;
+	let searchTerm: string;
+	let countriesFiltered: CountryItem[] = [];
+
+	$: countryItems = countriesFiltered = data.countries.map((country) => {
 		const { id, code, thumbnail, translations } = country;
 		const imageUrl = thumbnail
 			? imageUrlBuilder(thumbnail, DirectusImageTransformation.PREVIEW)
 			: '/images/gallery/travel.jpg';
-		return { id, code, imageUrl, thumbnail, translations };
+		return { id, code, imageUrl, translations };
 	});
 
-	const observers: HTMLDivElement[] = [];
-	let observer: IntersectionObserver;
+	const debouncedSearch = debounce(async () => {
+		countriesFiltered = filterCountriesBySearchTerm(countryItems, searchTerm);
+		await tick();
+	}, 300);
+
+	$: if (browser && searchTerm !== undefined) {
+		debouncedSearch();
+	}
+
+	function filterCountriesBySearchTerm(posts: CountryItem[], term: string) {
+		const lowerCaseTerm = term.toLowerCase();
+		return posts.filter((post) =>
+			getCountryTranslation(post.translations, $locale)?.name?.toLowerCase().includes(lowerCaseTerm)
+		);
+	}
 
 	function getCountryTranslation(
 		translations: CountryEntryTranslation[],
@@ -55,15 +77,25 @@
 			rootMargin: '0px',
 			threshold: 0.01
 		});
-
 		observers.forEach((obs) => observer.observe(obs));
 	});
 </script>
 
 <section in:fly={{ y: 50, duration: 1000 }} class="mx-auto max-w-screen-xl p-5 dark:text-gray-100">
 	<div class="mx-auto max-w-screen-xl p-5 dark:text-gray-100">
+		<div class="relative mb-5 w-full md:w-72">
+			<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
+				<FaSearch />
+			</div>
+			<Input
+				id="search-navbar"
+				class="pl-14"
+				placeholder={$t('components.gallery.searchbar.placeholder')}
+				bind:value={searchTerm}
+			/>
+		</div>
 		<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-			{#each countries as country}
+			{#each countriesFiltered as country}
 				<a
 					href={`${PagePath.countries}/${country.id}`}
 					class="xl:transition xl:delay-150 xl:duration-300 xl:ease-in-out xl:hover:-translate-y-1 xl:hover:scale-110"
@@ -84,7 +116,7 @@
 								<span class="text-3xl font-semibold leading-none tracking-wide">
 									<span class={`fi fi-${country.code.toLowerCase()}`}></span>
 								</span>
-								<span class="text-gray-300 opacity-90 text-center uppercase leading-none">
+								<span class="text-center uppercase leading-none text-gray-300 opacity-90">
 									{getCountryTranslation(country.translations, $locale)?.name}
 								</span>
 							</div>
@@ -95,4 +127,3 @@
 		</div>
 	</div>
 </section>
-

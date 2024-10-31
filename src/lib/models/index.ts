@@ -7,3 +7,5 @@ export * from './posts.model';
 export * from './directus-images-transformation.enum';
 export * from './directus.model';
 export * from './geojson.model';
+export * from './blogpost-item.model';
+export * from './country-item.model';

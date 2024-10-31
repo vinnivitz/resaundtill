@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type GeoFeatureCollection, type MapItem } from '$lib/models';
 	import { Button, Spinner } from 'flowbite-svelte';
-	import type { Map, LeafletMouseEvent, LatLngBounds } from 'leaflet';
+	import type { Map, LeafletMouseEvent, GeoJSON } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
@@ -19,15 +19,18 @@
 	let mapElement: HTMLDivElement;
 	let spinnerElement: HTMLElement;
 	let countries: GeoFeatureCollection;
-	let boundaryLayer: LatLngBounds;
+	let geoJSON: GeoJSON | undefined;
 
 	onMount(async () => {
 		mapElement.style.opacity = '0';
 		spinnerElement.style.display = 'block';
 		const L = await import('leaflet');
-		initializeMap(L);
 		if (countryCode) {
-			await setCountryBoundaries(L, countryCode);
+			geoJSON = await getGeoJSON(L, countryCode);
+		}
+		initializeMap(L);
+		if (geoJSON) {
+			geoJSON.addTo(map);
 		}
 	});
 
@@ -55,13 +58,19 @@
 	}
 
 	function createMap(L: typeof import('leaflet'), coords: number[][]) {
-		map.setView([coords[coords.length - 1][1], coords[coords.length - 1][0]], 13);
+		if (geoJSON) {
+			map.fitBounds(geoJSON.getBounds());
+		} else {
+			map.setView([coords[coords.length - 1][1], coords[coords.length - 1][0]], 13);
+		}
 		map.zoomControl.remove();
 		L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
 			attribution: '© OpenStreetMap'
 		}).addTo(map);
-		map.setZoom(zoomOut);
+		if (!geoJSON) {
+			map.setZoom(zoomOut);
+		}
 	}
 
 	function disableMapInteractions() {
@@ -72,7 +81,7 @@
 		map.dragging.disable();
 	}
 
-	async function setCountryBoundaries(L: typeof import('leaflet'), code: string | undefined): Promise<void> {
+	async function getGeoJSON(L: typeof import('leaflet'), code: string | undefined): Promise<GeoJSON | undefined> {
 		if (!code) {
 			return;
 		}
@@ -82,15 +91,16 @@
 			(feature) => feature.properties.ISO_A2.toLowerCase() === code.toLowerCase()
 		);
 		if (country) {
-			L.geoJSON(country, {
+			return L.geoJSON(country, {
 				style: {
 					fillColor: 'transparent',
 					color: 'black',
 					weight: 2,
 					opacity: 0.5
 				}
-			}).addTo(map);
+			});
 		}
+		return;
 	}
 
 	function addMarkersToMap(L: typeof import('leaflet'), coords: number[][]): void {

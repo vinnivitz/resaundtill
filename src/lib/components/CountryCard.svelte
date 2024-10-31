@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { CountryEntry, CountryEntryTranslation, SupportTranslation } from '$lib/models';
+	import type { CountryEntry, CountryEntryTranslation } from '$lib/models';
 	import { getTranslation } from '$lib/utils';
 	import 'flag-icons/css/flag-icons.min.css';
 	import { locale } from 'svelte-i18n';

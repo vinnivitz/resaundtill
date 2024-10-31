@@ -1,11 +1,5 @@
 import { browser } from '$app/environment';
-import {
-	Locale,
-	type BlogPostTranslation,
-	type CountryEntryTranslation,
-	type SupportTranslation,
-	type Translations
-} from '$lib/models';
+import { Locale, type Translations } from '$lib/models';
 
 /**
  * Returns the locale in `Locale` format

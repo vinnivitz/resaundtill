@@ -61,7 +61,7 @@ export type CountryEntryBlogPost = {
 	id: string;
 	resaundtill_countries_id: string;
 	resaundtill_posts_id: string;
-}
+};
 
 export type DirectusImage = {
 	id: string;

@@ -4,4 +4,4 @@ node_modules
 /.svelte-kit
 .env
 pnpm-lock.yaml
-
+/static

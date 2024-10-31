@@ -10,7 +10,7 @@
 	import { browser } from '$app/environment';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
-	import "/node_modules/flag-icons/css/flag-icons.min.css";
+	import '/node_modules/flag-icons/css/flag-icons.min.css';
 
 	let toggleTheme: () => void;
 	let toggleLocale: () => void;
