@@ -10,10 +10,17 @@
 	import FaArrowLeft from 'svelte-icons/fa/FaArrowLeft.svelte';
 	// @ts-expect-error - Ignore this error
 	import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
+	// @ts-expect-error - Ignore this error
+	import FaInfoCircle from 'svelte-icons/fa/FaInfoCircle.svelte';
+	// @ts-expect-error - Ignore this error
+	import FaImages from 'svelte-icons/fa/FaImages.svelte';
+	// @ts-expect-error - Ignore this error
+	import FaMapMarkerAlt from 'svelte-icons/fa/FaMapMarkerAlt.svelte';
 	import Map from '$lib/components/Map.svelte';
 	import { formatDate, getTranslation } from '$lib/utils';
 	import { goto } from '$app/navigation';
 	import { PagePath, type BlogPostTranslation, type DirectusImage, type MapItem } from '$lib/models';
+	import { Tabs, TabItem } from 'flowbite-svelte';
 
 	export let data: PageData;
 
@@ -99,36 +106,54 @@
 	</div>
 
 	<div in:fly={{ y: 50, duration: 1000 }}>
-		<Heading customSize="text-4xl md:text-5xl">
+		<Heading customSize="text-4xl md:text-5xl mt-6">
 			<Secondary>{translatedTitle}</Secondary>
 		</Heading>
 		<Hr />
 
 		<div class="flex flex-wrap items-center gap-4">
-			<div class="grow" />
+			<div class="hidden grow md:block" />
 			<div class="h-6 w-6"><FaCalendar /></div>
 			<div class="text-sm md:text-lg">{formatDate(new Date(postItem.date), $locale)}</div>
 		</div>
-		<p class="whitespace-pre-wrap pt-8 text-lg font-normal md:pt-12">
-			{translatedDescription}
-		</p>
 
-		{#if images.length > 0}
-			<Hr />
+		<div class="mt-7 block md:hidden">
+			<Tabs tabStyle="underline" defaultClass="flex justify-center">
+				{#if translatedDescription}
+					<TabItem open title={$_('travel.description')} defaultClass="text-lg">
+						<p class="whitespace-pre-wrap text-lg font-normal md:pt-12">
+							{translatedDescription}
+						</p>
+					</TabItem>
+				{/if}
+				{#if images.length > 0}
+					<TabItem title={$_('travel.gallery-title')} defaultClass="text-lg">
+						<Gallery {images} posts={data.posts} />
+					</TabItem>
+				{/if}
+				{#if mapItems}
+					<TabItem title={$_('common.map')} defaultClass="text-lg p-0">
+						<Map items={mapItems} deactivated={true} />
+					</TabItem>
+				{/if}
+			</Tabs>
+		</div>
+		<div class="hidden md:block">
+			<p class="whitespace-pre-wrap pt-8 text-lg font-normal md:pt-12">
+				{translatedDescription}
+			</p>
 
-			<Heading customSize="pt-5 pb-3 text-4xl"><Secondary>{$_('travel.gallery-title')}</Secondary></Heading>
+			{#if images.length > 0}
+				<Hr />
+				<div class="m-2">
+					<Gallery {images} posts={data.posts} />
+				</div>
+			{/if}
 
-			<div class="m-2">
-				<Gallery {images} posts={data.posts} />
-			</div>
-		{/if}
-
-		{#if mapItems}
-			<Hr />
-
-			<Heading customSize="pt-5 pb-3 text-4xl"><Secondary>{$_('common.map')}</Secondary></Heading>
-
-			<Map items={mapItems} deactivated={true} />
-		{/if}
+			{#if mapItems}
+				<Hr />	
+				<Map items={mapItems} deactivated={true} />
+			{/if}
+		</div>
 	</div>
 </section>

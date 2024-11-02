@@ -17,7 +17,8 @@
       }
     },
     "gallery-title": "Bildergalerie",
-    "no-entries": "Keine Einträge gefunden."
+    "no-entries": "Keine Einträge gefunden.",
+    "description": "Information"
   },
   "legals": {
     "title": "Haftungsausschluss",
@@ -41,7 +42,14 @@
   "common": {
     "map": "Karte",
     "from": "von",
-    "to": "bis"
+    "to": "bis",
+    "information": "Information",
+    "overview": "Übersicht",
+    "population": "Einwohner",
+    "area": "Fläche",
+    "currency": "Währungen",
+    "capital": "Hauptstadt",
+    "posts": "Beiträge"
   },
   "components": {
     "map": {
