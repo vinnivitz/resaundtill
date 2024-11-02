@@ -5,7 +5,8 @@
 		type BlogPostEntry,
 		type BlogPostImage,
 		type BlogPostItem,
-		type BlogPostTranslation
+		type BlogPostTranslation,
+		type CalendarStore
 	} from '$lib/models';
 	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
 	import { Input } from 'flowbite-svelte';
@@ -15,6 +16,8 @@
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 	import { t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
+	import { Datepicker } from './calendar';
+	import dayjs from 'dayjs';
 
 	export let posts: BlogPostEntry[];
 	export let thumbnails: Map<string, BlogPostImage>;
@@ -24,6 +27,16 @@
 	let observer: IntersectionObserver;
 	let searchTerm: string;
 	let postItemsFiltered: BlogPostItem[] = [];
+	let fromCalendarStore: CalendarStore;
+	let toCalendarStore: CalendarStore;
+	let fromDate: Date;
+	let toDate: Date;
+	let initStartDate: Date;
+	let initEndDate: Date;
+	let fromDatepickerStart: Date;
+	let fromDatepickerEnd: Date;
+	let toDatepickerStart: Date;
+	let toDatepickerEnd: Date;
 
 	$: postItems = postItemsFiltered = posts.map((post) => {
 		const { id, date, translations } = post;
@@ -36,6 +49,7 @@
 			id,
 			translations,
 			imageUrl,
+			date: postDate,
 			formattedDate: {
 				day: postDate.getDate(),
 				month: postDate.toLocaleString('default', { month: 'long' })
@@ -43,8 +57,30 @@
 		} as BlogPostItem;
 	});
 
+	if (searchable) {
+		initStartDate = normalizeDate(
+			new Date(
+				posts.reduce((earliest, current) => (current.date < earliest.date ? current : earliest)).date ?? new Date()
+			)
+		);
+		initEndDate = normalizeDate(
+			new Date(posts.reduce((latest, current) => (current.date > latest.date ? current : latest)).date ?? new Date())
+		);
+
+		fromDate = initStartDate;
+		toDate = initEndDate;
+
+		fromDatepickerStart = initStartDate;
+		fromDatepickerEnd = toDate;
+		toDatepickerStart = fromDate;
+		toDatepickerEnd = initEndDate;
+	}
+
+	$: fromDatepickerEnd = toDate;
+	$: toDatepickerStart = dayjs(fromDate).subtract(1, 'hour').toDate();
+
 	const debouncedSearch = debounce(async () => {
-		postItemsFiltered = filterBlogPostsBySearchTerm(postItems, searchTerm);
+		postItemsFiltered = filterBlogPosts(postItems, searchTerm, fromDate, toDate);
 		await tick();
 	}, 300);
 
@@ -52,10 +88,23 @@
 		debouncedSearch();
 	}
 
-	function filterBlogPostsBySearchTerm(posts: BlogPostItem[], term: string) {
-		const lowerCaseTerm = term.toLowerCase();
-		return posts.filter((post) =>
-			getBlogPostTranslation(post.translations, $locale)?.title?.toLowerCase().includes(lowerCaseTerm)
+	function normalizeDate(date: Date): Date {
+		const newDate = new Date(date);
+		newDate.setHours(0, 0, 0, 0);
+		return newDate;
+	}
+
+	function filterBlogPosts(posts: BlogPostItem[], term: string, from: Date, to: Date) {
+		const lowerCaseTerm = term?.toLowerCase();
+		from.setHours(12);
+		to.setHours(12);
+		return posts.filter(
+			(post) =>
+				(lowerCaseTerm
+					? getBlogPostTranslation(post.translations, $locale)?.title?.toLowerCase().includes(lowerCaseTerm)
+					: true) &&
+				post.date >= from &&
+				post.date <= to
 		);
 	}
 
@@ -96,21 +145,59 @@
 		});
 
 		observers.forEach((obs) => observer.observe(obs));
+		if (searchable) {
+			fromCalendarStore?.subscribe((data) => {
+				if (data.hasChosen && !data.open && data.selected !== fromDate) {
+					fromDate = data.selected;
+					if (fromDate > toDate) {
+						toDate = fromDate;
+					}
+					debouncedSearch();
+				}
+			});
+			toCalendarStore?.subscribe((data) => {
+				if (data.hasChosen && !data.open && data.selected !== toDate) {
+					toDate = data.selected;
+					if (toDate < fromDate) {
+						fromDate = toDate;
+					}
+					debouncedSearch();
+				}
+			});
+		}
 	});
 </script>
 
-<div class="mx-auto max-w-screen-xl p-5 dark:text-gray-100">
+<div class="mx-auto max-w-screen-xl p-5 pt-0 dark:text-gray-100">
 	{#if searchable}
-		<div class="relative mb-5 w-full md:w-72">
-			<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
-				<FaSearch />
+		<div class="mb-5 flex-row items-center justify-between gap-2 md:flex">
+			<div class="relative w-full md:w-72">
+				<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
+					<FaSearch />
+				</div>
+				<Input
+					id="search-navbar"
+					class="pl-14"
+					placeholder={$t('components.gallery.searchbar.placeholder')}
+					bind:value={searchTerm}
+				/>
 			</div>
-			<Input
-				id="search-navbar"
-				class="pl-14"
-				placeholder={$t('components.gallery.searchbar.placeholder')}
-				bind:value={searchTerm}
-			/>
+			<div class="mt-3 flex items-center justify-center gap-2 px-3">
+				<div>{$t('common.from')}</div>
+				<Datepicker
+					bind:store={fromCalendarStore}
+					selected={fromDate}
+					bind:start={fromDatepickerStart}
+					bind:end={fromDatepickerEnd}
+				/>
+				<div>{$t('common.to')}</div>
+				<Datepicker
+					bind:store={toCalendarStore}
+					selected={toDate}
+					bind:start={toDatepickerStart}
+					bind:end={toDatepickerEnd}
+				/>
+			</div>
 		</div>
 	{/if}
 	<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">

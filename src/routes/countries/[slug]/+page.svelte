@@ -3,18 +3,21 @@
 	import type { PageData } from './$types';
 	import { fly } from 'svelte/transition';
 	import { t, locale } from 'svelte-i18n';
-	import Map from '$lib/components/Map.svelte';
-	import { getTranslation } from '$lib/utils';
+	import MapComponent from '$lib/components/Map.svelte';
+	import { getTranslation, isPointInPolygon } from '$lib/utils';
 	import {
 		PagePath,
 		type BlogPostEntry,
 		type CountryEntryTranslation,
+		type GeoFeature,
 		type GeoFeatureCollection,
+		type GeoPoint,
 		type MapItem
 	} from '$lib/models';
 	import { onMount } from 'svelte';
 	import BlogPosts from '$lib/components/BlogPosts.svelte';
 	import { goto } from '$app/navigation';
+	import type { polygon } from 'leaflet';
 
 	export let data: PageData;
 
@@ -48,16 +51,22 @@
 		}
 	}
 
+	function getPosts(feature: GeoFeature): BlogPostEntry[] {
+		const polygon = feature.geometry.coordinates;
+		return data.posts.filter((post) => post?.location?.coordinates && isPointInPolygon(post.location.coordinates, polygon));
+	}
+
 	onMount(async () => {
 		const result = await fetch('/json/countries.geojson');
-		const geojson: GeoFeatureCollection = await result.json();
-		countryCode = geojson.features
-			.find((feature) => feature.properties.ISO_A2.toLowerCase() === countryItem.code.toLocaleLowerCase())
-			?.properties.ISO_A2.toLowerCase();
-		const postIds = countryItem.entries.map((entry) => entry.resaundtill_posts_id);
-		posts = data.posts.filter((post) => postIds.includes(post.id));
-		mapItems = posts.map((post) => ({ coords: post.location?.coordinates, isFlight: post.isFlight }) as MapItem);
-		console.log('map', mapItems);
+		const collection: GeoFeatureCollection = await result.json();
+		const feature = collection.features.find(
+			(feature) => feature.properties.ISO_A2.toLowerCase() === countryItem.code.toLowerCase()
+		);
+		if (feature) {
+			countryCode = feature.properties.ISO_A2.toLowerCase();
+			posts = getPosts(feature);
+			mapItems = posts.map((post) => ({ coords: post.location?.coordinates, isFlight: post.isFlight }) as MapItem);
+		}
 	});
 </script>
 
@@ -75,7 +84,7 @@
 			{translatedDescription}
 		</p>
 
-		{#if countryItem.entries.length > 0}
+		{#if posts.length > 0}
 			<Hr />
 
 			<Heading customSize="pt-5 pb-3 text-4xl"><Secondary>{$t('countries.posts')}</Secondary></Heading>
@@ -90,7 +99,7 @@
 
 			<Heading customSize="pt-5 pb-3 text-4xl"><Secondary>{$t('common.map')}</Secondary></Heading>
 
-			<Map items={mapItems} {countryCode} deactivated={true} on:activeCoords={(event) => navigate(event)} />
+			<MapComponent items={mapItems} {countryCode} deactivated={true} on:activeCoords={(event) => navigate(event)} />
 		{/if}
 	</div>
 </section>

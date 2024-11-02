@@ -1,3 +1,5 @@
+import type { GeoPoint } from "./geojson.model";
+
 export type Translations = {
 	languages_code: string;
 };
@@ -8,7 +10,7 @@ export type Departure = {
 };
 
 export type DirectusLocation = {
-	coordinates: number[];
+	coordinates: GeoPoint;
 	type: string;
 };
 
@@ -37,7 +39,6 @@ export type CountryEntry = {
 	translations: CountryEntryTranslation[];
 	code: string;
 	thumbnail?: string;
-	entries: CountryEntryBlogPost[];
 };
 
 export type CountryEntryTranslation = Translations & {
@@ -55,12 +56,6 @@ export type BlogPostTranslation = Translations & {
 export type SupportTranslation = Translations & {
 	id: string;
 	content: string;
-};
-
-export type CountryEntryBlogPost = {
-	id: string;
-	resaundtill_countries_id: string;
-	resaundtill_posts_id: string;
 };
 
 export type DirectusImage = {

@@ -43,7 +43,7 @@
 		<Spinner size="24" color="blue" />
 	</div>
 {:else}
-	<header class="fixed left-0 right-0 top-0 z-50">
+	<header class="fixed left-0 right-0 top-0 z-40">
 		<Navbar {isDark} on:locale={toggleLocale} on:theme={toggleTheme} />
 	</header>
 

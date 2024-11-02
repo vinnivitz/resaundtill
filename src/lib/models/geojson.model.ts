@@ -11,7 +11,7 @@ export type GeoFeature = {
 		ISO_A2: string;
 	};
 	geometry: {
-		coordinates: number[][][][];
+		coordinates: GeoPoint[][][];
 		type: GeoGeometryType;
 	};
 };
@@ -20,6 +20,8 @@ export enum GeoFeatureType {
 	Feature = 'Feature',
 	FeatureCollection = 'FeatureCollection'
 }
+
+export type GeoPoint = [number, number]; 
 
 export enum GeoGeometryType {
 	Point = 'Point',
