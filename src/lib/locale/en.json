@@ -69,6 +69,10 @@
       "lightbox": {
         "post-button": "Go to post"
       }
+    },
+    "posts": {
+      "select-countries": "Countries",
+      "country-filter-not-categorized": "Not categorized"
     }
   },
   "countries": {

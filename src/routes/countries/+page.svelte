@@ -18,13 +18,15 @@
 	let searchTerm: string;
 	let countriesFiltered: CountryItem[] = [];
 
-	$: countryItems = countriesFiltered = data.countries.map((country) => {
+	const countryItems = data.countries.map((country) => {
 		const { id, code, thumbnail, translations } = country;
 		const imageUrl = thumbnail
 			? imageUrlBuilder(thumbnail, DirectusImageTransformation.PREVIEW)
 			: '/images/gallery/travel.jpg';
 		return { id, code, imageUrl, translations };
 	});
+
+	countriesFiltered = countryItems;
 
 	const debouncedSearch = debounce(async () => {
 		countriesFiltered = filterCountriesBySearchTerm(countryItems, searchTerm);

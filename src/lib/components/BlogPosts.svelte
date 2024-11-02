@@ -6,9 +6,12 @@
 		type BlogPostImage,
 		type BlogPostItem,
 		type BlogPostTranslation,
-		type CalendarStore
+		type CalendarStore,
+		type CountryEntry,
+		type CountryEntryTranslation,
+		type GeoFeatureCollection
 	} from '$lib/models';
-	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
+	import { debounce, getTranslation, imageUrlBuilder, isPointInPolygon } from '$lib/utils';
 	import { Input } from 'flowbite-svelte';
 	import { onMount, tick } from 'svelte';
 	import { locale } from 'svelte-i18n';
@@ -18,14 +21,21 @@
 	import { browser } from '$app/environment';
 	import { Datepicker } from './calendar';
 	import dayjs from 'dayjs';
+	import { Button, Dropdown, Checkbox, Search } from 'flowbite-svelte';
+	// @ts-expect-error - Ignore this error
+	import FaChevronDown from 'svelte-icons/fa/FaChevronDown.svelte';
+	// @ts-expect-error - Ignore this error
+	import FaTrashAlt from 'svelte-icons/fa/FaTrashAlt.svelte';
 
 	export let posts: BlogPostEntry[];
 	export let thumbnails: Map<string, BlogPostImage>;
 	export let searchable = false;
+	export let countries: CountryEntry[] = [];
 
 	const observers: HTMLDivElement[] = [];
 	let observer: IntersectionObserver;
 	let searchTerm: string;
+	let postItems: BlogPostItem[] = [];
 	let postItemsFiltered: BlogPostItem[] = [];
 	let fromCalendarStore: CalendarStore;
 	let toCalendarStore: CalendarStore;
@@ -37,8 +47,14 @@
 	let fromDatepickerEnd: Date;
 	let toDatepickerStart: Date;
 	let toDatepickerEnd: Date;
+	let countrySearch: string;
+	let countryItems: { name: string; code: string; checked: boolean; postIds: string[] }[];
+	let countryItemsFiltered: { name: string; code: string; checked: boolean; postIds: string[] }[] = [];
+	let filterApplied = false;
+	let loading = true;
+	let resetted = false;
 
-	$: postItems = postItemsFiltered = posts.map((post) => {
+	postItems = posts.map((post) => {
 		const { id, date, translations } = post;
 		const thumbnail = thumbnails.get(id);
 		const imageUrl = thumbnail
@@ -57,32 +73,42 @@
 		} as BlogPostItem;
 	});
 
-	if (searchable) {
-		initStartDate = normalizeDate(
-			new Date(
-				posts.reduce((earliest, current) => (current.date < earliest.date ? current : earliest)).date ?? new Date()
-			)
-		);
-		initEndDate = normalizeDate(
-			new Date(posts.reduce((latest, current) => (current.date > latest.date ? current : latest)).date ?? new Date())
-		);
+	$: filterApplied =
+		(postItemsFiltered?.length !== postItems?.length || countryItemsFiltered?.length !== countryItems?.length) &&
+		!loading;
 
-		fromDate = initStartDate;
-		toDate = initEndDate;
+	postItemsFiltered = postItems;
 
-		fromDatepickerStart = initStartDate;
-		fromDatepickerEnd = toDate;
-		toDatepickerStart = fromDate;
-		toDatepickerEnd = initEndDate;
-	}
+	initStartDate = normalizeDate(
+		new Date(
+			posts.reduce((earliest, current) => (current.date < earliest.date ? current : earliest)).date ?? new Date()
+		)
+	);
+	initEndDate = normalizeDate(
+		new Date(posts.reduce((latest, current) => (current.date > latest.date ? current : latest)).date ?? new Date())
+	);
+
+	fromDate = initStartDate;
+	toDate = initEndDate;
+
+	fromDatepickerStart = initStartDate;
+	$: fromDatepickerEnd = toDate;
+	$: toDatepickerStart = fromDate;
+	toDatepickerEnd = initEndDate;
 
 	$: fromDatepickerEnd = toDate;
-	$: toDatepickerStart = dayjs(fromDate).subtract(1, 'hour').toDate();
+	$: toDatepickerStart = fromDate;
 
 	const debouncedSearch = debounce(async () => {
 		postItemsFiltered = filterBlogPosts(postItems, searchTerm, fromDate, toDate);
 		await tick();
 	}, 300);
+
+	$: if (browser && countrySearch !== undefined) {
+		countryItemsFiltered = countryItems.filter(
+			(country) => country.name.toLowerCase().indexOf(countrySearch?.toLowerCase()) !== -1
+		);
+	}
 
 	$: if (browser && searchTerm !== undefined) {
 		debouncedSearch();
@@ -96,15 +122,14 @@
 
 	function filterBlogPosts(posts: BlogPostItem[], term: string, from: Date, to: Date) {
 		const lowerCaseTerm = term?.toLowerCase();
-		from.setHours(12);
-		to.setHours(12);
 		return posts.filter(
 			(post) =>
 				(lowerCaseTerm
 					? getBlogPostTranslation(post.translations, $locale)?.title?.toLowerCase().includes(lowerCaseTerm)
 					: true) &&
-				post.date >= from &&
-				post.date <= to
+				post.date >= dayjs(from).subtract(1, 'day').toDate() &&
+				post.date <= dayjs(to).add(1, 'day').toDate() &&
+				countryItemsFiltered.some((country) => country.checked && country.postIds.includes(post.id))
 		);
 	}
 
@@ -137,7 +162,18 @@
 		return getTranslation<BlogPostTranslation>(translations, locale);
 	}
 
-	onMount(() => {
+	function resetFilter() {
+		resetted = true;
+		searchTerm = '';
+		fromDate = initStartDate;
+		toDate = initEndDate;
+		fromDatepickerStart = initStartDate;
+		toDatepickerEnd = initEndDate;
+		countryItemsFiltered = countryItems;
+		postItemsFiltered = postItems;
+	}
+
+	onMount(async () => {
 		observer = new IntersectionObserver(lazyLoadBackground, {
 			root: null,
 			rootMargin: '0px',
@@ -146,49 +182,93 @@
 
 		observers.forEach((obs) => observer.observe(obs));
 		if (searchable) {
-			fromCalendarStore?.subscribe((data) => {
+			fromCalendarStore.subscribe((data) => {
 				if (data.hasChosen && !data.open && data.selected !== fromDate) {
 					fromDate = data.selected;
 					if (fromDate > toDate) {
 						toDate = fromDate;
 					}
 					debouncedSearch();
+					resetted = false;
 				}
 			});
-			toCalendarStore?.subscribe((data) => {
+			toCalendarStore.subscribe((data) => {
 				if (data.hasChosen && !data.open && data.selected !== toDate) {
 					toDate = data.selected;
 					if (toDate < fromDate) {
 						fromDate = toDate;
 					}
 					debouncedSearch();
+					resetted = false;
 				}
 			});
 		}
+		const geojsonResult = await fetch('/json/countries.geojson');
+		const collection: GeoFeatureCollection = await geojsonResult.json();
+		countryItems = countries.map((country) => {
+			const feature = collection.features.find(
+				(feature) => feature.properties.ISO_A2.toLowerCase() === country.code.toLowerCase()
+			);
+			return {
+				name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
+				checked: true,
+				code: country.code.toLowerCase(),
+				postIds: posts
+					.filter(
+						(post) =>
+							post.location &&
+							feature?.geometry.coordinates &&
+							isPointInPolygon(post.location.coordinates, feature?.geometry.coordinates)
+					)
+					.map((post) => post.id)
+			};
+		});
+		const categorizedPostIds = new Set(countryItems.flatMap((country) => country.postIds));
+		const uncategorizedPostIds = posts.filter((post) => !categorizedPostIds.has(post.id)).map((post) => post.id);
+		countryItems.push({
+			name: $t('components.posts.country-filter-not-categorized'),
+			checked: true,
+			code: '',
+			postIds: uncategorizedPostIds
+		});
+
+		countryItemsFiltered = countryItems;
+		loading = false;
 	});
 </script>
 
 <div class="mx-auto max-w-screen-xl p-5 pt-0 dark:text-gray-100">
 	{#if searchable}
-		<div class="mb-5 flex-row items-center justify-between gap-2 md:flex">
-			<div class="relative w-full md:w-72">
-				<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
-					<FaSearch />
+		<div class="mb-5 flex-row items-center justify-between md:flex">
+			<div class="flex items-center gap-2">
+				<div class="relative w-full md:w-72">
+					<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
+						<FaSearch />
+					</div>
+					<Input
+						id="search-navbar"
+						class="pl-14"
+						placeholder={$t('components.gallery.searchbar.placeholder')}
+						bind:value={searchTerm}
+					/>
 				</div>
-				<Input
-					id="search-navbar"
-					class="pl-14"
-					placeholder={$t('components.gallery.searchbar.placeholder')}
-					bind:value={searchTerm}
-				/>
+				{#if filterApplied}
+					<div class="block md:hidden">
+						<Button color="red" on:click={resetFilter}>
+							<div class="h-6 w-6"><FaTrashAlt></FaTrashAlt></div>
+						</Button>
+					</div>
+				{/if}
 			</div>
-			<div class="mt-3 flex items-center justify-center gap-2 px-3">
+			<div class="mt-3 flex items-center justify-center gap-2">
 				<div>{$t('common.from')}</div>
 				<Datepicker
 					bind:store={fromCalendarStore}
 					selected={fromDate}
 					bind:start={fromDatepickerStart}
 					bind:end={fromDatepickerEnd}
+					format="DD.MM.YYYY"
+					reset={resetted}
 				/>
 				<div>{$t('common.to')}</div>
 				<Datepicker
@@ -196,7 +276,32 @@
 					selected={toDate}
 					bind:start={toDatepickerStart}
 					bind:end={toDatepickerEnd}
+					format="DD.MM.YYYY"
+					reset={resetted}
 				/>
+				<div class="flex-1">
+					<Button class="w-full border text-black dark:text-white">
+						{$t('components.posts.select-countries')}
+						<span class="ml-2 h-6 w-6"> <FaChevronDown class="ms-2 h-6 w-6 text-white dark:text-white" /></span></Button
+					>
+					<Dropdown class="h-44 overflow-y-auto px-3 pb-3 text-sm">
+						<div slot="header" class="p-3">
+							<Search size="md" bind:value={countrySearch} />
+						</div>
+						{#each countryItemsFiltered as country}
+							<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+								<Checkbox bind:checked={country.checked} on:change={debouncedSearch}>{country.name}</Checkbox>
+							</li>
+						{/each}
+					</Dropdown>
+				</div>
+				{#if filterApplied}
+					<div class="hidden md:block">
+						<Button color="red" on:click={resetFilter}>
+							<div class="h-6 w-6"><FaTrashAlt></FaTrashAlt></div>
+						</Button>
+					</div>
+				{/if}
 			</div>
 		</div>
 	{/if}

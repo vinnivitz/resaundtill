@@ -80,7 +80,6 @@
 		const countryDataResult = await fetch(`/json/country-data.json`);
 		const countryData: CountryData[] = await countryDataResult.json();
 		metaData = countryData.find((entry) => entry.cca2.toLowerCase() === countryItem.code.toLowerCase());
-		console.log('mega', Object.values(metaData!.currencies));
 	});
 </script>
 

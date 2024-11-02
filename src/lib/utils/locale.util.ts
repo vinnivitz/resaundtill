@@ -23,7 +23,10 @@ export function getTranslation<T = Translations>(
 	translations: Translations[],
 	locale: string | null | undefined
 ): T | undefined {
-	return translations.find((translation) => translation.languages_code === getLocaleCode(locale)) as T;
+	return translations.find(
+		(translation) =>
+			translation.languages_code === getLocaleCode(locale) || ['de-DE', 'en-US'].includes(translation.languages_code)
+	) as T;
 }
 
 /**

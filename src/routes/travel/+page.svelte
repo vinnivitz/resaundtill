@@ -11,7 +11,7 @@
 
 <section in:fly={{ y: 50, duration: 1000 }} class="pt-4 md:pt-12">
 	{#if data.posts}
-		<BlogPosts {posts} thumbnails={data.blogPostThumbnailMap} searchable />
+		<BlogPosts {posts} thumbnails={data.blogPostThumbnailMap} countries={data.countries} searchable />
 	{:else}
 		<div class="text-center">
 			{$_('travel.no-entries')}

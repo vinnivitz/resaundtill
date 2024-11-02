@@ -19,6 +19,7 @@
 	export let theme = {};
 	export let defaultTheme = undefined;
 	export let startOfWeekIndex = 0;
+	export let reset = false;
 	export let store = datepickerStore.get({
 		selected,
 		start,
@@ -26,6 +27,8 @@
 		shouldEnlargeDay: true,
 		startOfWeekIndex
 	});
+
+	let initial = selected;
 
 	setContext(storeContextKey, store);
 	setContext(
@@ -40,6 +43,7 @@
 		$store.start = start;
 		$store.end = end;
 	}
+	$: if (reset) $store.selected = initial;
 </script>
 
 <Theme {defaultTheme} {theme} let:style>
