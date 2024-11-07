@@ -1,54 +1,45 @@
 <script lang="ts">
-	import { DirectusImageTransformation, PagePath, type CountryEntryTranslation, type CountryItem } from '$lib/models';
-
+	import { DirectusImageTransformation, PagePath, type CountryEntryTranslation } from '$lib/models';
 	import { fly } from 'svelte/transition';
-	import type { PageData } from '../$types';
-	import { onMount, tick } from 'svelte';
-	import { locale, t } from 'svelte-i18n';
+	import { onMount } from 'svelte';
+	import { t } from 'svelte-i18n';
 	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
 	// @ts-expect-error - Ignore this error
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 	import { Input } from 'flowbite-svelte';
 	import { browser } from '$app/environment';
+	import { countryStore } from '$lib/stores';
+	import type { PageData } from '../$types';
+	import { locale } from 'svelte-i18n';
+	import type { CountryItem } from '$lib/models';
 
 	export let data: PageData;
 
 	const observers: HTMLDivElement[] = [];
 	let observer: IntersectionObserver;
 	let searchTerm: string;
-	let countriesFiltered: CountryItem[] = [];
+	let countryItems: CountryItem[];
+	let countriesFiltered: CountryItem[];
 
-	const countryItems = data.countries.map((country) => {
-		const { id, code, thumbnail, translations } = country;
-		const imageUrl = thumbnail
-			? imageUrlBuilder(thumbnail, DirectusImageTransformation.PREVIEW)
-			: '/images/gallery/travel.jpg';
-		return { id, code, imageUrl, translations };
-	});
+	countryItems = Array.from(data.countries.values()).map((country) => ({
+		code: country.code,
+		name: getTranslation<CountryEntryTranslation>(country.translations, $locale)!.name,
+		thumbnailUrl: country.thumbnail
+			? imageUrlBuilder(country.thumbnail, DirectusImageTransformation.PREVIEW)
+			: '/images/gallery/travel.jpg'
+	}));
 
-	countriesFiltered = countryItems;
+	countriesFiltered = [...countryItems];
 
-	const debouncedSearch = debounce(async () => {
-		countriesFiltered = filterCountriesBySearchTerm(countryItems, searchTerm);
-		await tick();
-	}, 300);
+	const debouncedSearch = debounce(async () => (countriesFiltered = [...filterCountriesBySearchTerm(searchTerm)]), 300);
 
 	$: if (browser && searchTerm !== undefined) {
 		debouncedSearch();
 	}
 
-	function filterCountriesBySearchTerm(posts: CountryItem[], term: string) {
+	function filterCountriesBySearchTerm(term: string) {
 		const lowerCaseTerm = term.toLowerCase();
-		return posts.filter((post) =>
-			getCountryTranslation(post.translations, $locale)?.name?.toLowerCase().includes(lowerCaseTerm)
-		);
-	}
-
-	function getCountryTranslation(
-		translations: CountryEntryTranslation[],
-		locale: string | null | undefined
-	): CountryEntryTranslation | undefined {
-		return getTranslation<CountryEntryTranslation>(translations, locale);
+		return countryItems.filter((country) => country.name?.toLowerCase().includes(lowerCaseTerm));
 	}
 
 	function lazyLoadBackground(entries: IntersectionObserverEntry[]) {
@@ -96,36 +87,40 @@
 				bind:value={searchTerm}
 			/>
 		</div>
-		<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-			{#each countriesFiltered as country}
-				<a
-					href={`${PagePath.countries}/${country.id}`}
-					class="xl:transition xl:delay-150 xl:duration-300 xl:ease-in-out xl:hover:-translate-y-1 xl:hover:scale-110"
-				>
-					<div
-						class="relative flex h-96 w-full items-end justify-start bg-cover bg-center text-left dark:bg-gray-500"
-						data-bg-url={country.imageUrl}
-						use:registerObserver
-						style={`background-color: #6c7380;`}
+		{#if countriesFiltered.length === 0}
+			<p>{$t('countries.no-entries')}</p>
+		{:else if countriesFiltered}
+			<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+				{#each countriesFiltered as country}
+					<a
+						href={`${PagePath.countries}/${country.code}`}
+						class="xl:transition xl:delay-150 xl:duration-300 xl:ease-in-out xl:hover:-translate-y-1 xl:hover:scale-110"
 					>
 						<div
-							class="absolute bottom-0 left-0 right-0 top-0 z-[-1] bg-gradient-to-b dark:from-gray-900 dark:via-transparent dark:to-gray-900"
-						/>
-						<div
-							class="absolute left-0 right-0 top-0 flex items-center justify-between bg-gradient-to-b from-black to-transparent px-5 pb-40 pt-3"
+							class="relative flex h-96 w-full items-end justify-start bg-cover bg-center text-left dark:bg-gray-500"
+							data-bg-url={country.thumbnailUrl}
+							use:registerObserver
+							style={`background-color: #6c7380;`}
 						>
-							<div class="flex items-center justify-start gap-2 text-center text-gray-700">
-								<span class="text-3xl font-semibold leading-none tracking-wide">
-									<span class={`fi fi-${country.code.toLowerCase()}`}></span>
-								</span>
-								<span class="text-center uppercase leading-none text-gray-300 opacity-90">
-									{getCountryTranslation(country.translations, $locale)?.name}
-								</span>
+							<div
+								class="absolute bottom-0 left-0 right-0 top-0 z-[-1] bg-gradient-to-b dark:from-gray-900 dark:via-transparent dark:to-gray-900"
+							/>
+							<div
+								class="absolute left-0 right-0 top-0 flex items-center justify-between bg-gradient-to-b from-black to-transparent px-5 pb-40 pt-3"
+							>
+								<div class="flex items-center justify-start gap-2 text-center text-gray-700">
+									<span class="text-3xl font-semibold leading-none tracking-wide">
+										<span class={`fi fi-${country.code}`}></span>
+									</span>
+									<span class="text-center uppercase leading-none text-gray-300 opacity-90">
+										{country.name}
+									</span>
+								</div>
 							</div>
 						</div>
-					</div>
-				</a>
-			{/each}
-		</div>
+					</a>
+				{/each}
+			</div>
+		{/if}
 	</div>
 </section>

@@ -1,4 +1,4 @@
-import type { GeoPoint } from "./geojson.model";
+import type { GeoFeatureType, GeoGeometryType, GeoPoint } from './geojson.model';
 
 export type Translations = {
 	languages_code: string;
@@ -11,7 +11,7 @@ export type Departure = {
 
 export type DirectusLocation = {
 	coordinates: GeoPoint;
-	type: string;
+	type: GeoGeometryType.Point;
 };
 
 export type GalleryShufflePercentage = {
@@ -32,6 +32,7 @@ export type BlogPostEntry = {
 	translations: BlogPostTranslation[];
 	location?: DirectusLocation;
 	images?: BlogPostImage[];
+	countryCode?: string;
 };
 
 export type CountryEntry = {
@@ -39,6 +40,10 @@ export type CountryEntry = {
 	translations: CountryEntryTranslation[];
 	code: string;
 	thumbnail?: string;
+	capital: string;
+	area: number;
+	population: number;
+	currency: string;
 };
 
 export type CountryEntryTranslation = Translations & {

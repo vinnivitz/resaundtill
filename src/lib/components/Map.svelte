@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { type GeoFeatureCollection, type MapItem } from '$lib/models';
+	import { type MapItem } from '$lib/models';
+	import { countryStore } from '$lib/stores';
 	import { Button, Spinner } from 'flowbite-svelte';
 	import type { Map, LeafletMouseEvent, GeoJSON } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
@@ -7,7 +8,7 @@
 	import { _ } from 'svelte-i18n';
 
 	export let items: MapItem[] = [];
-	export let zoomOut = 10;
+	export let zoomOut = 8;
 	export let deactivated = false;
 	export let countryCode: string | undefined = undefined;
 
@@ -18,8 +19,7 @@
 	let map: Map;
 	let mapElement: HTMLDivElement;
 	let spinnerElement: HTMLElement;
-	let countries: GeoFeatureCollection;
-	let geoJSON: GeoJSON | undefined;
+	let geoJSON: GeoJSON | null;
 
 	onMount(async () => {
 		mapElement.style.opacity = '0';
@@ -81,15 +81,8 @@
 		map.dragging.disable();
 	}
 
-	async function getGeoJSON(L: typeof import('leaflet'), code: string | undefined): Promise<GeoJSON | undefined> {
-		if (!code) {
-			return;
-		}
-		const result = await fetch('/json/countries.geojson');
-		countries = await result.json();
-		const country = countries.features.find(
-			(feature) => feature.properties.ISO_A2.toLowerCase() === code.toLowerCase()
-		);
+	async function getGeoJSON(L: typeof import('leaflet'), code: string): Promise<GeoJSON | null> {
+		const country = countryStore.countryDataCache.get(code)?.feature;
 		if (country) {
 			return L.geoJSON(country, {
 				style: {
@@ -100,7 +93,7 @@
 				}
 			});
 		}
-		return;
+		return null;
 	}
 
 	function addMarkersToMap(L: typeof import('leaflet'), coords: number[][]): void {
@@ -160,7 +153,7 @@
 	<div bind:this={mapElement} id="map" class="absolute left-0 right-0 top-0 opacity-95" style="opacity: 0;" />
 	{#if isActivatable}
 		<div
-			class={`map-button absolute bottom-1/3 left-[calc(50%-75px)] z-50 ${deactivated ? 'opacity-80' : 'opacity-40'}`}
+			class={`map-button absolute left-[calc(50%-75px)] top-[calc(100%-100px)] z-50 ${deactivated ? 'opacity-80' : 'opacity-40'}`}
 		>
 			<Button on:click={toggleActivation} color="blue" pill={true}
 				>{$_('components.map.activate-button.label', { values: { pre: deactivated ? '' : 'de' } })}
@@ -172,10 +165,10 @@
 <style lang="postcss">
 	.wrapper,
 	#map {
-		height: calc(100vh - var(--nav-height) - var(--footer-height));
+		height: calc(100vh - var(--nav-height));
 
 		@media only screen and (max-width: 726px) {
-			height: calc(100vh - var(--nav-height-mobile) - var(--footer-height));
+			height: calc(100vh - var(--nav-height-mobile));
 		}
 	}
 

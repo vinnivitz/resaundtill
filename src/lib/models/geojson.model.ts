@@ -16,18 +16,42 @@ export type GeoFeature = {
 	};
 };
 
+export type BoundingBoxEntry = {
+	code: string;
+	bounds: GeoBoundingBox;
+};
+
+export type GeoBoundingBox = {
+	min_lon: number;
+	min_lat: number;
+	max_lon: number;
+	max_lat: number;
+};
+
+export type GeoGeometry =
+	| {
+			coordinates: GeoPoint[][][];
+			type: GeoGeometryType.MultiPolygon;
+	  }
+	| {
+			coordinates: GeoPoint[][];
+			type: GeoGeometryType.Polygon;
+	  };
+
 export enum GeoFeatureType {
-	Feature = 'Feature',
-	FeatureCollection = 'FeatureCollection'
+	FeatureCollection = 'FeatureCollection',
+	Feature = 'Feature'
 }
 
-export type GeoPoint = [number, number]; 
+export type GeoPoint = [number, number];
 
 export enum GeoGeometryType {
-	Point = 'Point',
-	LineString = 'LineString',
+	MultiPolygon = 'MultiPolygon',
 	Polygon = 'Polygon',
-	MultiPoint = 'MultiPoint',
-	MultiLineString = 'MultiLineString',
-	MultiPolygon = 'MultiPolygon'
+	Point = 'Point'
 }
+
+export type GeoCountry = {
+	code: string;
+	feature: GeoFeature;
+};

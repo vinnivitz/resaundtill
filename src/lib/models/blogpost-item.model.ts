@@ -6,4 +6,12 @@ export type BlogPostItem = {
 	imageUrl: string;
 	date: Date;
 	formattedDate: { day: number; month: string };
+	countryCode: string;
+};
+
+export type BlogPostCountrySearchItem = {
+	name: string;
+	code: string;
+	checked: boolean;
+	postIds: string[];
 };

@@ -45,6 +45,7 @@
 	"dependencies": {
 		"@directus/sdk": "^15.1.0",
 		"@popperjs/core": "^2.11.8",
+		"@turf/turf": "^7.1.0",
 		"dayjs": "^1.11.13",
 		"flag-icons": "^7.2.3",
 		"flowbite": "^2.3.0",

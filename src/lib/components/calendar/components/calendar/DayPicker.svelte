@@ -76,14 +76,7 @@
 	</div>
 	<Crossfade {duration} let:key let:receive let:send>
 		<div class="stage" use:scrollable={{ y: initialY, step: scrollStep }} on:y={updateIndex}>
-			<InfiniteGrid
-				cellCount={1}
-				itemCount={totalMonths}
-				bind:index={monthIndex}
-				{get}
-				let:days
-				let:index
-			>
+			<InfiniteGrid cellCount={1} itemCount={totalMonths} bind:index={monthIndex} {get} let:days let:index>
 				<Grid template="repeat(6, 1fr) / repeat(7, 1fr)">
 					{#each days as day, i (day)}
 						{#if !$store.enlargeDay || index !== monthIndex || !dayjs(day.date).isSame($store.selected)}
@@ -92,8 +85,7 @@
 								on:keydown|preventDefault
 								on:click|preventDefault={select(day.date)}
 								class:disabled={!store.isSelectable(day.date)}
-								class:selected={index === monthIndex &&
-									dayjs(day.date).isSame($store.selected, 'day')}
+								class:selected={index === monthIndex && dayjs(day.date).isSame($store.selected, 'day')}
 								class:outsider={day.outsider}
 								out:send|local={{ key }}
 								in:receive|local={{ key }}

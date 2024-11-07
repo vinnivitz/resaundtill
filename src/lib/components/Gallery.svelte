@@ -10,7 +10,7 @@
 		type GalleryImageItem,
 		type LightboxController
 	} from '$lib/models';
-	import { imageCache } from '$lib/stores';
+	import { imageCacheStore } from '$lib/stores';
 	// @ts-expect-error - Ignore this error
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 	import { _, locale } from 'svelte-i18n';
@@ -142,7 +142,7 @@
 	}
 
 	function cacheImages() {
-		imageCache.update((cache) => {
+		imageCacheStore.update((cache) => {
 			cachedImages = cache;
 			cacheImagesSequentially(cache);
 			return cache;

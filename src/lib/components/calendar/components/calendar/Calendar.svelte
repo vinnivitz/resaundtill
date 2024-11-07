@@ -41,8 +41,17 @@
 				min(var(--sc-theme-calendar-maxWidth), var(--sc-theme-calendar-width)) * 6 / 7 +
 					var(--sc-theme-calendar-legend-height)
 			);
-		font-family: Rajdhani, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
-			sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+		font-family:
+			Rajdhani,
+			-apple-system,
+			BlinkMacSystemFont,
+			'Segoe UI',
+			Helvetica,
+			Arial,
+			sans-serif,
+			'Apple Color Emoji',
+			'Segoe UI Emoji',
+			'Segoe UI Symbol';
 		box-shadow: var(--sc-theme-calendar-shadow);
 		background: var(--sc-theme-calendar-colors-background-primary);
 		text-align: center;

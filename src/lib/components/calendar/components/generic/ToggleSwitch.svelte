@@ -3,11 +3,7 @@
 	export let width = '45px';
 	export let height = '20px';
 
-	$: containerStyle = [
-		`width: ${width}`,
-		`height: ${height}`,
-		`border-radius: calc(${height} / 2)`
-	].join(';');
+	$: containerStyle = [`width: ${width}`, `height: ${height}`, `border-radius: calc(${height} / 2)`].join(';');
 
 	$: buttonStyle = [
 		`width: ${height}`,

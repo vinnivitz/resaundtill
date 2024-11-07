@@ -50,10 +50,6 @@
 	<main class="relative z-0 h-screen overflow-scroll bg-gradient-to-b from-gray-200 to-20% pb-5 dark:from-gray-800">
 		<slot />
 	</main>
-
-	<div class="fixed bottom-[17.5px] left-0 right-0">
-		<Footer />
-	</div>
 {/if}
 
 <style lang="postcss">

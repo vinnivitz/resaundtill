@@ -1,83 +1,85 @@
 {
-  "nav": {
-    "gallery": "Galerie",
-    "legals": "Impressum",
-    "map": "Karte",
-    "about": "Über uns",
-    "travel": "Unsere Reise",
-    "countries": "Länder"
-  },
-  "travel": {
-    "header": {
-      "prev-button": {
-        "label": "vorheriger Eintrag"
-      },
-      "next-button": {
-        "label": "nächster Eintrag"
-      }
-    },
-    "gallery-title": "Bildergalerie",
-    "no-entries": "Keine Einträge gefunden.",
-    "description": "Information"
-  },
-  "legals": {
-    "title": "Haftungsausschluss",
-    "content-liability": {
-      "content": "Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt.\n\nFür die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.\n\nAls Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten verantwortlich.\n\nNach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.\n\nVerpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben hiervon unberührt.\n\nEine diesbezügliche Haftung ist jedoch erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich.\n\nBei Bekanntwerden von Rechtsverletzungen werden wir diese Inhalte umgehend entfernen.",
-      "title": "Haftung für Inhalte"
-    },
-    "copyright": {
-      "content": "Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht.\n\nDie Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.\n\nDownloads und Kopien dieser Seite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet.\n\nSoweit die Inhalte auf dieser Seite nicht vom Betreiber erstellt wurden, werden die Urheberrechte Dritter beachtet.\n\nInsbesondere werden Inhalte Dritter als solche gekennzeichnet.\n\nSollten Sie trotzdem auf eine Urheberrechtsverletzung aufmerksam werden, bitten wir um einen entsprechenden Hinweis.\n\nBei Bekanntwerden von Rechtsverletzungen werden wir derartige Inhalte umgehend entfernen.",
-      "title": "Urheberrechte ©"
-    },
-    "link-liability": {
-      "content": "Unser Angebot enthält Links zu externen Webseiten Dritter, auf deren Inhalte wir keinen Einfluss haben.\n\nDeshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen.\n\nFür die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.\n\nDie verlinkten Seiten wurden zum Zeitpunkt der Verlinkung auf mögliche Rechtsverstöße überprüft.\n\nRechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar.\n\nEine permanente inhaltliche Kontrolle der verlinkten Seiten ist jedoch ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar.\n\nBei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.",
-      "title": "Haftung für Links"
-    },
-    "privacy": {
-      "content": "Die Nutzung unserer Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich.\n\nSoweit auf unseren Seiten personenbezogene Daten (beispielsweise Name, Anschrift oder E-Mail-Adressen) erhoben werden, erfolgt dies, soweit möglich, stets auf freiwilliger Basis.\n\nDiese Daten werden ohne Ihre ausdrückliche Zustimmung nicht an Dritte weitergegeben.\n\nWir weisen darauf hin, dass die Datenübertragung im Internet (z.B. bei der Kommunikation per E-Mail) Sicherheitslücken aufweisen kann.\n\nEin lückenloser Schutz der Daten vor dem Zugriff durch Dritte ist nicht möglich.\n\nDer Nutzung von im Rahmen der Impressumspflicht veröffentlichten Kontaktdaten durch Dritte zur Übersendung von nicht ausdrücklich angeforderter Werbung und Informationsmaterialien wird hiermit ausdrücklich widersprochen.\n\nDie Seitenbetreiber behalten sich ausdrücklich rechtliche Schritte im Falle der unverlangten Zusendung von Werbung, etwa durch Spam-E-Mails, vor.",
-      "title": "Privatsphäre"
-    }
-  },
-  "common": {
-    "map": "Karte",
-    "from": "von",
-    "to": "bis",
-    "information": "Information",
-    "overview": "Übersicht",
-    "population": "Einwohner",
-    "area": "Fläche",
-    "currency": "Währungen",
-    "capital": "Hauptstadt",
-    "posts": "Beiträge"
-  },
-  "components": {
-    "map": {
-      "activate-button": {
-        "label": "Karte {pre}aktivieren"
-      }
-    },
-    "countdown": {
-      "days": "Tage",
-      "hours": "Stunden",
-      "minutes": "Minuten",
-      "seconds": "Sekunden"
-    },
-    "gallery": {
-      "searchbar": {
-        "placeholder": "Suchen..."
-      },
-      "no_results": "Keine Bilder mit dem Stichwort gefunden.",
-      "lightbox": {
-        "post-button": "Zum Post"
-      }
-    },
-    "posts": {
-      "select-countries": "Länder",
-      "country-filter-not-categorized": "Nicht zugeordnet"
-    }
-  },
-  "countries": {
-    "posts": "Beiträge"
-  }
+	"nav": {
+		"gallery": "Galerie",
+		"legals": "Impressum",
+		"map": "Karte",
+		"about": "Über uns",
+		"travel": "Unsere Reise",
+		"countries": "Länder"
+	},
+	"travel": {
+		"header": {
+			"prev-button": {
+				"label": "vorheriger Eintrag"
+			},
+			"next-button": {
+				"label": "nächster Eintrag"
+			}
+		},
+		"gallery-title": "Bildergalerie",
+		"no-entries": "Keine Einträge gefunden.",
+		"description": "Information"
+	},
+	"legals": {
+		"title": "Haftungsausschluss",
+		"content-liability": {
+			"content": "Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt.\n\nFür die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.\n\nAls Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten verantwortlich.\n\nNach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.\n\nVerpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben hiervon unberührt.\n\nEine diesbezügliche Haftung ist jedoch erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich.\n\nBei Bekanntwerden von Rechtsverletzungen werden wir diese Inhalte umgehend entfernen.",
+			"title": "Haftung für Inhalte"
+		},
+		"copyright": {
+			"content": "Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht.\n\nDie Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.\n\nDownloads und Kopien dieser Seite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet.\n\nSoweit die Inhalte auf dieser Seite nicht vom Betreiber erstellt wurden, werden die Urheberrechte Dritter beachtet.\n\nInsbesondere werden Inhalte Dritter als solche gekennzeichnet.\n\nSollten Sie trotzdem auf eine Urheberrechtsverletzung aufmerksam werden, bitten wir um einen entsprechenden Hinweis.\n\nBei Bekanntwerden von Rechtsverletzungen werden wir derartige Inhalte umgehend entfernen.",
+			"title": "Urheberrechte ©"
+		},
+		"link-liability": {
+			"content": "Unser Angebot enthält Links zu externen Webseiten Dritter, auf deren Inhalte wir keinen Einfluss haben.\n\nDeshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen.\n\nFür die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.\n\nDie verlinkten Seiten wurden zum Zeitpunkt der Verlinkung auf mögliche Rechtsverstöße überprüft.\n\nRechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar.\n\nEine permanente inhaltliche Kontrolle der verlinkten Seiten ist jedoch ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar.\n\nBei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.",
+			"title": "Haftung für Links"
+		},
+		"privacy": {
+			"content": "Die Nutzung unserer Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich.\n\nSoweit auf unseren Seiten personenbezogene Daten (beispielsweise Name, Anschrift oder E-Mail-Adressen) erhoben werden, erfolgt dies, soweit möglich, stets auf freiwilliger Basis.\n\nDiese Daten werden ohne Ihre ausdrückliche Zustimmung nicht an Dritte weitergegeben.\n\nWir weisen darauf hin, dass die Datenübertragung im Internet (z.B. bei der Kommunikation per E-Mail) Sicherheitslücken aufweisen kann.\n\nEin lückenloser Schutz der Daten vor dem Zugriff durch Dritte ist nicht möglich.\n\nDer Nutzung von im Rahmen der Impressumspflicht veröffentlichten Kontaktdaten durch Dritte zur Übersendung von nicht ausdrücklich angeforderter Werbung und Informationsmaterialien wird hiermit ausdrücklich widersprochen.\n\nDie Seitenbetreiber behalten sich ausdrücklich rechtliche Schritte im Falle der unverlangten Zusendung von Werbung, etwa durch Spam-E-Mails, vor.",
+			"title": "Privatsphäre"
+		}
+	},
+	"common": {
+		"map": "Karte",
+		"from": "von",
+		"to": "bis",
+		"information": "Information",
+		"overview": "Übersicht",
+		"population": "Einwohner",
+		"area": "Fläche",
+		"currency": "Währungen",
+		"capital": "Hauptstadt",
+		"posts": "Beiträge"
+	},
+	"components": {
+		"map": {
+			"activate-button": {
+				"label": "Karte {pre}aktivieren"
+			}
+		},
+		"countdown": {
+			"days": "Tage",
+			"hours": "Stunden",
+			"minutes": "Minuten",
+			"seconds": "Sekunden"
+		},
+		"gallery": {
+			"searchbar": {
+				"placeholder": "Suchen..."
+			},
+			"no_results": "Keine Bilder mit dem Stichwort gefunden.",
+			"lightbox": {
+				"post-button": "Zum Post"
+			}
+		},
+		"posts": {
+			"select-countries": "Länder",
+			"country-filter-not-categorized": "Nicht zugeordnet",
+			"no-posts": "Keine Einträge gefunden."
+		}
+	},
+	"countries": {
+		"posts": "Beiträge",
+		"no-entries": "Keine Länder gefunden."
+	}
 }

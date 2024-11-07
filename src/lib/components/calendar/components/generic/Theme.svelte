@@ -21,8 +21,7 @@
 
 	const getTheme = (defaults, overrides = {}, base = '') =>
 		Object.entries(defaults).reduce((acc, [k, v]) => {
-			if (typeof v === 'object')
-				return { ...acc, ...getTheme(v, overrides[k], [base, k].filter(Boolean).join('-')) };
+			if (typeof v === 'object') return { ...acc, ...getTheme(v, overrides[k], [base, k].filter(Boolean).join('-')) };
 			return { ...acc, [[base, k].filter(Boolean).join('-')]: overrides[k] || v };
 		}, {});
 

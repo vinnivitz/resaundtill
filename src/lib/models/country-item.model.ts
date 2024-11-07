@@ -1,8 +1,21 @@
-import type { CountryEntryTranslation } from './directus.model';
+import exp from 'constants';
+import type { BlogPostEntry } from './directus.model';
+import type { MapItem } from './posts.model';
+
+export type CountryItemDetails = {
+	code: string;
+	name: string;
+	description?: string;
+	population: number;
+	area: number;
+	capital: string;
+	currency: string;
+	posts: BlogPostEntry[];
+	mapItems: MapItem[];
+};
 
 export type CountryItem = {
-	id: string;
 	code: string;
-	imageUrl: string;
-	translations: CountryEntryTranslation[];
+	name: string;
+	thumbnailUrl: string;
 };

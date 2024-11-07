@@ -1,4 +1,5 @@
 export type CountryData = {
+	name: { common: string; official: string };
 	area: number;
 	borders: string[];
 	capital: [string];

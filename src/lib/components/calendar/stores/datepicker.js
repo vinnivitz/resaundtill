@@ -44,14 +44,12 @@ const get = ({ selected, start, end, startOfWeekIndex = 0, shouldEnlargeDay = fa
 		},
 		getSelectableVector(date) {
 			const { start, end } = this.getState();
-			// console.log(`date: ${date} start: ${start} end: ${end}`);
 			if (date < start) return -1;
 			if (date > end) return 1;
 			return 0;
 		},
 		isSelectable(date, clamping = []) {
 			const vector = this.getSelectableVector(date);
-			// console.log(`vector: ${vector} on date: ${date}`);
 			if (vector === 0) return true;
 			if (!clamping.length) return false;
 			const clamped = this.clampValue(dayjs(date), clamping).toDate();
