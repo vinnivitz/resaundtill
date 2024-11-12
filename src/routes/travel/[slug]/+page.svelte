@@ -11,66 +11,83 @@
 	// @ts-expect-error - no types available
 	import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
 	import Map from '$lib/components/Map.svelte';
-	import { formatDate, getTranslation } from '$lib/utils';
+	import { formatDate, getHostUrl, getTranslation, imageUrlBuilder } from '$lib/utils';
 	import { goto } from '$app/navigation';
 	import {
+		DirectusImageTransformation,
 		PagePath,
+		type BlogPostItem,
+		type BlogPostItemDetails,
 		type BlogPostTranslation,
 		type CountryEntryTranslation,
-		type DirectusImage,
+		type DirectusImageDetails,
 		type MapItem
 	} from '$lib/models';
 	import { Tabs, TabItem } from 'flowbite-svelte';
+	import { dataStore } from '$lib/stores';
+	import dayjs from 'dayjs';
 
 	export let data: PageData;
 
-	const postItem = data.posts.find((post) => post.id === data.postID)!;
-	const countryName = getTranslation<CountryEntryTranslation>(
-		Array.from(data.countries.values()).find((country) => country.code === postItem.countryCode)!.translations,
-		$locale
-	)?.name;
-	const currentIndex = data.posts.findIndex((post) => post.id === postItem.id);
-	const isPrevPost = currentIndex > 0;
-	const isNextPost = currentIndex < data.posts.length - 1;
+	let currentIndex: number;
+	let postItem: BlogPostItemDetails;
+	let countryName: string | undefined;
+	let countryCode: string;
+	let isPrevPost = false;
+	let isNextPost = false;
+	let mapItems: MapItem[];
+
+	$: if ($dataStore?.posts && $dataStore) {
+		const posts = $dataStore.posts;
+		const post = posts.find((post) => post.id === data.postID);
+		if (!post) {
+			goto(PagePath.travel);
+		} else {
+			postItem = {
+				id: post.id,
+				date: new Date(post.date),
+				translations: post.translations,
+				formattedDate: dayjs().format('DD. MMMM')
+			};
+
+			currentIndex = posts.findIndex((post) => post.id === postItem.id);
+			isPrevPost = currentIndex > 0;
+			isNextPost = currentIndex < $dataStore.posts.length - 1;
+
+			if ($dataStore.postToCountry) {
+				const countryCode = $dataStore.postToCountry.get(postItem.id);
+				if (countryCode) {
+					countryName = getTranslation<CountryEntryTranslation>(
+						$dataStore.countries.find((country) => country.code === countryCode)?.translations ?? [],
+						$locale
+					)?.name;
+
+					if ($dataStore.mapItems && $dataStore.countryToPosts) {
+						mapItems = $dataStore.mapItems.filter((item) =>
+							$dataStore.countryToPosts.get(countryCode)?.includes(item.id)
+						);
+					}
+				}
+			}
+		}
+	}
 
 	$: translatedTitle = getTranslation<BlogPostTranslation>(postItem.translations, $locale)?.title;
 
 	$: translatedDescription = getTranslation<BlogPostTranslation>(postItem.translations, $locale)?.description;
 
-	const images: DirectusImage[] =
-		postItem.images
-			?.sort(
-				(a, b) =>
-					new Date(a.directus_files_id.uploaded_on).getTime() - new Date(b.directus_files_id.uploaded_on).getTime()
-			)
-			.map(({ directus_files_id: { id, title, description, width, height, uploaded_on } }) => ({
-				id,
-				title,
-				description,
-				width,
-				height,
-				uploaded_on
-			})) || [];
-
-	const mapItems: MapItem[] | null = postItem.location?.coordinates
-		? [
-				{
-					coords: [...postItem.location.coordinates],
-					isFlight: postItem.isFlight
-				}
-			]
-		: null;
+	const images: DirectusImageDetails[] = [];
 
 	function getPrevPost(): void {
-		if (isPrevPost) {
-			const post = data.posts[currentIndex - 1];
+		if (isPrevPost && $dataStore.posts) {
+			const post = $dataStore.posts[currentIndex - 1];
 			goto(`${PagePath.travel}/${post.id}`);
 		}
 	}
 
 	function getNextPost(): void {
-		if (isNextPost) {
-			const post = data.posts[currentIndex + 1];
+		if (isNextPost && $dataStore.posts) {
+			const post = $dataStore.posts[currentIndex + 1];
 			goto(`${PagePath.travel}/${post.id}`);
 		}
 	}
@@ -116,9 +133,9 @@
 					{formatDate(new Date(postItem.date), $locale)}
 				</div>
 			</div>
-			{#if postItem.countryCode}
+			{#if countryCode}
 				<div class="flex items-center gap-2 text-xl">
-					<div class={`fi fi-${postItem.countryCode}`}></div>
+					<div class={`fi fi-${countryCode}`}></div>
 					<div>{countryName}</div>
 				</div>
 			{/if}
@@ -135,12 +152,12 @@
 				{/if}
 				{#if images.length > 0}
 					<TabItem title={$t('travel.gallery-title')} defaultClass="text-lg">
-						<Gallery {images} posts={data.posts} />
+						<!-- <Gallery {images} posts={data.posts} /> -->
 					</TabItem>
 				{/if}
 				{#if mapItems}
 					<TabItem title={$t('common.map')} defaultClass="text-lg p-0">
-						<Map countryCode={postItem.countryCode} items={mapItems} deactivated={true} />
+						<Map {countryCode} items={mapItems} deactivated={true} />
 					</TabItem>
 				{/if}
 			</Tabs>
@@ -156,13 +173,13 @@
 			{#if images.length > 0}
 				<Hr />
 				<div class="m-2">
-					<Gallery {images} posts={data.posts} />
+					<Gallery {images} posts={$dataStore?.posts} />
 				</div>
 			{/if}
 
 			{#if mapItems}
 				<Hr />
-				<Map countryCode={postItem.countryCode} items={mapItems} deactivated={true} />
+				<Map {countryCode} items={mapItems} deactivated={true} />
 			{/if}
 		</div>
 	</div>

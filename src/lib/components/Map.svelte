@@ -1,56 +1,110 @@
 <script lang="ts">
-	import { type MapItem } from '$lib/models';
+	import { type GeoPoint, type MapItem } from '$lib/models';
 	import { countryStore } from '$lib/stores';
+	import { dataStore } from '$lib/stores/data.store';
 	import { Button, Spinner } from 'flowbite-svelte';
-	import type { Map, LeafletMouseEvent, GeoJSON } from 'leaflet';
+	import type { Map, LeafletMouseEvent, GeoJSON, Icon, IconOptions } from 'leaflet';
 	import 'leaflet/dist/leaflet.css';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 
 	export let items: MapItem[] = [];
-	export let zoomOut = 8;
 	export let deactivated = false;
 	export let countryCode: string | undefined = undefined;
 
-	const isActivatable = deactivated;
-
 	const dispatch = createEventDispatcher();
 
+	let L: typeof import('leaflet');
 	let map: Map;
 	let mapElement: HTMLDivElement;
 	let spinnerElement: HTMLElement;
 	let geoJSON: GeoJSON | null;
+	let defaultIcon: Icon<IconOptions>;
+	let resaTillIcon: Icon<IconOptions>;
+	let currentCoordinates: GeoPoint | undefined;
+
+	$: if (items.length > 0) {
+		if (map && defaultIcon && resaTillIcon) {
+			const markers = items.map((item, index) => {
+				return L.marker([item.location.coordinates[1], item.location.coordinates[0]], {
+					icon: index === items.length - 1 ? resaTillIcon : defaultIcon
+				})
+					.on('click', () => dispatch('navigate', item.id))
+					.addTo(map);
+			});
+			if (markers.length > 1) {
+				markers.forEach((marker, index) => {
+					if (index < markers.length - 1) {
+						const nextMarker = markers[index + 1];
+						L.polyline([marker.getLatLng(), nextMarker.getLatLng()], {
+							color: 'blue',
+							dashArray: items[index + 1].isFlight ? '6' : '',
+							opacity: items[index + 1].isFlight ? 0.2 : 0.5
+						}).addTo(map);
+					}
+				});
+			}
+		}
+	}
 
 	onMount(async () => {
 		mapElement.style.opacity = '0';
 		spinnerElement.style.display = 'block';
-		const L = await import('leaflet');
-		if (countryCode) {
-			geoJSON = await getGeoJSON(L, countryCode);
-		}
-		initializeMap(L);
-		if (geoJSON) {
-			geoJSON.addTo(map);
-		}
+		L = await import('leaflet');
+		dataStore.subscribe(async (data) => {
+			if (data?.currentCoordinates !== currentCoordinates) {
+				currentCoordinates = data.currentCoordinates;
+				await initializeMap();
+				mapElement.style.removeProperty('opacity');
+				spinnerElement.style.display = 'none';
+			}
+		});
+		// if (countryCode) {
+		// 	geoJSON = await getGeoJSON(L, countryCode);
+		// }
+		// if (geoJSON) {
+		// 	geoJSON.addTo(map);
+		// }
 	});
 
-	function initializeMap(L: typeof import('leaflet')) {
-		const coords = getValidCoords();
+	async function initializeMap() {
+		// const coords = getValidCoords();
 		map = L.map('map');
-		createMap(L, coords);
-		if (deactivated) {
-			disableMapInteractions();
-		}
-		addMarkersToMap(L, coords);
-		mapElement.style.removeProperty('opacity');
-		spinnerElement.style.display = 'none';
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			maxZoom: 19,
+			attribution: '© OpenStreetMap'
+		}).addTo(map);
+		map.setView(currentCoordinates ? [currentCoordinates[1], currentCoordinates[0]] : [51.053719, 13.737908], 10);
+		defaultIcon = L.icon({
+			iconUrl: '/images/map/marker.png',
+			iconSize: [20, 35],
+			shadowSize: [0, 0],
+			iconAnchor: [10, 35],
+			popupAnchor: [0, 0]
+		});
+
+		resaTillIcon = L.icon({
+			iconUrl: '/images/map/tillresa_marker.png',
+			iconSize: [38, 95],
+			shadowSize: [50, 64],
+			iconAnchor: [22, 94],
+			popupAnchor: [-3, -76],
+			className: 'resa-till-marker'
+		});
+		// createMap(L, coords);
+		// if (deactivated) {
+		// 	disableMapInteractions();
+		// }
+		// addMarkersToMap(L, coords);
+		// mapElement.style.removeProperty('opacity');
+		// spinnerElement.style.display = 'none';
 	}
 
 	function getValidCoords() {
-		if (items.length < 1 || !isValidCoord(items[0].coords)) {
+		if (items.length < 1 || !isValidCoord(items[0].location.coordinates)) {
 			return [[51.053719, 13.737908]]; // Default coordinates
 		}
-		return items.map((item) => item.coords);
+		return items.map((item) => item.location.coordinates);
 	}
 
 	function isValidCoord(coord: number[]) {
@@ -69,7 +123,7 @@
 			attribution: '© OpenStreetMap'
 		}).addTo(map);
 		if (!geoJSON) {
-			map.setZoom(zoomOut);
+			map.setZoom(10);
 		}
 	}
 
@@ -81,10 +135,10 @@
 		map.dragging.disable();
 	}
 
-	async function getGeoJSON(L: typeof import('leaflet'), code: string): Promise<GeoJSON | null> {
-		const country = countryStore.countryDataCache.get(code)?.feature;
+	async function getGeoJSON(code: string): Promise<GeoJSON | null> {
+		const country = await countryStore.getGeoCountry(code);
 		if (country) {
-			return L.geoJSON(country, {
+			return L.geoJSON(country.feature, {
 				style: {
 					fillColor: 'transparent',
 					color: 'black',
@@ -118,7 +172,14 @@
 			return L.marker([coord[1], coord[0]], {
 				icon: index === coords.length - 1 ? iconResaTill : iconDefault
 			})
-				.on('click', (e: LeafletMouseEvent) => dispatch('activeCoords', [e.latlng.lat, e.latlng.lng]))
+				.on('click', (e: LeafletMouseEvent) =>
+					dispatch(
+						'navigate',
+						items.find(
+							(item) => item.location.coordinates[0] === e.latlng.lng && item.location.coordinates[1] === e.latlng.lat
+						)?.id
+					)
+				)
 				.addTo(map);
 		});
 
@@ -151,7 +212,7 @@
 		<Spinner size="24" color="blue" />
 	</div>
 	<div bind:this={mapElement} id="map" class="absolute left-0 right-0 top-0 opacity-95" style="opacity: 0;" />
-	{#if isActivatable}
+	{#if deactivated}
 		<div
 			class={`map-button absolute left-[calc(50%-75px)] top-[calc(100%-100px)] z-50 ${deactivated ? 'opacity-80' : 'opacity-40'}`}
 		>

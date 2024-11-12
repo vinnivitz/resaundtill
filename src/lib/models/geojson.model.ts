@@ -28,16 +28,6 @@ export type GeoBoundingBox = {
 	max_lat: number;
 };
 
-export type GeoGeometry =
-	| {
-			coordinates: GeoPoint[][][];
-			type: GeoGeometryType.MultiPolygon;
-	  }
-	| {
-			coordinates: GeoPoint[][];
-			type: GeoGeometryType.Polygon;
-	  };
-
 export enum GeoFeatureType {
 	FeatureCollection = 'FeatureCollection',
 	Feature = 'Feature'

@@ -3,20 +3,19 @@
 	import { LayoutTheme, Locale } from '$lib/models';
 	import { getLocale } from '$lib/utils';
 	import { onMount } from 'svelte';
-	import { isLoading, locale } from 'svelte-i18n';
+
+	import { locale } from 'svelte-i18n';
 	import '../app.pcss';
-	import { Spinner } from 'flowbite-svelte';
-	import { navigating } from '$app/stores';
-	import { browser } from '$app/environment';
 	import Navbar from '$lib/components/Navbar.svelte';
-	import Footer from '$lib/components/Footer.svelte';
 	import '/node_modules/flag-icons/css/flag-icons.min.css';
+	import { dataStore } from '$lib/stores/data.store';
 
 	let toggleTheme: () => void;
 	let toggleLocale: () => void;
 	let isDark: boolean;
 
 	onMount(() => {
+		dataStore.init();
 		isDark =
 			localStorage.getItem('color-theme') === LayoutTheme.DARK ||
 			(!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -38,19 +37,20 @@
 	<title>Resa und Till</title>
 </svelte:head>
 
-{#if $isLoading || (browser && $navigating)}
+<header class="fixed left-0 right-0 top-0 z-40">
+	<Navbar {isDark} on:locale={toggleLocale} on:theme={toggleTheme} />
+</header>
+
+<main class="relative z-0 h-screen overflow-scroll bg-gradient-to-b from-gray-200 to-20% pb-5 dark:from-gray-800">
+	<slot />
+</main>
+
+<!-- {#if $isLoading || (browser && $navigating)}
 	<div class="flex h-screen items-center justify-center">
 		<Spinner size="24" color="blue" />
 	</div>
 {:else}
-	<header class="fixed left-0 right-0 top-0 z-40">
-		<Navbar {isDark} on:locale={toggleLocale} on:theme={toggleTheme} />
-	</header>
-
-	<main class="relative z-0 h-screen overflow-scroll bg-gradient-to-b from-gray-200 to-20% pb-5 dark:from-gray-800">
-		<slot />
-	</main>
-{/if}
+{/if} -->
 
 <style lang="postcss">
 	main {

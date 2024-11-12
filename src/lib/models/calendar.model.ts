@@ -39,3 +39,14 @@ export type CalendarStore = {
 		outsider: boolean;
 	}[];
 };
+
+export type CalendarModel = {
+	fromCalendar?: CalendarStore;
+	toCalendar?: CalendarStore;
+	from?: Date;
+	to?: Date;
+	start?: Date;
+	end?: Date;
+	fromEnd?: Date;
+	toStart?: Date;
+};

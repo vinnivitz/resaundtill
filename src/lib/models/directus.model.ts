@@ -1,4 +1,4 @@
-import type { GeoFeatureType, GeoGeometryType, GeoPoint } from './geojson.model';
+import type { GeoGeometryType, GeoPoint } from './geojson.model';
 
 export type Translations = {
 	languages_code: string;
@@ -30,8 +30,8 @@ export type BlogPostEntry = {
 	date: string;
 	isFlight: boolean;
 	translations: BlogPostTranslation[];
-	location?: DirectusLocation;
-	images?: BlogPostImage[];
+	location?: { type: GeoGeometryType.Point; coordinates: GeoPoint };
+	images?: DirectusImage[];
 	countryCode?: string;
 };
 
@@ -63,7 +63,7 @@ export type SupportTranslation = Translations & {
 	content: string;
 };
 
-export type DirectusImage = {
+export type DirectusImageDetails = {
 	id: string;
 	uploaded_on: string;
 	height: number;
@@ -72,10 +72,10 @@ export type DirectusImage = {
 	description?: string;
 };
 
-export type BlogPostImage = {
+export type DirectusImage = {
 	id: string;
-	directus_files_id: DirectusImage;
-	resaundtill_id: BlogPostEntry;
+	directus_files_id: string;
+	resaundtill_posts_id: string;
 };
 
 export enum BlogPostStatus {

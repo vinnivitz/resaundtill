@@ -1,4 +1,7 @@
+import type { GeoGeometryType, GeoPoint } from './geojson.model';
+
 export type MapItem = {
-	coords: number[];
+	location: { type: GeoGeometryType.Point; coordinates: GeoPoint };
 	isFlight: boolean;
+	id: string;
 };

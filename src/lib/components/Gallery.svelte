@@ -6,7 +6,7 @@
 		DirectusImageTransformation,
 		PagePath,
 		type BlogPostEntry,
-		type DirectusImage,
+		type DirectusImageDetails,
 		type GalleryImageItem,
 		type LightboxController
 	} from '$lib/models';
@@ -20,7 +20,7 @@
 	import { goto } from '$app/navigation';
 	import Masonry from 'svelte-bricks';
 
-	export let images: DirectusImage[] = [];
+	export let images: DirectusImageDetails[] = [];
 	export let caching = true;
 	export let searchable = false;
 	export let showPostLink = false;

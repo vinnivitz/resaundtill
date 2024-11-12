@@ -1,12 +1,21 @@
-import type { BlogPostTranslation } from './directus.model';
+import type { BlogPostTranslation, CountryEntryTranslation } from './directus.model';
+import type { GeoPoint } from './geojson.model';
 
 export type BlogPostItem = {
 	id: string;
 	translations: BlogPostTranslation[];
-	imageUrl: string;
 	date: Date;
-	formattedDate: { day: number; month: string };
-	countryCode: string;
+	formattedDate: string;
+	coordinates?: GeoPoint;
+	thumbnailUrl: string;
+};
+
+export type BlogPostItemDetails = {
+	id: string;
+	translations: BlogPostTranslation[];
+	date: Date;
+	formattedDate: string;
+	images: string[];
 };
 
 export type BlogPostCountrySearchItem = {
