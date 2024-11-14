@@ -44,9 +44,6 @@ importers:
       svelte-bricks:
         specifier: ^0.2.1
         version: 0.2.1
-      svelte-calendar:
-        specifier: ^3.1.6
-        version: 3.1.6
       svelte-i18n:
         specifier: ^4.0.1
         version: 4.0.1(svelte@5.1.15)
@@ -2015,9 +2012,6 @@ packages:
     resolution: {integrity: sha512-x2wSZHEBK20CY+Wy+BPE7MrFQHW6sIsdaGUMEqmGAio+3gFzQaBYPwLRonUfQf9Ak8pBieqj9tUofX1+WtAEIg==}
     engines: {node: '>= 12'}
 
-  just-throttle@2.3.1:
-    resolution: {integrity: sha512-0H4miIAWZYpnpg7oD/Y/PBb77ISSHAETif5xK9EnwIgYCO6oC8ErkJxDumMUTR44shSOwptRIArRuvNuvN/hOw==}
-
   just-throttle@4.2.0:
     resolution: {integrity: sha512-/iAZv1953JcExpvsywaPKjSzfTiCLqeguUTE6+VmK15mOcwxBx7/FHrVvS4WEErMR03TRazH8kcBSHqMagYIYg==}
 
@@ -2580,9 +2574,6 @@ packages:
 
   svelte-bricks@0.2.1:
     resolution: {integrity: sha512-cc3XK3j5ViPyZ3K183+Sr53B2e8mJaiV3POyoJtjmm1dYc/TBMy7jOUMt8MW/snJzodpACfqwFzokBQbrZ297w==}
-
-  svelte-calendar@3.1.6:
-    resolution: {integrity: sha512-jOHiPlxBAa1LGVFQZoczdAGnCSI2RKcuQQHj32TjLbXO/P2Povx4JphPEcP7XjKj/s/jimBC6xQyFhyjD0vxbg==}
 
   svelte-check@4.0.7:
     resolution: {integrity: sha512-24hwo+D5L35HOXsh3Z2sU4WhdDLavlHquYaJhrEqAt+mV1xOVzoMVYThW80n99osDJxyuH+vxjNFkNRL4EvwTg==}
@@ -5588,8 +5579,6 @@ snapshots:
 
   jsts@2.7.1: {}
 
-  just-throttle@2.3.1: {}
-
   just-throttle@4.2.0: {}
 
   keyv@4.5.4:
@@ -6078,11 +6067,6 @@ snapshots:
   svelte-bricks@0.2.1:
     dependencies:
       svelte: 4.2.19
-
-  svelte-calendar@3.1.6:
-    dependencies:
-      dayjs: 1.11.13
-      just-throttle: 2.3.1
 
   svelte-check@4.0.7(picomatch@4.0.2)(svelte@5.1.15)(typescript@5.6.3):
     dependencies:
