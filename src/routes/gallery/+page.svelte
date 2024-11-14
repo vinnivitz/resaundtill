@@ -1,9 +1,12 @@
-<script lang="ts">
-	import Gallery from '$lib/components/Gallery.svelte';
-	import { fly } from 'svelte/transition';
-	import type { PageData } from './$types';
-	import { browser } from '$app/environment';
+<!-- <script lang="ts">
 	import { Spinner } from 'flowbite-svelte';
+	import { fly } from 'svelte/transition';
+
+	import Gallery from '$lib/components/Gallery.svelte';
+
+	import { browser } from '$app/environment';
+
+	import type { PageData } from './$types';
 
 	export let data: PageData;
 
@@ -28,4 +31,4 @@
 		randomizePercentage={galleryShufflePercentage}
 		on:loading={(event) => (isLoading = event.detail)}
 	/>
-</section>
+</section> -->

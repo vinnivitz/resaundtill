@@ -1,15 +1,16 @@
 <script>
 	// @ts-nocheck
 	import dayjs from 'dayjs';
-	import datepickerStore from '../stores/datepicker';
-	import { keyControlsContextKey, storeContextKey } from '../context';
 	import { setContext } from 'svelte';
-	import { derived } from 'svelte/store';
-	import Popover from '../components/Popover.svelte';
-	import Theme from '../components/generic/Theme.svelte';
+
 	import Calendar from '../components/calendar/Calendar.svelte';
-	import { fade } from 'svelte/transition';
+	import Theme from '../components/generic/Theme.svelte';
+	import Popover from '../components/Popover.svelte';
 	import { calendar as calendarDefaults } from '../config/defaults';
+	import { keyControlsContextKey, storeContextKey } from '../context';
+	import datepickerStore from '../stores/datepicker';
+	import { derived } from 'svelte/store';
+	import { fade } from 'svelte/transition';
 
 	export let selected = calendarDefaults.selected;
 	export let start = calendarDefaults.start;
@@ -50,7 +51,7 @@
 	<Popover {style} let:key let:send let:receive bind:isOpen={$store.open}>
 		<slot {key} {send} {receive} {formatted}>
 			<div class="button-container">
-				<button in:receive|local={{ key }} out:send|local={{ key }} />
+				<button in:receive|local={{ key }} out:send|local={{ key }} aria-label="Open calendar"></button>
 				<div class="flex pt-2">
 					<span transition:fade|local={{ delay: 150 }} class="button-text">{formatted}</span>
 				</div>

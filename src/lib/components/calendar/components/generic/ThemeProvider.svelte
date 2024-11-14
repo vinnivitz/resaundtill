@@ -1,7 +1,7 @@
 <script>
-	import { themeContextKey } from '../../context';
-
 	import { getContext } from 'svelte';
+
+	import { themeContextKey } from '../../context';
 
 	export let key = null;
 

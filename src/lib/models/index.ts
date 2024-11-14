@@ -12,3 +12,4 @@ export * from './country-item.model';
 export * from './calendar.model';
 export * from './country-data.model';
 export * from './blogpost-sort.model';
+export * from './data-store.model';

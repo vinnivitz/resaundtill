@@ -1,19 +1,14 @@
-export type GeoFeatureCollection = {
-	type: GeoFeatureType.FeatureCollection;
-	features: GeoFeature[];
+import type { Feature, FeatureCollection, GeoJsonProperties, MultiPolygon, Polygon } from 'geojson';
+
+export type CustomFeatureCollection = FeatureCollection<Polygon | MultiPolygon, CustomGeoJsonProperties> & {
+	type: FeatureCollection;
+	features: Feature<Polygon | MultiPolygon, CustomGeoJsonProperties>[];
 };
 
-export type GeoFeature = {
-	type: GeoFeatureType.Feature;
-	properties: {
-		ADMIN: string;
-		ISO_A3: string;
-		ISO_A2: string;
-	};
-	geometry: {
-		coordinates: GeoPoint[][][];
-		type: GeoGeometryType;
-	};
+export type CustomGeoJsonProperties = GeoJsonProperties & {
+	ADMIN: string;
+	ISO_A3: string;
+	ISO_A2: string;
 };
 
 export type BoundingBoxEntry = {
@@ -28,20 +23,7 @@ export type GeoBoundingBox = {
 	max_lat: number;
 };
 
-export enum GeoFeatureType {
-	FeatureCollection = 'FeatureCollection',
-	Feature = 'Feature'
-}
-
-export type GeoPoint = [number, number];
-
-export enum GeoGeometryType {
-	MultiPolygon = 'MultiPolygon',
-	Polygon = 'Polygon',
-	Point = 'Point'
-}
-
 export type GeoCountry = {
 	code: string;
-	feature: GeoFeature;
+	feature: Feature<Polygon | MultiPolygon, CustomGeoJsonProperties>;
 };

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
 	import { fly } from 'svelte/transition';
+	import { _ } from 'svelte-i18n';
 </script>
 
 <section in:fly={{ y: 50, duration: 1000 }} class="p-5 font-normal md:p-10">

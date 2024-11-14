@@ -1,98 +1,99 @@
 <script lang="ts">
-	import { Heading, Secondary, Hr } from 'flowbite-svelte';
-	import type { PageData } from './$types';
-	// @ts-expect-error - no types available
-	import FaCalendar from 'svelte-icons/fa/FaCalendar.svelte';
-	import { fly } from 'svelte/transition';
-	import { t, locale } from 'svelte-i18n';
-	import Gallery from '$lib/components/Gallery.svelte';
-	// @ts-expect-error - no types available
-	import FaArrowLeft from 'svelte-icons/fa/FaArrowLeft.svelte';
-	// @ts-expect-error - no types available
-	import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
-	import Map from '$lib/components/Map.svelte';
-	import { formatDate, getHostUrl, getTranslation, imageUrlBuilder } from '$lib/utils';
-	import { goto } from '$app/navigation';
-	import {
-		DirectusImageTransformation,
-		PagePath,
-		type BlogPostItem,
-		type BlogPostItemDetails,
-		type BlogPostTranslation,
-		type CountryEntryTranslation,
-		type DirectusImageDetails,
-		type MapItem
-	} from '$lib/models';
-	import { Tabs, TabItem } from 'flowbite-svelte';
-	import { dataStore } from '$lib/stores';
-	import dayjs from 'dayjs';
+	// import dayjs from 'dayjs';
+	// import { Heading, Secondary, Hr, Tabs, TabItem } from 'flowbite-svelte';
+	// import { fly } from 'svelte/transition';
+	// import { t, locale } from 'svelte-i18n';
+	// // @ts-expect-error - no types available
+	// import FaArrowLeft from 'svelte-icons/fa/FaArrowLeft.svelte';
+	// // @ts-expect-error - no types available
+	// import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
+	// // @ts-expect-error - no types available
+	// import FaCalendar from 'svelte-icons/fa/FaCalendar.svelte';
 
-	export let data: PageData;
+	// import Gallery from '$lib/components/Gallery.svelte';
+	// import Map from '$lib/components/Map.svelte';
+	// import {
+	// 	PagePath,
+	// 	type BlogPostItemDetails,
+	// 	type BlogPostTranslation,
+	// 	type CountryEntryTranslation,
+	// 	type DirectusImageDetails,
+	// 	type MapItem
+	// } from '$lib/models';
+	// import { dataStore } from '$lib/stores';
+	// import { formatDate, getTranslation } from '$lib/utils';
 
-	let currentIndex: number;
-	let postItem: BlogPostItemDetails;
-	let countryName: string | undefined;
-	let countryCode: string;
-	let isPrevPost = false;
-	let isNextPost = false;
-	let mapItems: MapItem[];
+	// import { goto } from '$app/navigation';
 
-	$: if ($dataStore?.posts && $dataStore) {
-		const posts = $dataStore.posts;
-		const post = posts.find((post) => post.id === data.postID);
-		if (!post) {
-			goto(PagePath.travel);
-		} else {
-			postItem = {
-				id: post.id,
-				date: new Date(post.date),
-				translations: post.translations,
-				formattedDate: dayjs().format('DD. MMMM')
-			};
+	// import type { PageData } from './$types';
 
-			currentIndex = posts.findIndex((post) => post.id === postItem.id);
-			isPrevPost = currentIndex > 0;
-			isNextPost = currentIndex < $dataStore.posts.length - 1;
+	// let data: PageData;
 
-			if ($dataStore.postToCountry) {
-				const countryCode = $dataStore.postToCountry.get(postItem.id);
-				if (countryCode) {
-					countryName = getTranslation<CountryEntryTranslation>(
-						$dataStore.countries.find((country) => country.code === countryCode)?.translations ?? [],
-						$locale
-					)?.name;
+	// let currentIndex: number;
+	// let postItem: BlogPostItemDetails;
+	// let countryName: string | undefined;
+	// let countryCode: string;
+	// let isPrevPost = false;
+	// let isNextPost = false;
+	// let mapItems: MapItem[];
 
-					if ($dataStore.mapItems && $dataStore.countryToPosts) {
-						mapItems = $dataStore.mapItems.filter((item) =>
-							$dataStore.countryToPosts.get(countryCode)?.includes(item.id)
-						);
-					}
-				}
-			}
-		}
-	}
+	// $: if ($dataStore?.posts && $dataStore) {
+	// 	const posts = $dataStore.posts;
+	// 	const post = posts.find((post) => post.id === data.postID);
+	// 	if (!post) {
+	// 		goto(PagePath.travel);
+	// 	} else {
+	// 		postItem = {
+	// 			id: post.id,
+	// 			date: new Date(post.date),
+	// 			translations: post.translations,
+	// 			formattedDate: { day: dayjs(post.date).format('DD'), month: dayjs(post.date).format('MMMM') },
+	// 			images: []
+	// 		};
 
-	$: translatedTitle = getTranslation<BlogPostTranslation>(postItem.translations, $locale)?.title;
+	// 		currentIndex = posts.findIndex((post) => post.id === postItem.id);
+	// 		isPrevPost = currentIndex > 0;
+	// 		isNextPost = currentIndex < $dataStore.posts.length - 1;
 
-	$: translatedDescription = getTranslation<BlogPostTranslation>(postItem.translations, $locale)?.description;
+	// 		if ($dataStore.postToCountry) {
+	// 			const countryCode = $dataStore.postToCountry.get(postItem.id);
+	// 			if (countryCode) {
+	// 				countryName = getTranslation<CountryEntryTranslation>(
+	// 					$dataStore.countries.find((country) => country.code === countryCode)?.translations ?? [],
+	// 					$locale
+	// 				)?.name;
 
-	const images: DirectusImageDetails[] = [];
+	// 				if ($dataStore.mapItems && $dataStore.countryToPosts) {
+	// 					mapItems = $dataStore.mapItems.filter((item) =>
+	// 						$dataStore.countryToPosts.get(countryCode)?.includes(item.id)
+	// 					);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-	function getPrevPost(): void {
-		if (isPrevPost && $dataStore.posts) {
-			const post = $dataStore.posts[currentIndex - 1];
-			goto(`${PagePath.travel}/${post.id}`);
-		}
-	}
+	// $: translatedTitle = getTranslation<BlogPostTranslation>(postItem.translations, $locale)?.title;
 
-	function getNextPost(): void {
-		if (isNextPost && $dataStore.posts) {
-			const post = $dataStore.posts[currentIndex + 1];
-			goto(`${PagePath.travel}/${post.id}`);
-		}
-	}
+	// $: translatedDescription = getTranslation<BlogPostTranslation>(postItem.translations, $locale)?.description;
+
+	// const images: DirectusImageDetails[] = [];
+
+	// function getPrevPost(): void {
+	// 	if (isPrevPost && $dataStore.posts) {
+	// 		const post = $dataStore.posts[currentIndex - 1];
+	// 		goto(`${PagePath.travel}/${post.id}`);
+	// 	}
+	// }
+
+	// function getNextPost(): void {
+	// 	if (isNextPost && $dataStore.posts) {
+	// 		const post = $dataStore.posts[currentIndex + 1];
+	// 		goto(`${PagePath.travel}/${post.id}`);
+	// 	}
+	// }
 </script>
-
+<!-- 
 <section class="p-3 md:px-12 md:py-4">
 	<div class="mb-3 mt-2 flex md:mt-0">
 		{#if isPrevPost}
@@ -106,7 +107,7 @@
 		{:else}
 			<div class="invisible flex rounded-full px-4 pt-2"></div>
 		{/if}
-		<div class="grow" />
+		<div class="grow"></div>
 		{#if isNextPost}
 			<button
 				on:click={getNextPost}
@@ -152,12 +153,12 @@
 				{/if}
 				{#if images.length > 0}
 					<TabItem title={$t('travel.gallery-title')} defaultClass="text-lg">
-						<!-- <Gallery {images} posts={data.posts} /> -->
+						<Gallery {images} posts={data.posts} />
 					</TabItem>
 				{/if}
 				{#if mapItems}
 					<TabItem title={$t('common.map')} defaultClass="text-lg p-0">
-						<Map {countryCode} items={mapItems} deactivated={true} />
+						<Map items={mapItems} deactivated={true} />
 					</TabItem>
 				{/if}
 			</Tabs>
@@ -179,8 +180,8 @@
 
 			{#if mapItems}
 				<Hr />
-				<Map {countryCode} items={mapItems} deactivated={true} />
+				<Map items={mapItems} deactivated={true} />
 			{/if}
 		</div>
 	</div>
-</section>
+</section> -->

@@ -1,4 +1,4 @@
-import type { GeoGeometryType, GeoPoint } from './geojson.model';
+import type { Point } from 'geojson';
 
 export type Translations = {
 	languages_code: string;
@@ -7,11 +7,6 @@ export type Translations = {
 export type Departure = {
 	id: string;
 	date: string;
-};
-
-export type DirectusLocation = {
-	coordinates: GeoPoint;
-	type: GeoGeometryType.Point;
 };
 
 export type GalleryShufflePercentage = {
@@ -30,7 +25,7 @@ export type BlogPostEntry = {
 	date: string;
 	isFlight: boolean;
 	translations: BlogPostTranslation[];
-	location?: { type: GeoGeometryType.Point; coordinates: GeoPoint };
+	location?: Point;
 	images?: DirectusImage[];
 	countryCode?: string;
 };

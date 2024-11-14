@@ -1,9 +1,7 @@
 <script>
 	//@ts-nocheck
 	import { tick } from 'svelte';
-
 	import { quintOut } from 'svelte/easing';
-
 	import { fly, fade } from 'svelte/transition';
 	export let value;
 	export let getId = (value) => value?.id || value;

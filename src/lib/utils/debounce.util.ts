@@ -1,7 +1,11 @@
-export function debounce<T extends (...args: unknown[]) => void>(func: T, delay: number) {
+export function debounce<T extends (...args: any[]) => R, R>(
+	func: T,
+	delay: number
+): (...args: Parameters<T>) => Promise<R> {
 	let timeoutId: NodeJS.Timeout;
-	return (...args: Parameters<T>) => {
-		clearTimeout(timeoutId);
-		timeoutId = setTimeout(() => func(...args), delay);
-	};
+	return (...args: Parameters<T>) =>
+		new Promise<R>((resolve) => {
+			clearTimeout(timeoutId);
+			timeoutId = setTimeout(() => resolve(func(...args) as R), delay); // Cast to `R`
+		});
 }

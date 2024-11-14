@@ -1,19 +1,15 @@
 <script lang="ts">
-	import { DirectusImageTransformation, PagePath, type CountryEntryTranslation } from '$lib/models';
-	import { fly } from 'svelte/transition';
+	import { Input } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
-	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
 	// @ts-expect-error - Ignore this error
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
-	import { Input } from 'flowbite-svelte';
-	import { browser } from '$app/environment';
-	import { countryStore } from '$lib/stores';
-	import type { PageData } from '../$types';
-	import { locale } from 'svelte-i18n';
-	import type { CountryItem } from '$lib/models';
 
-	export let data: PageData;
+	import { PagePath, type CountryItem } from '$lib/models';
+	import { debounce } from '$lib/utils';
+
+	import { browser } from '$app/environment';
+	import { fly } from 'svelte/transition';
 
 	const observers: HTMLDivElement[] = [];
 	let observer: IntersectionObserver;
@@ -21,15 +17,15 @@
 	let countryItems: CountryItem[];
 	let countriesFiltered: CountryItem[];
 
-	countryItems = Array.from(data.countries.values()).map((country) => ({
-		code: country.code,
-		name: getTranslation<CountryEntryTranslation>(country.translations, $locale)!.name,
-		thumbnailUrl: country.thumbnail
-			? imageUrlBuilder(country.thumbnail, DirectusImageTransformation.PREVIEW)
-			: '/images/gallery/travel.jpg'
-	}));
+	// countryItems = Array.from(data.countries.values()).map((country) => ({
+	// 	code: country.code,
+	// 	name: getTranslation<CountryEntryTranslation>(country.translations, $locale)!.name,
+	// 	thumbnailUrl: country.thumbnail
+	// 		? imageUrlBuilder(country.thumbnail, DirectusImageTransformation.PREVIEW)
+	// 		: '/images/gallery/travel.jpg'
+	// }));
 
-	countriesFiltered = [...countryItems];
+	// countriesFiltered = [...countryItems];
 
 	const debouncedSearch = debounce(async () => (countriesFiltered = [...filterCountriesBySearchTerm(searchTerm)]), 300);
 
@@ -37,12 +33,12 @@
 		debouncedSearch();
 	}
 
-	function filterCountriesBySearchTerm(term: string) {
+	function filterCountriesBySearchTerm(term: string): CountryItem[] {
 		const lowerCaseTerm = term.toLowerCase();
 		return countryItems.filter((country) => country.name?.toLowerCase().includes(lowerCaseTerm));
 	}
 
-	function lazyLoadBackground(entries: IntersectionObserverEntry[]) {
+	function lazyLoadBackground(entries: IntersectionObserverEntry[]): void {
 		entries.forEach((entry) => {
 			if (entry.isIntersecting) {
 				const element = entry.target as HTMLDivElement;
@@ -54,7 +50,7 @@
 		});
 	}
 
-	function registerObserver(node: HTMLDivElement) {
+	function registerObserver(node: HTMLDivElement): { destroy: () => void } {
 		observers.push(node);
 		observer?.observe(node);
 		return {
@@ -104,7 +100,7 @@
 						>
 							<div
 								class="absolute bottom-0 left-0 right-0 top-0 z-[-1] bg-gradient-to-b dark:from-gray-900 dark:via-transparent dark:to-gray-900"
-							/>
+							></div>
 							<div
 								class="absolute left-0 right-0 top-0 flex items-center justify-between bg-gradient-to-b from-black to-transparent px-5 pb-40 pt-3"
 							>

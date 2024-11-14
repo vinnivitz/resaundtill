@@ -1,7 +1,7 @@
-import type { GeoGeometryType, GeoPoint } from './geojson.model';
+import type { Point } from "geojson";
 
 export type MapItem = {
-	location: { type: GeoGeometryType.Point; coordinates: GeoPoint };
+	location: Point;
 	isFlight: boolean;
 	id: string;
 };

@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { writable, get as getFromStore } from 'svelte/store';
 import dayjs from 'dayjs';
+import { writable, get as getFromStore } from 'svelte/store';
 
 const PICKER_TYPES = ['days', 'months', 'years'];
 

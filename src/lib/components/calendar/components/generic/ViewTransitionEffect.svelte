@@ -1,7 +1,8 @@
 <script>
-	import { scale } from 'svelte/transition';
-	import { storeContextKey } from '../../context';
 	import { getContext } from 'svelte';
+
+	import { storeContextKey } from '../../context';
+	import { scale } from 'svelte/transition';
 
 	const store = getContext(storeContextKey);
 </script>

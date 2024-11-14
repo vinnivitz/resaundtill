@@ -1,9 +1,10 @@
 <script>
 	// @ts-nocheck
-	import Arrow from '../generic/Arrow.svelte';
-	import { getContext } from 'svelte';
-	import { storeContextKey } from '../../context';
 	import dayjs from 'dayjs';
+	import { getContext } from 'svelte';
+
+	import { storeContextKey } from '../../context';
+	import Arrow from '../generic/Arrow.svelte';
 	import KeyControls from '../generic/KeyControls.svelte';
 
 	const store = getContext(storeContextKey);

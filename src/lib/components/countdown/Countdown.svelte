@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Card from '$lib/components/countdown/Card.svelte';
 	import { _ } from 'svelte-i18n';
 
-	export let date = new Date(new Date().setDate(new Date().getDate() + 7));
+	import Card from '$lib/components/countdown/Card.svelte';
 
-	let show = false;
+	let { date }: { date: Date | null } = $props();
+
+	let show = $state(false);
 
 	// Set default values to 9 days
 	let time = {
@@ -15,9 +16,9 @@
 		seconds: 0
 	};
 
-	const handleTick = () => {
+	function handleTick(): void {
 		const currentDate = new Date();
-		const gap = date.getTime() - currentDate.getTime();
+		const gap = (date?.getTime() ?? 0) - currentDate.getTime();
 
 		const getDays = Math.floor(gap / (1000 * 60 * 60 * 24));
 		const getHours = Math.floor((gap / (1000 * 60 * 60)) % 24);
@@ -28,7 +29,7 @@
 		time.hours = getHours;
 		time.minutes = getMinutes;
 		time.seconds = getSeconds;
-	};
+	}
 
 	onMount(() => {
 		handleTick();

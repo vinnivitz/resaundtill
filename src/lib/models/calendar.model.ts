@@ -1,52 +1,47 @@
-import type { Subscriber, Unsubscriber } from 'svelte/store';
+// import type { ManipulateType } from 'dayjs';
+// import type { Subscriber, Unsubscriber } from 'svelte/store';
 
-export type CalendarProps = {
-	open: boolean;
-	hasChosen: boolean;
-	selected: any;
-	start: Date;
-	end: Date;
-	shouldEnlargeDay: boolean;
-	enlargeDay: boolean;
-	year: any;
-	month: any;
-	day: any;
-	activeView: string;
-	activeViewDirection: number;
-	startOfWeekIndex: number;
-};
+// export type CalendarProps = {
+// 	open: boolean;
+// 	hasChosen: boolean;
+// 	selected: Date;
+// 	start: Date;
+// 	end: Date;
+// 	shouldEnlargeDay: boolean;
+// 	enlargeDay: boolean;
+// 	year: number;
+// 	month: number;
+// 	day: number;
+// 	activeView: string;
+// 	activeViewDirection: number;
+// 	startOfWeekIndex: number;
+// };
 
-export type CalendarStore = {
-	set: (this: void, value: CalendarProps) => void;
-	subscribe: (this: void, run: Subscriber<CalendarProps>, invalidate?: (value?: CalendarProps) => void) => Unsubscriber;
-	getState(): CalendarProps;
-	enlargeDay(enlargeDay?: boolean): void;
-	getSelectableVector(date: any): 0 | 1 | -1;
-	isSelectable(date: any, clamping?: any[]): any;
-	clampValue(day: any, clampable: any): any;
-	add(amount: any, unit: any, clampable?: any[]): void;
-	setActiveView(newActiveView: any): void;
-	setYear(year: any): void;
-	setMonth(month: any): void;
-	setDay(day: any): void;
-	close(extraState: any): void;
-	selectDay(): void;
-	getCalendarPage(
-		month: any,
-		year: any
-	): {
-		date: any;
-		outsider: boolean;
-	}[];
-};
+// export type CalendarStore = {
+// 	set: (this: void, value: CalendarProps) => void;
+// 	subscribe: (this: void, run: Subscriber<CalendarProps>, invalidate?: (value?: CalendarProps) => void) => Unsubscriber;
+// 	getState(): CalendarProps;
+// 	enlargeDay(enlargeDay?: boolean): void;
+// 	getSelectableVector(date: Date): 0 | 1 | -1;
+// 	isSelectable(date: Date, clamping?: string[]): boolean;
+// 	clampValue(day: Date, clampable: boolean): unknown;
+// 	add(amount: number, unit: ManipulateType, clampable?: unknown[]): void;
+// 	setActiveView(newActiveView: string): void;
+// 	setYear(year: number): void;
+// 	setMonth(month: number): void;
+// 	setDay(day: number): void;
+// 	close(extraState: CalendarStore): void;
+// 	selectDay(): void;
+// 	getCalendarPage(
+// 		month: number,
+// 		year: number
+// 	): {
+// 		date: Date;
+// 		outsider: boolean;
+// 	}[];
+// };
 
 export type CalendarModel = {
-	fromCalendar?: CalendarStore;
-	toCalendar?: CalendarStore;
 	from?: Date;
 	to?: Date;
-	start?: Date;
-	end?: Date;
-	fromEnd?: Date;
-	toStart?: Date;
 };

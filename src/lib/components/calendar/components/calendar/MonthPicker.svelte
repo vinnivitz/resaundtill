@@ -1,13 +1,14 @@
 <script>
 	// @ts-nocheck
-	import { getContext } from 'svelte';
-	import { storeContextKey } from '../../context';
 	import dayjs from 'dayjs';
-	import KeyControls from '../generic/KeyControls.svelte';
+	import { getContext } from 'svelte';
+
+	import { scrollStep } from '../../config/scroll';
+	import { storeContextKey } from '../../context';
+	import scrollable from '../../directives/scrollable';
 	import Grid from '../generic/Grid.svelte';
 	import InfiniteGrid from '../generic/InfiniteGrid.svelte';
-	import scrollable from '../../directives/scrollable';
-	import { scrollStep } from '../../config/scroll';
+	import KeyControls from '../generic/KeyControls.svelte';
 
 	const store = getContext(storeContextKey);
 

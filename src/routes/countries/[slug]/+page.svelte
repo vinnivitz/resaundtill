@@ -1,77 +1,79 @@
 <script lang="ts">
-	import { Heading, Secondary, Hr } from 'flowbite-svelte';
-	import type { PageData } from './$types';
-	import { fly } from 'svelte/transition';
-	import MapComponent from '$lib/components/Map.svelte';
-	import { PagePath, type CountryEntryTranslation, type CountryItemDetails } from '$lib/models';
-	import BlogPosts from '$lib/components/BlogPosts.svelte';
-	import { goto } from '$app/navigation';
-	import { Tabs, TabItem } from 'flowbite-svelte';
-	import { t } from 'svelte-i18n';
-	// @ts-expect-error - Ignore this error
-	import FaUser from 'svelte-icons/fa/FaUser.svelte';
-	// @ts-expect-error - Ignore this error
-	import FaMap from 'svelte-icons/fa/FaMap.svelte';
-	// @ts-expect-error - Ignore this error
-	import FaMoneyBillWave from 'svelte-icons/fa/FaMoneyBillWave.svelte';
-	import { getTranslation } from '$lib/utils';
-	import { locale } from 'svelte-i18n';
+	// import { Heading, Secondary, Hr, Tabs, TabItem } from 'flowbite-svelte';
+	// import { fly } from 'svelte/transition';
+	// import { t, locale } from 'svelte-i18n';
+	// // @ts-expect-error - Ignore this error
+	// import FaMap from 'svelte-icons/fa/FaMap.svelte';
+	// // @ts-expect-error - Ignore this error
+	// import FaMoneyBillWave from 'svelte-icons/fa/FaMoneyBillWave.svelte';
+	// // @ts-expect-error - Ignore this error
+	// import FaUser from 'svelte-icons/fa/FaUser.svelte';
 
-	export let data: PageData;
+	// import BlogPosts from '$lib/components/BlogPosts.svelte';
+	// import MapComponent from '$lib/components/Map.svelte';
+	// import { PagePath, type CountryEntryTranslation, type CountryItemDetails } from '$lib/models';
+	// import { dataStore } from '$lib/stores';
+	// import { getTranslation } from '$lib/utils';
 
-	const country = data.countries.get(data.countryId)!;
+	// import { goto } from '$app/navigation';
 
-	const countryItem: CountryItemDetails = {
-		code: country.code,
-		name: getCountryEntryPostTranslation(country.translations, $locale)!.name,
-		description: getCountryEntryPostTranslation(country.translations, $locale)!.description,
-		population: country.population,
-		area: country.area,
-		capital: country.capital,
-		currency: country.currency,
-		posts: data.posts.filter((post) => post.countryCode === country.code),
-		mapItems: data.posts
-			.filter((post) => post.location && post.countryCode === country.code)
-			.map((post) => {
-				return {
-					coords: post.location!.coordinates,
-					isFlight: post.isFlight
-				};
-			})
-	};
+	// import type { PageData } from './$types';
 
-	function getCountryEntryPostTranslation(
-		translations: CountryEntryTranslation[],
-		locale: string | null | undefined
-	): CountryEntryTranslation | undefined {
-		return getTranslation<CountryEntryTranslation>(translations, locale);
-	}
+	// export let data: PageData;
 
-	function navigate(event: CustomEvent) {
-		const coordinates: number[] = event.detail;
-		const matchedPost = data.posts.find(
-			(post) =>
-				post.location &&
-				post.location.coordinates[0] === coordinates[1] &&
-				post.location.coordinates[1] === coordinates[0]
-		);
+	// const country = $dataStore.countries.get(data.countryId)!;
 
-		if (matchedPost) {
-			goto(`${PagePath.travel}/${matchedPost.id}`);
-		}
-	}
+	// const countryItem: CountryItemDetails = {
+	// 	code: country.code,
+	// 	name: getCountryEntryPostTranslation(country.translations, $locale)!.name,
+	// 	description: getCountryEntryPostTranslation(country.translations, $locale)!.description,
+	// 	population: country.population,
+	// 	area: country.area,
+	// 	capital: country.capital,
+	// 	currency: country.currency,
+	// 	posts: data.posts.filter((post) => post.countryCode === country.code),
+	// 	mapItems: data.posts
+	// 		.filter((post) => post.location && post.countryCode === country.code)
+	// 		.map((post) => {
+	// 			return {
+	// 				coords: post.location!.coordinates,
+	// 				isFlight: post.isFlight
+	// 			};
+	// 		})
+	// };
+
+	// function getCountryEntryPostTranslation(
+	// 	translations: CountryEntryTranslation[],
+	// 	locale: string | null | undefined
+	// ): CountryEntryTranslation | undefined {
+	// 	return getTranslation<CountryEntryTranslation>(translations, locale);
+	// }
+
+	// function navigate(event: CustomEvent) {
+	// 	const coordinates: number[] = event.detail;
+	// 	const matchedPost = data.posts.find(
+	// 		(post) =>
+	// 			post.location &&
+	// 			post.location.coordinates[0] === coordinates[1] &&
+	// 			post.location.coordinates[1] === coordinates[0]
+	// 	);
+
+	// 	if (matchedPost) {
+	// 		goto(`${PagePath.travel}/${matchedPost.id}`);
+	// 	}
+	// }
 </script>
 
 <section class="p-3 md:px-12 md:py-4">
-	<div in:fly={{ y: 50, duration: 1000 }}>
+	<!-- <div in:fly={{ y: 50, duration: 1000 }}>
 		<Heading customSize="text-4xl md:text-5xl mt-5">
 			<Secondary>
 				<div class="flex gap-4">
 					<span class={`fi fi-${countryItem.code}`}></span><span>{countryItem.name}</span>
 				</div>
 			</Secondary>
-		</Heading>
-
+		</Heading> -->
+	<!-- 
 		<div class="hidden md:block">
 			<Hr />
 		</div>
@@ -165,5 +167,5 @@
 				on:activeCoords={(event) => navigate(event)}
 			/>
 		</div>
-	</div>
+	</div> -->
 </section>

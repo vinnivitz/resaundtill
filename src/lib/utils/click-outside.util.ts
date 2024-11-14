@@ -4,11 +4,11 @@
  * @returns {object} The directive
  */
 export function clickOutside(node: Node): { destroy: () => void } {
-	const handleClick = (event: Event) => {
+	function handleClick(event: Event): void {
 		if (node && !node.contains(event.target as Node) && !event.defaultPrevented) {
 			node.dispatchEvent(new CustomEvent('canplay', node as object));
 		}
-	};
+	}
 
 	document.addEventListener('click', handleClick, true);
 

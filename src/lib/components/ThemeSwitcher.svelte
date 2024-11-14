@@ -1,8 +1,8 @@
 <script lang="ts">
 	// @ts-expect-error - Ignore this error
-	import FaSun from 'svelte-icons/fa/FaSun.svelte';
-	// @ts-expect-error - Ignore this error
 	import FaMoon from 'svelte-icons/fa/FaMoon.svelte';
+	// @ts-expect-error - Ignore this error
+	import FaSun from 'svelte-icons/fa/FaSun.svelte';
 
 	export let isDark: boolean;
 </script>

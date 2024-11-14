@@ -1,196 +1,149 @@
-// src/stores/dataStore.ts
 import { writable } from 'svelte/store';
-import SDK from '$lib/sdk';
-import { readItems, readSingleton } from '@directus/sdk';
+import { readItems, readSingleton, type FetchInterface } from '@directus/sdk';
+import { sdk } from '$lib/sdk';
+import { countryStore } from './';
+
 import {
 	type BlogPostEntry,
 	type Departure,
 	type SupportInfoEntry,
 	type GalleryShufflePercentage,
 	type CountryEntry,
-	type MapItem,
-	type GeoPoint
+	type MapItem
 } from '$lib/models';
-import type { DataModel, DataStore } from '$lib/models/data-store.model';
-import { countryStore } from './';
+import type { Position } from 'geojson';
+
+// Define individual stores for each property
+export const postsStore = writable<BlogPostEntry[] | null>(null);
+export const postToImagesStore = writable<Map<string, string[]> | null>(null);
+export const imagesStore = writable<string[] | null>(null);
+export const countriesStore = writable<CountryEntry[] | null>(null);
+export const departureStore = writable<Date | null>(null);
+export const supportInfoStore = writable<SupportInfoEntry | null>(null);
+export const galleryShufflePercentageStore = writable<number | null>(null);
+export const currentCoordinatesStore = writable<Position | null>(null);
+export const mapItemsStore = writable<MapItem[]>([]);
+export const countryToPostsStore = writable<Map<string, string[]> | null>(null);
+export const postToCountryStore = writable<Map<string, string> | null>(null);
 
 let initialized = false;
 
-function createDataStore(): DataStore {
-	const { subscribe, update } = writable<DataModel>();
+async function initDataStores(fetch: FetchInterface): Promise<boolean> {
+	if (initialized) return true;
+	initialized = true;
 
-	async function init(): Promise<void> {
-		if (initialized) {
-			return;
-		}
-		initialized = true;
+	async function getPosts() {
+		const posts = await sdk(fetch).request<BlogPostEntry[]>(
+			readItems('resaundtill_posts', {
+				limit: -1,
+				sort: ['-date'],
+				fields: ['id', 'date', 'translations.*']
+			})
+		);
+		postsStore.set(posts);
+	}
 
-		async function getPosts(): Promise<void> {
-			try {
-				const posts = await SDK.request<BlogPostEntry[]>(
-					readItems('resaundtill_posts', {
-						limit: -1,
-						sort: ['-date'],
-						fields: ['id', 'date', 'translations.*']
-					})
+	async function getImages() {
+		const posts = await sdk(fetch).request<BlogPostEntry[]>(
+			readItems('resaundtill_posts', { limit: -1, fields: ['id', 'images.*'] })
+		);
+		const postToImages = new Map<string, string[]>();
+		posts.forEach((post) => {
+			if (post.images) {
+				postToImages.set(
+					post.id,
+					post.images.map((image) => image.directus_files_id)
 				);
-				update((state) => ({ ...state, posts }));
-				console.log('posts updated');
-			} catch (error) {
-				console.error(error);
 			}
-		}
+		});
+		postToImagesStore.set(postToImages);
+		imagesStore.set(Array.from(postToImages.values()).flat());
+	}
 
-		async function getImages(): Promise<void> {
-			try {
-				const posts = await SDK.request<BlogPostEntry[]>(
-					readItems('resaundtill_posts', { fields: ['id', 'images.*'] })
-				);
-				const postToImages = new Map<string, string[]>();
-				posts.forEach((post) => {
-					if (post.images) {
-						postToImages.set(
-							post.id,
-							post.images.map((image) => image.directus_files_id)
-						);
-					}
-				});
-				update((state) => ({ ...state, postToImages }));
+	async function getCountries() {
+		const countries = await sdk(fetch).request<CountryEntry[]>(
+			readItems('resaundtill_countries', {
+				fields: ['id', 'code', 'translations.*', 'population', 'area', 'capital', 'currency', 'thumbnail']
+			})
+		);
+		countriesStore.set(countries);
+	}
 
-				const images = Array.from(postToImages.values()).flat();
-				update((state) => ({ ...state, images }));
-				console.log('images updated');
-			} catch (error) {
-				console.error(error);
-				update((state) => ({ ...state, files: [], postToImages: new Map() }));
-			}
-		}
+	async function getDeparture() {
+		const departure = await sdk(fetch).request<Departure>(readSingleton('resaundtill_departure', { fields: ['date'] }));
+		departureStore.set(new Date(departure.date));
+	}
 
-		async function getCountries(): Promise<void> {
-			try {
-				const countries = await SDK.request<CountryEntry[]>(
-					readItems('resaundtill_countries', {
-						fields: ['id', 'code', 'translations.*', 'population', 'area', 'capital', 'currency', 'thumbnail']
-					})
-				);
-				update((state) => ({ ...state, countries }));
-				console.log('countries updated');
-			} catch (error) {
-				console.error(error);
-				update((state) => ({ ...state, countries: [] }));
-			}
-		}
+	async function getSupportInfo() {
+		const supportInfo = await sdk(fetch).request<SupportInfoEntry>(
+			// @ts-expect-error - Directus SDK typings are incorrect
+			readSingleton('resaundtill_support', { fields: ['id', 'translations.*'] })
+		);
+		supportInfoStore.set(supportInfo);
+	}
 
-		async function getDeparture(): Promise<void> {
-			try {
-				const departure = await SDK.request<Departure>(readSingleton('resaundtill_departure', { fields: ['date'] }));
-				update((state) => ({ ...state, departure: new Date(departure.date) }));
-				console.log('departure updated');
-			} catch (error) {
-				console.error(error);
-				update((state) => ({ ...state, departure: new Date() }));
-			}
-		}
+	async function getGalleryShufflePercentage() {
+		const galleryShufflePercentage = await sdk(fetch).request<GalleryShufflePercentage>(
+			readSingleton('resaundtill_gallery_shuffle_percentage')
+		);
+		galleryShufflePercentageStore.set(galleryShufflePercentage.value);
+	}
 
-		async function getSupportInfo(): Promise<void> {
-			try {
-				const supportInfo = await SDK.request<SupportInfoEntry>(
-					// @ts-expect-error - Directus SDK typings are incorrect
-					readSingleton('resaundtill_support', { fields: ['id', 'translations.*'] })
-				);
-				update((state) => ({ ...state, supportInfo }));
-				console.log('support updated');
-			} catch (error) {
-				console.error(error);
-				update((state) => ({ ...state, supportInfo: { id: '', translations: [] } }));
-			}
-		}
+	async function currentCoordinates() {
+		const post = await sdk(fetch).request<BlogPostEntry[]>(
+			readItems('resaundtill_posts', {
+				limit: 1,
+				sort: ['-date'],
+				fields: ['location']
+			})
+		);
+		currentCoordinatesStore.set(post[0]?.location?.coordinates || null);
+	}
 
-		async function getGalleryShufflePercentage(): Promise<void> {
-			try {
-				const galleryShufflePercentage = await SDK.request<GalleryShufflePercentage>(
-					readSingleton('resaundtill_gallery_shuffle_percentage')
-				);
-				update((state) => ({ ...state, galleryShufflePercentage: galleryShufflePercentage.value }));
-				console.log('shuffle updated');
-			} catch (error) {
-				console.error(error);
-				update((state) => ({ ...state, galleryShufflePercentage: 0 }));
-			}
-		}
+	async function mapItems() {
+		const posts = await sdk(fetch).request<BlogPostEntry[]>(
+			readItems('resaundtill_posts', {
+				limit: -1,
+				sort: ['date'],
+				fields: ['id', 'location', 'isFlight']
+			})
+		);
+		mapItemsStore.set(posts.filter((post) => post.location) as MapItem[]);
+	}
 
-		async function currentCoordinates(): Promise<void> {
-			try {
-				const post = await SDK.request<BlogPostEntry[]>(
-					readItems('resaundtill_posts', {
-						limit: 1,
-						sort: ['-date'],
-						fields: ['location']
-					})
-				);
-				update((state) => ({ ...state, currentCoordinates: post[0]?.location?.coordinates as GeoPoint }));
-				console.log('coordinates updated');
-			} catch (error) {
-				console.error(error);
-				update((state) => ({ ...state, currentCoordinates: undefined }));
-			}
-		}
-
-		async function mapItems(): Promise<void> {
-			try {
-				const posts = await SDK.request<BlogPostEntry[]>(
-					readItems('resaundtill_posts', {
-						limit: -1,
-						sort: ['date'],
-						fields: ['id', 'location', 'isFlight']
-					})
-				);
-				update((state) => ({ ...state, mapItems: posts.filter((post) => post.location) as MapItem[] }));
-				console.log('map updated');
-			} catch (error) {
-				console.error(error);
-				update((state) => ({ ...state, mapItems: [] }));
-			}
-		}
-
-		async function countryPostRelations(): Promise<void> {
-			try {
-				const posts = await SDK.request<BlogPostEntry[]>(
-					readItems('resaundtill_posts', {
-						limit: -1,
-						sort: ['date'],
-						fields: ['id', 'countryCode']
-					})
-				);
-				const countryToPosts = new Map<string, string[]>();
-				await Promise.all(
-					posts.map(async (post) => {
-						if (post.location) {
-							post.countryCode = post.countryCode ?? (await countryStore.getCountryCode(post.location.coordinates));
-							if (post.countryCode) {
-								const postsForCountry = countryToPosts.get(post.countryCode) ?? [];
-								postsForCountry.push(post.id);
-								countryToPosts.set(post.countryCode, postsForCountry);
-							}
-						}
-					})
-				);
-				update((state) => ({ ...state, countryToPosts }));
-
-				const postToCountry = new Map<string, string>();
-				for (const [countryCode, postIds] of countryToPosts.entries()) {
-					for (const postId of postIds) {
-						postToCountry.set(postId, countryCode);
+	async function countryPostRelations() {
+		const posts = await sdk(fetch).request<BlogPostEntry[]>(
+			readItems('resaundtill_posts', {
+				limit: -1,
+				sort: ['date'],
+				fields: ['id', 'countryCode', 'location']
+			})
+		);
+		const countryToPosts = new Map<string, string[]>();
+		await Promise.all(
+			posts.map(async (post) => {
+				if (post.location) {
+					post.countryCode = post.countryCode ?? (await countryStore.getCountryCode(post.location.coordinates));
+					if (post.countryCode) {
+						const postsForCountry = countryToPosts.get(post.countryCode) ?? [];
+						postsForCountry.push(post.id);
+						countryToPosts.set(post.countryCode, postsForCountry);
 					}
 				}
-				update((state) => ({ ...state, postToCountry }));
-				console.log('country post updated');
-			} catch (error) {
-				console.log('error', error);
-				update((state) => ({ ...state, countryToPosts: new Map() }));
+			})
+		);
+		countryToPostsStore.set(countryToPosts);
+
+		const postToCountry = new Map<string, string>();
+		for (const [countryCode, postIds] of countryToPosts.entries()) {
+			for (const postId of postIds) {
+				postToCountry.set(postId, countryCode);
 			}
 		}
+		postToCountryStore.set(postToCountry);
+	}
 
+	try {
 		await Promise.all([
 			currentCoordinates(),
 			getPosts(),
@@ -202,12 +155,10 @@ function createDataStore(): DataStore {
 			mapItems(),
 			countryPostRelations()
 		]);
+		return true;
+	} catch (error) {
+		return false;
 	}
-
-	return {
-		subscribe,
-		init
-	};
 }
 
-export const dataStore = createDataStore();
+export { initDataStores };

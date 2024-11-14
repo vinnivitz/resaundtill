@@ -12,8 +12,8 @@
 			data-website-id="86999a49-48ed-4743-a8ba-dbd89b7ab0ca"
 		></script>
 		<script>
-			localStorage.getItem('color-theme') === 'dark' ||
-			(!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+			const colorTheme = localStorage.getItem('color-theme');
+			colorTheme === 'dark' || (!colorTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
 				? document.documentElement.classList.add('dark')
 				: document.documentElement.classList.remove('dark');
 		</script>

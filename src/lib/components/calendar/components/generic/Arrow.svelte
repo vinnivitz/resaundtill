@@ -2,7 +2,7 @@
 	export let dir = 'left';
 </script>
 
-<i class={dir} />
+<i class={dir}></i>
 
 <style>
 	i {

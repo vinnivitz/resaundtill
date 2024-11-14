@@ -15,7 +15,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div style={containerStyle} on:click={() => (value = !value)}>
-	<button style={buttonStyle} />
+	<button style={buttonStyle} aria-label="Toggle Switch"></button>
 </div>
 
 <style>

@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { locale } from 'svelte-i18n';
+
 	import type { CountryEntry, CountryEntryTranslation } from '$lib/models';
 	import { getTranslation } from '$lib/utils';
+
 	import 'flag-icons/css/flag-icons.min.css';
-	import { locale } from 'svelte-i18n';
 
 	export let item: CountryEntry;
 

@@ -1,4 +1,5 @@
 import type { FormatDateOptions } from '$lib/models';
+
 import { getLocaleCode } from './locale.util';
 
 /**
@@ -8,14 +9,14 @@ import { getLocaleCode } from './locale.util';
  * @param options options to format the date
  * @returns {string} The formatted date
  */
-export const formatDate = (
+export function formatDate(
 	date: Date,
 	locale: string | null | undefined,
 	options: FormatDateOptions = { w: true, d: true, m: true, y: true }
-) => {
+): string {
 	return `${options.w ? date.toLocaleString(getLocaleCode(locale), { weekday: 'long' }) : ''}, ${
 		options.d ? (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) : ''
 	}. ${options.m ? date.toLocaleString(getLocaleCode(locale), { month: 'long' }) : ''} ${
 		options.y ? date.getFullYear() : ''
 	}`;
-};
+}

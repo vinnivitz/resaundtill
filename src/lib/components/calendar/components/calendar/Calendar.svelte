@@ -1,10 +1,12 @@
 <script>
-	import DayPicker from './DayPicker.svelte';
-	import ViewTransitionEffect from '../generic/ViewTransitionEffect.svelte';
-	import DatepickerControls from './CalendarControls.svelte';
 	import { getContext } from 'svelte';
+
 	import { storeContextKey } from '../../context';
 	import CrossfadeProvider from '../generic/crossfade/CrossfadeProvider.svelte';
+	import ViewTransitionEffect from '../generic/ViewTransitionEffect.svelte';
+
+	import DatepickerControls from './CalendarControls.svelte';
+	import DayPicker from './DayPicker.svelte';
 	import MonthPicker from './MonthPicker.svelte';
 	import YearPicker from './YearPicker.svelte';
 

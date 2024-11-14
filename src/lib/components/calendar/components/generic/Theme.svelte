@@ -1,9 +1,10 @@
 <script>
 	// @ts-nocheck
-	import { light as lightTheme } from '../../config/theme';
-	import { themeContextKey } from '../../context';
 	import { setContext } from 'svelte';
 	import { writable } from 'svelte/store';
+
+	import { light as lightTheme } from '../../config/theme';
+	import { themeContextKey } from '../../context';
 
 	export let theme = {};
 	export let appliedTheme;

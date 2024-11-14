@@ -1,8 +1,6 @@
 <script>
-	//@ts-nocheck
-
+	// @ts-nocheck
 	import { tick } from 'svelte';
-
 	import { spring } from 'svelte/motion';
 	import { derived, writable } from 'svelte/store';
 

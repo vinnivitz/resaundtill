@@ -1,6 +1,7 @@
-import { Locale } from '$lib/models/user.model';
-import { determineLocale } from '$lib/utils';
 import { init, register } from 'svelte-i18n';
+
+import { Locale } from '$lib/models';
+import { determineLocale } from '$lib/utils';
 
 const defaultLocale = Locale.DE;
 

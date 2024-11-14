@@ -1,12 +1,13 @@
 <script>
 	// @ts-nocheck
 	import { getContext } from 'svelte';
+
+	import { scrollStep } from '../../config/scroll';
 	import { storeContextKey } from '../../context';
-	import KeyControls from '../generic/KeyControls.svelte';
+	import scrollable from '../../directives/scrollable';
 	import Grid from '../generic/Grid.svelte';
 	import InfiniteGrid from '../generic/InfiniteGrid.svelte';
-	import scrollable from '../../directives/scrollable';
-	import { scrollStep } from '../../config/scroll';
+	import KeyControls from '../generic/KeyControls.svelte';
 
 	export let rowCount = 3;
 	export let colCount = 3;

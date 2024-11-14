@@ -1,9 +1,10 @@
 <script>
 	// @ts-nocheck
-	import { KEY_CODES } from '../../config';
-	import { keyControlsContextKey } from '../../context';
 	import throttle from 'just-throttle';
 	import { getContext } from 'svelte';
+
+	import { KEY_CODES } from '../../config';
+	import { keyControlsContextKey } from '../../context';
 
 	export let limit = 0;
 	export let ctx = null;

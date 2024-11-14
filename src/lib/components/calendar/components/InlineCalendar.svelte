@@ -1,14 +1,16 @@
 <script>
-	// @ts-nocheck
+	//@ts-nocheck
 	import dayjs from 'dayjs';
-	import datepickerStore from '../stores/datepicker';
-	import { keyControlsContextKey, storeContextKey } from '../context';
 	import { setContext } from 'svelte';
-	import { derived, writable } from 'svelte/store';
-	import Theme from './generic/Theme.svelte';
+
+	import { calendar as calendarDefaults } from '../config/defaults';
+	import { keyControlsContextKey, storeContextKey } from '../context';
+	import datepickerStore from '../stores/datepicker';
+
 	import Calendar from './calendar/Calendar.svelte';
 	import CrossfadeBoundary from './generic/crossfade/CrossfadeBoundary.svelte';
-	import { calendar as calendarDefaults } from '../config/defaults';
+	import Theme from './generic/Theme.svelte';
+	import { derived, writable } from 'svelte/store';
 
 	export let selected = calendarDefaults.selected;
 	export let start = calendarDefaults.start;

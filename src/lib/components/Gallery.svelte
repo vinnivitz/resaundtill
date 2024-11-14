@@ -1,7 +1,12 @@
 <script lang="ts">
-	import { GalleryImage, LightboxGallery } from 'svelte-lightbox';
 	import { Input, Spinner } from 'flowbite-svelte';
-	import { debounce, formatDate, imageUrlBuilder } from '$lib/utils';
+	import { createEventDispatcher, onMount, tick } from 'svelte';
+	import Masonry from 'svelte-bricks';
+	import { _, locale, t } from 'svelte-i18n';
+	// @ts-expect-error - Types are missing
+	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
+	import { GalleryImage, LightboxGallery } from 'svelte-lightbox';
+
 	import {
 		DirectusImageTransformation,
 		PagePath,
@@ -11,14 +16,10 @@
 		type LightboxController
 	} from '$lib/models';
 	import { imageCacheStore } from '$lib/stores';
-	// @ts-expect-error - Ignore this error
-	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
-	import { _, locale } from 'svelte-i18n';
+	import { debounce, formatDate, imageUrlBuilder } from '$lib/utils';
+
 	import { browser } from '$app/environment';
-	import { createEventDispatcher, onMount, tick } from 'svelte';
-	import { t } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
-	import Masonry from 'svelte-bricks';
 
 	export let images: DirectusImageDetails[] = [];
 	export let caching = true;
@@ -79,14 +80,14 @@
 		enableKeyboardControl: true
 	};
 
-	function openModal(idx: number) {
+	function openModal(idx: number): void {
 		if (caching) {
 			cacheImages();
 		}
 		programmaticController.openImage(idx);
 	}
 
-	function renderFooter(image: GalleryImageItem) {
+	function renderFooter(image: GalleryImageItem): void {
 		const footer = document.querySelector('.svelte-lightbox-footer');
 		if (footer) {
 			footer.innerHTML = `
@@ -133,7 +134,7 @@
 		return shuffledArray;
 	}
 
-	function filterImagesBySearchTerm(images: GalleryImageItem[], term: string) {
+	function filterImagesBySearchTerm(images: GalleryImageItem[], term: string): GalleryImageItem[] {
 		const lowerCaseTerm = term.toLowerCase();
 		return images.filter(
 			(image) =>
@@ -141,7 +142,7 @@
 		);
 	}
 
-	function cacheImages() {
+	function cacheImages(): void {
 		imageCacheStore.update((cache) => {
 			cachedImages = cache;
 			cacheImagesSequentially(cache);
@@ -149,7 +150,7 @@
 		});
 	}
 
-	async function cacheImagesSequentially(cache: Map<string, HTMLImageElement>) {
+	async function cacheImagesSequentially(cache: Map<string, HTMLImageElement>): Promise<void> {
 		for (let i = 0; i < galleryImages.length; i++) {
 			const img = await loadDetailImage(galleryImages[i]);
 			if (!cache.has(galleryImages[i].id)) {
@@ -171,7 +172,7 @@
 		});
 	}
 
-	function handleIntersection(entries: IntersectionObserverEntry[]) {
+	function handleIntersection(entries: IntersectionObserverEntry[]): void {
 		entries.forEach((entry) => {
 			if (entry.isIntersecting) {
 				const placeholder = entry.target as HTMLDivElement;
@@ -184,14 +185,14 @@
 		});
 	}
 
-	function observeNextImage() {
+	function observeNextImage(): void {
 		const placeholders = document.querySelectorAll('.placeholder:not([data-loaded])');
 		if (placeholders.length > 0) {
 			intersectionObserver.observe(placeholders[0]);
 		}
 	}
 
-	function setupObservers() {
+	function setupObservers(): void {
 		if (intersectionObserver) {
 			intersectionObserver.disconnect();
 		}
@@ -209,19 +210,19 @@
 		observeNextImage();
 	}
 
-	async function gotoPost(id: string) {
-		const post = posts?.find((post) => post.images?.find((image) => image.directus_files_id.id === id));
+	async function gotoPost(id: string): Promise<void> {
+		const post = posts?.find((post) => post.images?.find((image) => image.directus_files_id === id));
 		if (post) {
-			await goto(`${PagePath.travel}/${post.id}`);
+			return goto(`${PagePath.travel}/${post.id}`);
 		}
 	}
 
-	function getPostDateByImageId(id: string, fallback: string) {
-		const post = posts?.find((post) => post.images?.find((image) => image.directus_files_id.id === id));
+	function getPostDateByImageId(id: string, fallback: string): Date {
+		const post = posts?.find((post) => post.images?.find((image) => image.directus_files_id === id));
 		return new Date(post?.date || fallback);
 	}
 
-	function getPlaceholderImage(image: GalleryImageItem) {
+	function getPlaceholderImage(image: GalleryImageItem): string {
 		const canvas = document.createElement('canvas');
 		canvas.width = image.width;
 		canvas.height = image.height;
@@ -230,7 +231,7 @@
 		return canvas.toDataURL('image/webp');
 	}
 
-	function createInitImage() {
+	function createInitImage(): string {
 		const canvas = document.createElement('canvas');
 		canvas.width = 1;
 		canvas.height = 1;

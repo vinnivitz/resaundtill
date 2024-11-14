@@ -1,5 +1,8 @@
+import type { Position } from 'geojson';
 import type { Readable } from 'svelte/store';
-import type { BlogPostEntry, CountryEntry, GeoPoint, MapItem, SupportInfoEntry } from './';
+
+import type { BlogPostEntry, CountryEntry, MapItem, SupportInfoEntry } from './';
+import type { FetchInterface } from '@directus/sdk';
 
 export type DataModel = {
 	posts: BlogPostEntry[];
@@ -9,10 +12,10 @@ export type DataModel = {
 	galleryShufflePercentage: number;
 	postToImages: Map<string, string[]>;
 	images: string[];
-	currentCoordinates: GeoPoint | undefined;
+	currentCoordinates: Position | undefined;
 	mapItems: MapItem[];
 	countryToPosts: Map<string, string[]>;
 	postToCountry: Map<string, string>;
 };
 
-export type DataStore = Readable<DataModel> & { init: () => Promise<void> };
+export type DataStore = Readable<DataModel> & { init: (fetch: FetchInterface) => Promise<boolean> };

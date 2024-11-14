@@ -2,24 +2,29 @@
 
 <script lang="ts">
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
-	import { _ } from 'svelte-i18n';
-	import { page } from '$app/stores';
 	import { createEventDispatcher } from 'svelte';
-	import { clickOutside } from '$lib/utils';
-	import ThemeSwitcher from './ThemeSwitcher.svelte';
-	import LocaleSwitcher from './LocaleSwitcher.svelte';
+	import { _ } from 'svelte-i18n';
+
 	import { PagePath } from '$lib/models';
+	import { clickOutside } from '$lib/utils';
+
+	import { page } from '$app/stores';
+
+	import LocaleSwitcher from './LocaleSwitcher.svelte';
+	import ThemeSwitcher from './ThemeSwitcher.svelte';
 
 	export let isDark: boolean;
 
 	const dispatch = createEventDispatcher();
 	let hidden = true;
 
-	const toggleLocale = () => dispatch('locale');
-	const toggleTheme = () => dispatch('theme');
+	function toggleLocale(): void {
+		dispatch('locale');
+	}
 
-	$: activePath = $page.url.pathname;
-	$: isActive = (path: string) => activePath === path;
+	function toggleTheme(): void {
+		dispatch('theme');
+	}
 </script>
 
 <Navbar>
@@ -36,24 +41,25 @@
 
 	<NavUl
 		{hidden}
+		activeUrl={$page.url.pathname}
 		ulClass="flex flex-col text-center py-4 px-2 lg:p-4 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium"
 	>
-		<NavLi href={PagePath.home} active={isActive(PagePath.home)}>
+		<NavLi href={PagePath.home}>
 			<span class="text-xl">{$_('nav.map')}</span>
 		</NavLi>
-		<NavLi href={PagePath.travel} active={isActive(PagePath.travel)}>
+		<NavLi href={PagePath.travel}>
 			<span class="text-xl">{$_('nav.travel')}</span>
 		</NavLi>
-		<NavLi href={PagePath.countries} active={isActive(PagePath.countries)}>
+		<NavLi href={PagePath.countries}>
 			<span class="text-xl">{$_('nav.countries')}</span>
 		</NavLi>
-		<NavLi href={PagePath.gallery} active={isActive(PagePath.gallery)}>
+		<NavLi href={PagePath.gallery}>
 			<span class="text-xl">{$_('nav.gallery')}</span>
 		</NavLi>
-		<NavLi href={PagePath.support} active={isActive(PagePath.support)}>
+		<NavLi href={PagePath.support}>
 			<span class="text-xl">{$_('nav.about')}</span>
 		</NavLi>
-		<NavLi href={PagePath.legals} active={isActive(PagePath.legals)}>
+		<NavLi href={PagePath.legals}>
 			<span class="text-xl">{$_('nav.legals')}</span>
 		</NavLi>
 		<NavLi>

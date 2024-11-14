@@ -1,9 +1,12 @@
 <script>
 	// @ts-nocheck
-	import Crossfade from './generic/crossfade/Crossfade.svelte';
-	import blurr from '../directives/blurr';
 	import { tick } from 'svelte';
+
 	import { browser } from '$app/environment';
+
+	import blurr from '../directives/blurr';
+
+	import Crossfade from './generic/crossfade/Crossfade.svelte';
 
 	export let isOpen = false;
 	export let style = '';

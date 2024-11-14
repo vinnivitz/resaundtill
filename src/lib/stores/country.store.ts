@@ -1,13 +1,15 @@
 // src/stores/countryStore.ts
 
+import * as turf from '@turf/turf';
+import type { Feature, MultiPolygon, Polygon, Position } from 'geojson';
 import { writable } from 'svelte/store';
 import type { Readable } from 'svelte/store';
-import * as turf from '@turf/turf';
-import { GeoGeometryType, type BoundingBoxEntry, type GeoCountry, type GeoFeature, type GeoPoint } from '$lib/models';
+
+import type { BoundingBoxEntry, CustomGeoJsonProperties, GeoCountry } from '$lib/models';
 import { getHostUrl } from '$lib/utils';
 
 interface CountryStore extends Readable<Map<string, string>> {
-	getCountryCode(location: GeoPoint): Promise<string | undefined>;
+	getCountryCode(location: Position): Promise<string | undefined>;
 	getGeoCountry(code: string): Promise<GeoCountry | undefined>;
 }
 
@@ -77,7 +79,7 @@ function createCountryStore(): CountryStore {
 					throw new Error(`Failed to load country data for ${countryCode}`);
 				}
 
-				const feature: GeoFeature = await response.json();
+				const feature: Feature<Polygon | MultiPolygon, CustomGeoJsonProperties> = await response.json();
 				const countryData: GeoCountry = {
 					code: countryCode,
 					feature
@@ -116,7 +118,7 @@ function createCountryStore(): CountryStore {
 	}
 
 	// Main function to get the country code
-	async function getCountryCode(location: GeoPoint): Promise<string | undefined> {
+	async function getCountryCode(location: Position): Promise<string | undefined> {
 		const cacheKey = `${location[0]},${location[1]}`;
 
 		// Check cache first
@@ -154,9 +156,9 @@ function createCountryStore(): CountryStore {
 			const polygon = countryData.feature;
 			let isInside = false;
 
-			if (polygon.geometry.type === GeoGeometryType.Polygon) {
-				isInside = turf.booleanPointInPolygon(point, polygon as any);
-			} else if (polygon.geometry.type === GeoGeometryType.MultiPolygon) {
+			if (polygon.geometry.type === 'Polygon') {
+				isInside = turf.booleanPointInPolygon(point, polygon);
+			} else if (polygon.geometry.type === 'MultiPolygon') {
 				for (const coords of polygon.geometry.coordinates) {
 					const poly = turf.polygon(coords);
 					if (turf.booleanPointInPolygon(point, poly)) {

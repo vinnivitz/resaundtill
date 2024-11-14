@@ -1,6 +1,8 @@
-import { browser } from '$app/environment';
-import { env } from '$env/dynamic/public';
 import { DirectusImageTransformation } from '$lib/models';
+
+import { browser } from '$app/environment';
+
+import { env } from '$env/dynamic/public';
 
 /**
  * Get the URL of the Directus API depending on the environment
@@ -24,7 +26,7 @@ export function getHostUrl(): string {
  * @param asThumbnail  Whether to return the thumbnail version of the image
  * @returns {string} The composed static URL to the image
  */
-export function imageUrlBuilder(id: string, transformation = DirectusImageTransformation.DEFAULT): string {
+export function imageUrlBuilder(id?: string, transformation = DirectusImageTransformation.DEFAULT): string {
 	return `${getApiUrl()}/assets/${id}?key=resaundtill-${
 		transformation === DirectusImageTransformation.THUMBNAIL
 			? 'thumbnail'

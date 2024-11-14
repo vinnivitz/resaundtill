@@ -1,9 +1,9 @@
 <script>
 	//@ts-nocheck
 	import { setContext } from 'svelte';
+	import { cubicInOut } from 'svelte/easing';
 	import { readable } from 'svelte/store';
 	import { crossfade } from 'svelte/transition';
-	import { cubicInOut } from 'svelte/easing';
 
 	export let key = {};
 	export let duration = (d) => Math.max(150, Math.sqrt(d * 150));

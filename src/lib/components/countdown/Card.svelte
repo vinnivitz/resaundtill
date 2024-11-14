@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { onInterval } from '$lib/utils/on-interval.util';
+
+	import { onInterval } from '$lib/utils';
+
 	export let callback: () => void;
 	export let number: number;
 	export let name: string;
@@ -11,16 +13,25 @@
 	let topFlip: string[] = [];
 	let bottomFlip: string[] = [];
 
-	const calculateLength = (num: number) => {
+	function calculateLength(num: number): string[] {
 		let arr = num.toString().split('');
 		let res = arr.length === 1 ? ['0', ...arr] : arr;
 
 		return res;
-	};
-	const topFlipStart = () => (topFront = numbers);
-	const topFlipEnd = () => (topFlip = numbers);
-	const bottomFlipStart = () => (bottomFlip = numbers);
-	const bottomFlipEnd = () => (bottomFront = numbers);
+	}
+
+	function topFlipStart(): void {
+		topFront = numbers;
+	}
+	function topFlipEnd(): void {
+		topFlip = numbers;
+	}
+	function bottomFlipStart(): void {
+		bottomFlip = numbers;
+	}
+	function bottomFlipEnd(): void {
+		bottomFront = numbers;
+	}
 	onMount(() => {
 		topFront = numbers;
 		bottomFront = numbers;
