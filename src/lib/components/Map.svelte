@@ -2,12 +2,11 @@
 	import { Button, Spinner } from 'flowbite-svelte';
 	import { type Position } from 'geojson';
 	import type { Map, Icon, IconOptions } from 'leaflet';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 
-	import { type MapItem } from '$lib/models';
-
 	import 'leaflet/dist/leaflet.css';
+	import { type MapItem } from '$lib/models';
 	import { currentCoordinatesStore } from '$lib/stores';
 
 	let {

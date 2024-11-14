@@ -1,6 +1,8 @@
-import { createDirectus, rest, type FetchInterface } from '@directus/sdk';
+import { createDirectus, rest, type DirectusClient, type FetchInterface, type RestClient } from '@directus/sdk';
 
 import type { Collections } from '$lib/models';
 import { getApiUrl } from '$lib/utils';
 
-export const sdk = (fetch: FetchInterface) => createDirectus<Collections>(getApiUrl(), { globals: { fetch } }).with(rest());
+export function sdk(fetch: FetchInterface): DirectusClient<Collections> & RestClient<Collections> {
+	return createDirectus<Collections>(getApiUrl(), { globals: { fetch } }).with(rest());
+}

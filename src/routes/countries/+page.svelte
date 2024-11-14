@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Input } from 'flowbite-svelte';
-	import { onMount } from 'svelte';
+	import { onMount, fly } from 'svelte';
 	import { t } from 'svelte-i18n';
 	// @ts-expect-error - Ignore this error
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
@@ -9,7 +9,6 @@
 	import { debounce } from '$lib/utils';
 
 	import { browser } from '$app/environment';
-	import { fly } from 'svelte/transition';
 
 	const observers: HTMLDivElement[] = [];
 	let observer: IntersectionObserver;

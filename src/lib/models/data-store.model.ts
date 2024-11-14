@@ -1,8 +1,8 @@
+import type { FetchInterface } from '@directus/sdk';
 import type { Position } from 'geojson';
 import type { Readable } from 'svelte/store';
 
 import type { BlogPostEntry, CountryEntry, MapItem, SupportInfoEntry } from './';
-import type { FetchInterface } from '@directus/sdk';
 
 export type DataModel = {
 	posts: BlogPostEntry[];

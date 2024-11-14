@@ -1,4 +1,4 @@
-import type { Point } from "geojson";
+import type { Point } from 'geojson';
 
 export type MapItem = {
 	location: Point;

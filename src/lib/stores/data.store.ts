@@ -1,7 +1,6 @@
-import { writable } from 'svelte/store';
 import { readItems, readSingleton, type FetchInterface } from '@directus/sdk';
-import { sdk } from '$lib/sdk';
-import { countryStore } from './';
+import type { Position } from 'geojson';
+import { writable } from 'svelte/store';
 
 import {
 	type BlogPostEntry,
@@ -11,7 +10,9 @@ import {
 	type CountryEntry,
 	type MapItem
 } from '$lib/models';
-import type { Position } from 'geojson';
+import { sdk } from '$lib/sdk';
+
+import { countryStore } from './';
 
 // Define individual stores for each property
 export const postsStore = writable<BlogPostEntry[] | null>(null);
@@ -32,7 +33,7 @@ async function initDataStores(fetch: FetchInterface): Promise<boolean> {
 	if (initialized) return true;
 	initialized = true;
 
-	async function getPosts() {
+	async function getPosts(): Promise<void> {
 		const posts = await sdk(fetch).request<BlogPostEntry[]>(
 			readItems('resaundtill_posts', {
 				limit: -1,
@@ -43,7 +44,7 @@ async function initDataStores(fetch: FetchInterface): Promise<boolean> {
 		postsStore.set(posts);
 	}
 
-	async function getImages() {
+	async function getImages(): Promise<void> {
 		const posts = await sdk(fetch).request<BlogPostEntry[]>(
 			readItems('resaundtill_posts', { limit: -1, fields: ['id', 'images.*'] })
 		);
@@ -60,7 +61,7 @@ async function initDataStores(fetch: FetchInterface): Promise<boolean> {
 		imagesStore.set(Array.from(postToImages.values()).flat());
 	}
 
-	async function getCountries() {
+	async function getCountries(): Promise<void> {
 		const countries = await sdk(fetch).request<CountryEntry[]>(
 			readItems('resaundtill_countries', {
 				fields: ['id', 'code', 'translations.*', 'population', 'area', 'capital', 'currency', 'thumbnail']
@@ -69,12 +70,12 @@ async function initDataStores(fetch: FetchInterface): Promise<boolean> {
 		countriesStore.set(countries);
 	}
 
-	async function getDeparture() {
+	async function getDeparture(): Promise<void> {
 		const departure = await sdk(fetch).request<Departure>(readSingleton('resaundtill_departure', { fields: ['date'] }));
 		departureStore.set(new Date(departure.date));
 	}
 
-	async function getSupportInfo() {
+	async function getSupportInfo(): Promise<void> {
 		const supportInfo = await sdk(fetch).request<SupportInfoEntry>(
 			// @ts-expect-error - Directus SDK typings are incorrect
 			readSingleton('resaundtill_support', { fields: ['id', 'translations.*'] })
@@ -82,14 +83,14 @@ async function initDataStores(fetch: FetchInterface): Promise<boolean> {
 		supportInfoStore.set(supportInfo);
 	}
 
-	async function getGalleryShufflePercentage() {
+	async function getGalleryShufflePercentage(): Promise<void> {
 		const galleryShufflePercentage = await sdk(fetch).request<GalleryShufflePercentage>(
 			readSingleton('resaundtill_gallery_shuffle_percentage')
 		);
 		galleryShufflePercentageStore.set(galleryShufflePercentage.value);
 	}
 
-	async function currentCoordinates() {
+	async function currentCoordinates(): Promise<void> {
 		const post = await sdk(fetch).request<BlogPostEntry[]>(
 			readItems('resaundtill_posts', {
 				limit: 1,
@@ -100,7 +101,7 @@ async function initDataStores(fetch: FetchInterface): Promise<boolean> {
 		currentCoordinatesStore.set(post[0]?.location?.coordinates || null);
 	}
 
-	async function mapItems() {
+	async function mapItems(): Promise<void> {
 		const posts = await sdk(fetch).request<BlogPostEntry[]>(
 			readItems('resaundtill_posts', {
 				limit: -1,
@@ -111,7 +112,7 @@ async function initDataStores(fetch: FetchInterface): Promise<boolean> {
 		mapItemsStore.set(posts.filter((post) => post.location) as MapItem[]);
 	}
 
-	async function countryPostRelations() {
+	async function countryPostRelations(): Promise<void> {
 		const posts = await sdk(fetch).request<BlogPostEntry[]>(
 			readItems('resaundtill_posts', {
 				limit: -1,
@@ -157,6 +158,7 @@ async function initDataStores(fetch: FetchInterface): Promise<boolean> {
 		]);
 		return true;
 	} catch (error) {
+		console.log('error', error);
 		return false;
 	}
 }

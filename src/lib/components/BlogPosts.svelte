@@ -1,8 +1,7 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import { Input, Spinner, Button, Dropdown, Checkbox, Search } from 'flowbite-svelte';
+	import { Input, Spinner, Button, Dropdown, Checkbox, Search, Datepicker } from 'flowbite-svelte';
 	import { onDestroy, onMount } from 'svelte';
-	import type { Unsubscriber } from 'svelte/store';
 	import { t, locale } from 'svelte-i18n';
 	// @ts-expect-error - Typings are missing
 	import FaArrowDown from 'svelte-icons/fa/FaArrowDown.svelte';
@@ -28,8 +27,6 @@
 	} from '$lib/models';
 	import { countriesStore, countryToPostsStore, postToImagesStore } from '$lib/stores/data.store';
 	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
-
-	import { Datepicker } from 'flowbite-svelte';
 
 	let {
 		posts,
@@ -144,7 +141,7 @@
 		calendar: CalendarModel | undefined,
 		countries: BlogPostCountrySearchItem[] | undefined,
 		_: number
-	) {
+	): Promise<void> {
 		if (items && calendar?.from && calendar?.to && countries) {
 			// Await the debounced filter result
 			postsItemsFiltered = await debouncedFilter(postItems, term, calendar, countrySearchItemsFiltered, resetted);

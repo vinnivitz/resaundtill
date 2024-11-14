@@ -1,4 +1,4 @@
-export function debounce<T extends (...args: any[]) => R, R>(
+export function debounce<T extends (...args: unknown[]) => R, R>(
 	func: T,
 	delay: number
 ): (...args: Parameters<T>) => Promise<R> {

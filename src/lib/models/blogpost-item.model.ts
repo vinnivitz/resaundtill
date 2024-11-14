@@ -1,4 +1,5 @@
 import type { Position } from 'geojson';
+
 import type { BlogPostTranslation } from './directus.model';
 
 export type BlogPostItem = {
