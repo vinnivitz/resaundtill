@@ -286,7 +286,7 @@
 					</div>
 				{/if}
 				{#if initCalendar && initCalendar.from && initCalendar.to}
-					<div class="w-80">
+					<div class="flex-1 md:flex-auto md:w-80">
 						<div class="block md:hidden">
 							<Datepicker
 								inputClass="cursor-pointer"

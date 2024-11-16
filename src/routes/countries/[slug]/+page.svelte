@@ -88,9 +88,8 @@
 					</div>
 				</Secondary>
 			</Heading>
-			<div class="hidden md:block">
-				<Hr />
-			</div>
+
+			<Hr />
 
 			<div class="block md:hidden">
 				<Tabs tabStyle="underline" defaultClass="flex justify-center">
@@ -123,7 +122,7 @@
 					</TabItem>
 					{#if posts && posts.length > 0}
 						<TabItem title={$t('common.posts')} defaultClass="text-lg">
-							<BlogPosts {posts} countryFilter={false} />
+							<BlogPosts {posts} searchable countryFilter={false} />
 						</TabItem>
 					{/if}
 					<TabItem title={$t('common.map')} defaultClass="text-lg p-0">
