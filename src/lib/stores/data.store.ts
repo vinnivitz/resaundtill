@@ -8,29 +8,33 @@ import {
 	type SupportInfoEntry,
 	type GalleryShufflePercentage,
 	type CountryEntry,
-	type MapItem
+	type MapItem,
+	type DirectusImageDetails,
+	type ImageDetails
 } from '$lib/models';
 import { sdk } from '$lib/sdk';
 
-import { countryStore } from './';
+import { alertStore } from './alert.store';
+
+import { geoJsonStore } from './';
 
 // Define individual stores for each property
-export const postsStore = writable<BlogPostEntry[] | null>(null);
-export const postToImagesStore = writable<Map<string, string[]> | null>(null);
-export const imagesStore = writable<string[] | null>(null);
-export const countriesStore = writable<CountryEntry[] | null>(null);
-export const departureStore = writable<Date | null>(null);
-export const supportInfoStore = writable<SupportInfoEntry | null>(null);
-export const galleryShufflePercentageStore = writable<number | null>(null);
-export const currentCoordinatesStore = writable<Position | null>(null);
-export const mapItemsStore = writable<MapItem[]>([]);
-export const countryToPostsStore = writable<Map<string, string[]> | null>(null);
-export const postToCountryStore = writable<Map<string, string> | null>(null);
+export const postsStore = writable<BlogPostEntry[] | undefined>(undefined);
+export const postToImagesStore = writable<Map<string, ImageDetails[]> | undefined>(undefined);
+export const imagesStore = writable<ImageDetails[] | undefined>(undefined);
+export const countriesStore = writable<CountryEntry[] | undefined>(undefined);
+export const departureStore = writable<Date | undefined>(undefined);
+export const supportInfoStore = writable<SupportInfoEntry | undefined>(undefined);
+export const galleryShufflePercentageStore = writable<number | undefined>(undefined);
+export const currentCoordinatesStore = writable<Position | undefined>(undefined);
+export const mapItemsStore = writable<MapItem[] | undefined>(undefined);
+export const countryToPostsStore = writable<Map<string, string[]> | undefined>(undefined);
+export const postToCountryStore = writable<Map<string, string> | undefined>(undefined);
 
 let initialized = false;
 
-async function initDataStores(fetch: FetchInterface): Promise<boolean> {
-	if (initialized) return true;
+async function initDataStores(fetch: FetchInterface): Promise<void> {
+	if (initialized) return;
 	initialized = true;
 
 	async function getPosts(): Promise<void> {
@@ -38,27 +42,33 @@ async function initDataStores(fetch: FetchInterface): Promise<boolean> {
 			readItems('resaundtill_posts', {
 				limit: -1,
 				sort: ['-date'],
-				fields: ['id', 'date', 'translations.*']
+				fields: ['id', 'date', 'location', 'translations.*']
 			})
 		);
 		postsStore.set(posts);
 	}
 
 	async function getImages(): Promise<void> {
-		const posts = await sdk(fetch).request<BlogPostEntry[]>(
-			readItems('resaundtill_posts', { limit: -1, fields: ['id', 'images.*'] })
+		const posts = await sdk(fetch).request<BlogPostEntry<DirectusImageDetails>[]>(
+			readItems('resaundtill_posts', { limit: -1, fields: ['id', 'date', 'images.*.*'] })
 		);
-		const postToImages = new Map<string, string[]>();
+		const postToImages = new Map<string, ImageDetails[]>();
 		posts.forEach((post) => {
 			if (post.images) {
 				postToImages.set(
 					post.id,
-					post.images.map((image) => image.directus_files_id)
+					post.images.map((image) => ({ ...image.directus_files_id, postId: post.id, date: post.date }))
 				);
 			}
 		});
 		postToImagesStore.set(postToImages);
-		imagesStore.set(Array.from(postToImages.values()).flat());
+		imagesStore.set(
+			Array.from(postToImages.values())
+				.flat()
+				.sort((a, b) => {
+					return new Date(a.date).getTime() - new Date(b.date).getTime();
+				})
+		);
 	}
 
 	async function getCountries(): Promise<void> {
@@ -98,7 +108,7 @@ async function initDataStores(fetch: FetchInterface): Promise<boolean> {
 				fields: ['location']
 			})
 		);
-		currentCoordinatesStore.set(post[0]?.location?.coordinates || null);
+		currentCoordinatesStore.set(post[0]?.location?.coordinates || undefined);
 	}
 
 	async function mapItems(): Promise<void> {
@@ -124,7 +134,7 @@ async function initDataStores(fetch: FetchInterface): Promise<boolean> {
 		await Promise.all(
 			posts.map(async (post) => {
 				if (post.location) {
-					post.countryCode = post.countryCode ?? (await countryStore.getCountryCode(post.location.coordinates));
+					post.countryCode = post.countryCode ?? (await geoJsonStore.getCountryCode(post.location.coordinates));
 					if (post.countryCode) {
 						const postsForCountry = countryToPosts.get(post.countryCode) ?? [];
 						postsForCountry.push(post.id);
@@ -156,10 +166,9 @@ async function initDataStores(fetch: FetchInterface): Promise<boolean> {
 			mapItems(),
 			countryPostRelations()
 		]);
-		return true;
 	} catch (error) {
-		console.log('error', error);
-		return false;
+		console.error(error);
+		alertStore.setAlert('Failed to load data');
 	}
 }
 

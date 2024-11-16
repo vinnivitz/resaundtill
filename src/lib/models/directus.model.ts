@@ -19,14 +19,14 @@ export type SupportInfoEntry = {
 	translations: SupportTranslation[];
 };
 
-export type BlogPostEntry = {
+export type BlogPostEntry<T = string> = {
 	id: string;
 	status: BlogPostStatus;
 	date: string;
 	isFlight: boolean;
 	translations: BlogPostTranslation[];
 	location?: Point;
-	images?: DirectusImage[];
+	images?: DirectusImage<T>[];
 	countryCode?: string;
 };
 
@@ -67,9 +67,14 @@ export type DirectusImageDetails = {
 	description?: string;
 };
 
-export type DirectusImage = {
+export type ImageDetails = DirectusImageDetails & {
+	postId: string;
+	date: string;
+};
+
+export type DirectusImage<T = string> = {
 	id: string;
-	directus_files_id: string;
+	directus_files_id: T;
 	resaundtill_posts_id: string;
 };
 

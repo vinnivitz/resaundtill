@@ -9,11 +9,12 @@ export type CountryItemDetails = {
 	area: number;
 	capital: string;
 	currency: string;
-	posts: BlogPostEntry[];
+	posts: BlogPostEntry[] | undefined;
 	mapItems: MapItem[];
 };
 
 export type CountryItem = {
+	id: string;
 	code: string;
 	name: string;
 	thumbnailUrl: string;

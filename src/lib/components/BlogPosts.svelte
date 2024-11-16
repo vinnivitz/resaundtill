@@ -2,6 +2,7 @@
 	import dayjs from 'dayjs';
 	import { Input, Spinner, Button, Dropdown, Checkbox, Search, Datepicker } from 'flowbite-svelte';
 	import { onDestroy, onMount } from 'svelte';
+	import { fly } from 'svelte/transition';
 	import { t, locale } from 'svelte-i18n';
 	// @ts-expect-error - Typings are missing
 	import FaArrowDown from 'svelte-icons/fa/FaArrowDown.svelte';
@@ -25,21 +26,27 @@
 		type CalendarModel,
 		type CountryEntryTranslation
 	} from '$lib/models';
+	import { dateStore } from '$lib/stores';
 	import { countriesStore, countryToPostsStore, postToImagesStore } from '$lib/stores/data.store';
 	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
 
 	let {
 		posts,
 		searchable = false,
+		countryFilter = true,
 		sort = BlogPostSort.DESCENDING
-	}: { posts: BlogPostEntry[] | null; searchable?: boolean; sort?: BlogPostSort } = $props();
+	}: {
+		posts: BlogPostEntry[] | undefined;
+		searchable?: boolean;
+		countryFilter?: boolean;
+		sort?: BlogPostSort;
+	} = $props();
 
 	let observer: IntersectionObserver;
 	const observers: HTMLDivElement[] = [];
 
 	let searchTerm: string | undefined = $state(undefined);
 	let countrySearchTerm: string | undefined = $state(undefined);
-	let resetted = $state(false);
 	let filterTrigger = $state(0);
 	let initCalendar = $state<CalendarModel>({});
 
@@ -49,25 +56,19 @@
 	const postItems: BlogPostItem[] | undefined = $derived(
 		posts && $postToImagesStore
 			? posts.map((post) => {
-					const thumbnailUrl = $postToImagesStore.get(post.id)?.[0];
+					const imageId = $postToImagesStore.get(post.id)?.[0]?.id;
 					return {
 						id: post.id,
 						date: new Date(post.date),
-						formattedDate: {
-							day: dayjs(new Date(post.date)).format('D'),
-							month: dayjs(new Date(post.date)).format('MMMM')
-						},
 						translations: post.translations,
-						thumbnailUrl: thumbnailUrl
-							? imageUrlBuilder(thumbnailUrl, DirectusImageTransformation.PREVIEW)
-							: 'images/gallery/travel.jpg'
+						thumbnailUrl: imageUrlBuilder(imageId, DirectusImageTransformation.PREVIEW)
 					};
 				})
 			: undefined
 	);
 
 	const countrySearchItems: BlogPostCountrySearchItem[] | undefined = $derived(
-		postItems && $countriesStore && $countryToPostsStore
+		countryFilter && postItems && $countriesStore && $countryToPostsStore
 			? [
 					...$countriesStore.map((country) => ({
 						name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
@@ -94,59 +95,47 @@
 			: undefined
 	);
 
-	$effect(() => {
-		countrySearchItemsFiltered = countrySearchItems;
-	});
-
-	$effect(() => {
-		countrySearchItemsFiltered = countrySearchTerm
-			? countrySearchItems?.map((country) => ({
-					...country,
-					visible: country.name.toLowerCase().indexOf(countrySearchTerm!.toLowerCase()) !== -1
-				}))
-			: countrySearchItems;
-	});
-
 	const initFromRange: Date | undefined = $derived(
-		postItems
+		searchable && postItems
 			? normalizeDate(postItems.reduce((earliest, current) => (current.date < earliest.date ? current : earliest)).date)
 			: undefined
 	);
 
 	const initToRange: Date | undefined = $derived(
-		postItems
+		searchable && postItems
 			? normalizeDate(postItems.reduce((latest, current) => (current.date > latest.date ? current : latest)).date)
 			: undefined
 	);
-
-	$effect(() => {
-		if (initFromRange && initToRange) {
-			initCalendar = { from: initFromRange, to: initToRange };
-		}
-	});
 
 	const calendar: CalendarModel | undefined = $derived(
 		initFromRange && initToRange ? { from: initFromRange, to: initToRange } : undefined
 	);
 
-	$effect(() => {
-		executeDebouncedFilter(postItems, searchTerm, calendar, countrySearchItemsFiltered, filterTrigger);
-	});
-
 	const filterApplied = $derived(postsItemsFiltered && postsItemsFiltered.length !== postItems?.length);
 
-	async function executeDebouncedFilter(
-		items: BlogPostItem[] | undefined,
-		term: string | undefined,
-		calendar: CalendarModel | undefined,
-		countries: BlogPostCountrySearchItem[] | undefined,
-		_: number
-	): Promise<void> {
-		if (items && calendar?.from && calendar?.to && countries) {
-			// Await the debounced filter result
-			postsItemsFiltered = await debouncedFilter(postItems, term, calendar, countrySearchItemsFiltered, resetted);
+	$effect(() => {
+		countrySearchItemsFiltered = countrySearchItems;
+	});
+
+	$effect(() => {
+		countrySearchItemsFiltered =
+			countryFilter && countrySearchTerm
+				? countrySearchItems?.map((country) => ({
+						...country,
+						visible: country.name.toLowerCase().indexOf(countrySearchTerm!.toLowerCase()) !== -1
+					}))
+				: countrySearchItems;
+	});
+
+	$effect(() => {
+		if (searchable && initFromRange && initToRange) {
+			initCalendar = { from: initFromRange, to: initToRange };
 		}
-	}
+	});
+
+	$effect(() => {
+		debouncedFilter(postItems, searchTerm, calendar, countrySearchItemsFiltered, filterTrigger);
+	});
 
 	function selectDate(event: CustomEvent<{ from: Date; to: Date }>): void {
 		const { from, to } = event.detail;
@@ -162,11 +151,11 @@
 		term: string | undefined,
 		calendar: CalendarModel | undefined,
 		countries: BlogPostCountrySearchItem[] | undefined,
-		_: boolean
-	): Promise<BlogPostItem[] | undefined> {
-		return debounce(() => (postsItemsFiltered = filterBlogPosts(items, term, calendar, countries)), 300)() as Promise<
-			BlogPostItem[] | undefined
-		>;
+		_: number
+	): void {
+		if (items && (!searchable || (calendar?.from && calendar?.to && (!countryFilter || countries)))) {
+			debounce(() => (postsItemsFiltered = getFilteredPosts(items, term, calendar, countries)), 300)();
+		}
 	}
 
 	function normalizeDate(date: Date): Date {
@@ -175,25 +164,28 @@
 		return newDate;
 	}
 
-	function filterBlogPosts(
+	function getFilteredPosts(
 		items: BlogPostItem[] | undefined,
 		term: string | undefined,
 		calendar: CalendarModel | undefined,
 		countries: BlogPostCountrySearchItem[] | undefined
 	): BlogPostItem[] | undefined {
-		const result = items?.filter((post) => {
-			const matchesTerm = term
-				? !!getTranslation<BlogPostTranslation>(post.translations, $locale)
-						?.title?.toLowerCase()
-						.includes(term.toLowerCase())
-				: true;
+		return items?.filter((post) => {
+			const matchesTerm =
+				!searchable ||
+				(term
+					? getTranslation<BlogPostTranslation>(post.translations, $locale)
+							?.title?.toLowerCase()
+							.includes(term.toLowerCase())
+					: true);
 			const matchesDate =
-				new Date(post.date) >= dayjs(calendar?.from).subtract(1, 'hour').toDate() &&
-				new Date(post.date) <= dayjs(calendar?.to).add(1, 'day').toDate();
-			const matchesCountries = countries?.some((country) => country.checked && country.postIds.includes(post.id));
-			return matchesTerm && matchesDate && matchesCountries;
+				!searchable ||
+				(new Date(post.date) >= dayjs(calendar?.from).subtract(1, 'hour').toDate() &&
+					new Date(post.date) <= dayjs(calendar?.to).add(1, 'day').toDate());
+			const matchesCountries =
+				!countryFilter || countries?.some((country) => country.checked && country.postIds.includes(post.id));
+			return !searchable || (matchesTerm && matchesDate && matchesCountries);
 		});
-		return result;
 	}
 
 	function lazyLoadBackground(entries: IntersectionObserverEntry[]): void {
@@ -226,7 +218,6 @@
 	}
 
 	function resetFilter(): void {
-		resetted = true;
 		searchTerm = '';
 		countrySearchTerm = '';
 		if (calendar && initFromRange && initToRange) {
@@ -263,9 +254,9 @@
 	onDestroy(() => observer?.disconnect());
 </script>
 
-<div class="mx-auto max-w-screen-xl p-5 pt-0 dark:text-gray-100">
+<div class="mx-auto max-w-screen-xl dark:text-gray-100">
 	{#if searchable}
-		<div class="mb-5 flex-row items-center justify-between md:flex">
+		<div class="mb-7 flex-row items-center justify-between md:flex">
 			<div class="flex items-center gap-2">
 				<div class="relative w-full md:w-72">
 					<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
@@ -286,26 +277,45 @@
 					</div>
 				{/if}
 			</div>
-			<div class="mt-3 flex flex-wrap items-center justify-center gap-2">
+			<div class="mt-3 flex items-center justify-center gap-2">
 				{#if filterApplied}
 					<div class="hidden md:block">
 						<Button color="red" onclick={resetFilter}>
-							<div class="h-6 w-6"><FaTrashAlt></FaTrashAlt></div>
+							<div class="h-[15px] w-6"><FaTrashAlt></FaTrashAlt></div>
 						</Button>
 					</div>
 				{/if}
-				{#if countrySearchItemsFiltered && initCalendar}
-					<Datepicker
-						inputClass="w-96 cursor-pointer"
-						color="blue"
-						rangeFrom={initCalendar.from}
-						rangeTo={initCalendar.to}
-						range
-						locale={$locale ?? undefined}
-						on:select={selectDate}
-					></Datepicker>
-					<div class="flex-auto">
-						<Button class="w-full border text-black dark:text-white">
+				{#if initCalendar && initCalendar.from && initCalendar.to}
+					<div class="w-80">
+						<div class="block md:hidden">
+							<Datepicker
+								inputClass="cursor-pointer"
+								color="blue"
+								rangeFrom={initCalendar.from}
+								rangeTo={initCalendar.to}
+								range
+								dateFormat={{ formatMatcher: 'best fit', day: '2-digit', month: '2-digit', year: '2-digit' }}
+								locale={$locale ?? undefined}
+								on:select={selectDate}
+							></Datepicker>
+						</div>
+						<div class="hidden md:block">
+							<Datepicker
+								inputClass="cursor-pointer"
+								color="blue"
+								rangeFrom={initCalendar.from}
+								rangeTo={initCalendar.to}
+								range
+								locale={$locale ?? undefined}
+								on:select={selectDate}
+								defaultDate={initCalendar.from}
+							></Datepicker>
+						</div>
+					</div>
+				{/if}
+				{#if countrySearchItemsFiltered}
+					<div class="flex-1">
+						<Button class="w-full border border-gray-600 px-2 py-[5px] text-black dark:text-white">
 							{$t('components.posts.select-countries')}
 							<span class="ml-2 h-6 w-6"> <FaChevronDown /></span></Button
 						>
@@ -324,15 +334,15 @@
 							{/each}
 						</Dropdown>
 					</div>
-					{#if sort === BlogPostSort.ASCENDING}
-						<button class="h-6 w-6 cursor-pointer" onclick={toggleSorting}>
-							<FaArrowUp />
-						</button>
-					{:else}
-						<button class="h-6 w-6 cursor-pointer" onclick={toggleSorting}>
-							<FaArrowDown />
-						</button>
-					{/if}
+				{/if}
+				{#if sort === BlogPostSort.ASCENDING}
+					<button class="h-6 w-6 cursor-pointer" onclick={toggleSorting}>
+						<FaArrowUp />
+					</button>
+				{:else}
+					<button class="h-6 w-6 cursor-pointer" onclick={toggleSorting}>
+						<FaArrowDown />
+					</button>
 				{/if}
 			</div>
 		</div>
@@ -342,14 +352,15 @@
 		<div class="flex h-screen items-center justify-center">
 			<Spinner size="24" color="blue" />
 		</div>
-	{:else if postsItemsFiltered && postsItemsFiltered.length === 0}
+	{:else if postsItemsFiltered.length === 0}
 		<div class="text-center text-2xl font-semibold dark:text-gray-100">
 			{$t('components.posts.no-posts')}
 		</div>
 	{:else}
-		<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+		<div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
 			{#each postsItemsFiltered as post (post.id)}
 				<a
+					in:fly={{ y: 50, duration: 1000 }}
 					href={`${PagePath.travel}/${post.id}`}
 					class="xl:transition xl:delay-150 xl:duration-300 xl:ease-in-out xl:hover:-translate-y-1 xl:hover:scale-110"
 				>
@@ -365,10 +376,10 @@
 						<div class="absolute left-0 right-0 top-0 mx-5 mt-3 flex items-center justify-between">
 							<div class="flex flex-col justify-start text-center text-gray-700">
 								<span class="text-shadow text-3xl font-semibold leading-none tracking-wide">
-									{post.formattedDate.day}
+									{$dateStore(post.date, 'DD')}
 								</span>
 								<span class="text-shadow uppercase leading-none">
-									{post.formattedDate.month}
+									{$dateStore(post.date, 'MMMM')}
 								</span>
 							</div>
 						</div>

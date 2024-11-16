@@ -17,18 +17,10 @@ const compat = new FlatCompat({
 	allConfig: js.configs.all
 });
 
-/** @type { import("eslint").ESLint.ConfigData } */
+/** @type { import("eslint").Linter.Config } */
 export default [
 	{
-		ignores: [
-			'**/node_modules',
-			'build',
-			'.svelte-kit',
-			'**/.env',
-			'**/pnpm-lock.yaml',
-			'static',
-			'src/lib/components/calendar'
-		]
+		ignores: ['**/node_modules', 'build', '.svelte-kit', '**/.env', '**/pnpm-lock.yaml', 'static']
 	},
 	...compat.extends(
 		'eslint:recommended',
@@ -63,6 +55,9 @@ export default [
 			},
 
 			'import/resolver': {
+				node: {
+					extensions: ['.js', '.ts', '.svelte']
+				},
 				typescript: {
 					alwaysTryTypes: true,
 					project: './tsconfig.json'

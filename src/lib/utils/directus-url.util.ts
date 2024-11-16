@@ -26,12 +26,15 @@ export function getHostUrl(): string {
  * @param asThumbnail  Whether to return the thumbnail version of the image
  * @returns {string} The composed static URL to the image
  */
-export function imageUrlBuilder(id?: string, transformation = DirectusImageTransformation.DEFAULT): string {
-	return `${getApiUrl()}/assets/${id}?key=resaundtill-${
-		transformation === DirectusImageTransformation.THUMBNAIL
-			? 'thumbnail'
-			: transformation === DirectusImageTransformation.PREVIEW
-				? 'preview'
-				: 'webp'
-	}`;
+
+export function imageUrlBuilder(
+	id?: string,
+	transformation: DirectusImageTransformation = DirectusImageTransformation.DEFAULT,
+	fallback = 'images/gallery/travel.jpg'
+): string {
+	if (!id) {
+		return `${getHostUrl()}/${fallback}`;
+	}
+	const key = DirectusImageTransformation.DEFAULT === transformation ? '' : `?key=resaundtill-${transformation}`;
+	return `${getApiUrl()}/assets/${id}${key}`;
 }

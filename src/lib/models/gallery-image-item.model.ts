@@ -1,5 +1,6 @@
 export type GalleryImageItem = {
 	id: string;
+	postId: string;
 	title?: string;
 	description?: string;
 	src: string;

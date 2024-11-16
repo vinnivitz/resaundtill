@@ -1,41 +1,49 @@
 <script lang="ts">
-	import { Input } from 'flowbite-svelte';
+	import { Input, Spinner } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
-	import { t } from 'svelte-i18n';
-	// @ts-expect-error - Ignore this error
+	import { fly } from 'svelte/transition';
+	import { locale, t } from 'svelte-i18n';
+	// @ts-expect-error - Typings are missing
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 
-	import { PagePath, type CountryItem } from '$lib/models';
-	import { debounce } from '$lib/utils';
-
-	import { browser } from '$app/environment';
-	import { fly } from 'svelte/transition';
+	import { DirectusImageTransformation, PagePath, type CountryEntryTranslation, type CountryItem } from '$lib/models';
+	import { countriesStore } from '$lib/stores';
+	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
 
 	const observers: HTMLDivElement[] = [];
 	let observer: IntersectionObserver;
-	let searchTerm: string;
-	let countryItems: CountryItem[];
-	let countriesFiltered: CountryItem[];
+	let searchTerm = $state<string | undefined>(undefined);
+	let countriesFiltered = $state<CountryItem[] | undefined>(undefined);
+	let filterTrigger = $state(0);
 
-	// countryItems = Array.from(data.countries.values()).map((country) => ({
-	// 	code: country.code,
-	// 	name: getTranslation<CountryEntryTranslation>(country.translations, $locale)!.name,
-	// 	thumbnailUrl: country.thumbnail
-	// 		? imageUrlBuilder(country.thumbnail, DirectusImageTransformation.PREVIEW)
-	// 		: '/images/gallery/travel.jpg'
-	// }));
+	const countryItems = $derived<CountryItem[] | undefined>(
+		$countriesStore?.map((country) => ({
+			id: country.id,
+			name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
+			code: country.code,
+			thumbnailUrl: imageUrlBuilder(country.thumbnail, DirectusImageTransformation.PREVIEW)
+		}))
+	);
 
-	// countriesFiltered = [...countryItems];
+	$effect(() => {
+		countriesFiltered = countryItems;
+	});
 
-	const debouncedSearch = debounce(async () => (countriesFiltered = [...filterCountriesBySearchTerm(searchTerm)]), 300);
+	$effect(() => {
+		debouncedFilter(countryItems, searchTerm, filterTrigger);
+	});
 
-	$: if (browser && searchTerm !== undefined) {
-		debouncedSearch();
+	function debouncedFilter(items: CountryItem[] | undefined, term: string | undefined, _: number): void {
+		if (items) {
+			debounce(() => (countriesFiltered = getFilteredCountries(items, term)), 300)();
+		}
 	}
 
-	function filterCountriesBySearchTerm(term: string): CountryItem[] {
-		const lowerCaseTerm = term.toLowerCase();
-		return countryItems.filter((country) => country.name?.toLowerCase().includes(lowerCaseTerm));
+	function getFilteredCountries(items: CountryItem[] | undefined, term: string | undefined): CountryItem[] | undefined {
+		return items?.filter((item) => {
+			const matchesTerm = term ? item.name.toLowerCase().includes(term.toLowerCase()) : true;
+			return matchesTerm;
+		});
 	}
 
 	function lazyLoadBackground(entries: IntersectionObserverEntry[]): void {
@@ -83,9 +91,13 @@
 				bind:value={searchTerm}
 			/>
 		</div>
-		{#if countriesFiltered.length === 0}
+		{#if !countriesFiltered}
+			<div class="flex h-screen items-center justify-center">
+				<Spinner size="24" color="blue" />
+			</div>
+		{:else if countriesFiltered.length === 0}
 			<p>{$t('countries.no-entries')}</p>
-		{:else if countriesFiltered}
+		{:else}
 			<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
 				{#each countriesFiltered as country}
 					<a

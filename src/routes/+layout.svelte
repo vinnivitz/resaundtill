@@ -1,14 +1,16 @@
 <script lang="ts">
 	import '$lib/locale';
+	import '/node_modules/flag-icons/css/flag-icons.min.css';
+	import '../app.pcss';
+
+	import { Toast } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import { locale } from 'svelte-i18n';
 
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { LayoutTheme, Locale } from '$lib/models';
+	import { alertStore } from '$lib/stores/alert.store';
 	import { getLocale } from '$lib/utils';
-
-	import '/node_modules/flag-icons/css/flag-icons.min.css';
-	import '../app.pcss';
 
 	let isDark = $state(false);
 
@@ -40,7 +42,7 @@
 </svelte:head>
 
 <header class="fixed z-10 w-full">
-	<Navbar {isDark} on:locale={toggleLocale} on:theme={toggleTheme} />
+	<Navbar {isDark} {toggleLocale} {toggleTheme} />
 </header>
 
 <main
@@ -48,3 +50,7 @@
 >
 	{@render children?.()}
 </main>
+
+{#if $alertStore}
+	<Toast>{$alertStore}</Toast>
+{/if}

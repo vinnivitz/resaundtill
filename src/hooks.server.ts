@@ -7,5 +7,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (lang) {
 		locale.set(lang);
 	}
-	return resolve(event);
+	return resolve(event, {
+		filterSerializedResponseHeaders(name) {
+			const allowedHeaders = ['content-type'];
+			return allowedHeaders.includes(name.toLowerCase());
+		}
+	});
 };

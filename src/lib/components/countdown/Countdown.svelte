@@ -4,7 +4,7 @@
 
 	import Card from '$lib/components/countdown/Card.svelte';
 
-	let { date }: { date: Date | null } = $props();
+	let { date }: { date: Date | undefined } = $props();
 
 	let show = $state(false);
 

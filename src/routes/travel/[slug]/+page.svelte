@@ -1,105 +1,106 @@
 <script lang="ts">
-	// import dayjs from 'dayjs';
-	// import { Heading, Secondary, Hr, Tabs, TabItem } from 'flowbite-svelte';
-	// import { fly } from 'svelte/transition';
-	// import { t, locale } from 'svelte-i18n';
-	// // @ts-expect-error - no types available
-	// import FaArrowLeft from 'svelte-icons/fa/FaArrowLeft.svelte';
-	// // @ts-expect-error - no types available
-	// import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
-	// // @ts-expect-error - no types available
-	// import FaCalendar from 'svelte-icons/fa/FaCalendar.svelte';
+	import { Heading, Secondary, Hr, Tabs, TabItem } from 'flowbite-svelte';
+	import { fly } from 'svelte/transition';
+	import { t, locale } from 'svelte-i18n';
+	// @ts-expect-error - no types available
+	import FaArrowLeft from 'svelte-icons/fa/FaArrowLeft.svelte';
+	// @ts-expect-error - no types available
+	import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
+	// @ts-expect-error - no types available
+	import FaCalendar from 'svelte-icons/fa/FaCalendar.svelte';
 
-	// import Gallery from '$lib/components/Gallery.svelte';
-	// import Map from '$lib/components/Map.svelte';
-	// import {
-	// 	PagePath,
-	// 	type BlogPostItemDetails,
-	// 	type BlogPostTranslation,
-	// 	type CountryEntryTranslation,
-	// 	type DirectusImageDetails,
-	// 	type MapItem
-	// } from '$lib/models';
-	// import { dataStore } from '$lib/stores';
-	// import { formatDate, getTranslation } from '$lib/utils';
+	import Gallery from '$lib/components/Gallery.svelte';
+	import Map from '$lib/components/Map.svelte';
+	import {
+		DirectusImageTransformation,
+		PagePath,
+		type BlogPostItemDetails,
+		type BlogPostTranslation,
+		type CountryEntryTranslation,
+		type MapItem
+	} from '$lib/models';
+	import {
+		countriesStore,
+		dateStore,
+		mapItemsStore,
+		postsStore,
+		postToCountryStore,
+		postToImagesStore
+	} from '$lib/stores';
+	import { getTranslation } from '$lib/utils';
 
-	// import { goto } from '$app/navigation';
+	import { goto } from '$app/navigation';
 
-	// import type { PageData } from './$types';
+	import type { PageData } from './$types';
 
-	// let data: PageData;
+	let { data }: { data: PageData } = $props();
 
-	// let currentIndex: number;
-	// let postItem: BlogPostItemDetails;
-	// let countryName: string | undefined;
-	// let countryCode: string;
-	// let isPrevPost = false;
-	// let isNextPost = false;
-	// let mapItems: MapItem[];
+	const isPrevPost = $derived($postsStore && ($postsStore.findIndex((post) => post.id === data.postId) ?? 0) > 0);
+	const isNextPost = $derived(
+		$postsStore && ($postsStore.findIndex((post) => post.id === data.postId) ?? 0) < $postsStore.length - 1
+	);
 
-	// $: if ($dataStore?.posts && $dataStore) {
-	// 	const posts = $dataStore.posts;
-	// 	const post = posts.find((post) => post.id === data.postID);
-	// 	if (!post) {
-	// 		goto(PagePath.travel);
-	// 	} else {
-	// 		postItem = {
-	// 			id: post.id,
-	// 			date: new Date(post.date),
-	// 			translations: post.translations,
-	// 			formattedDate: { day: dayjs(post.date).format('DD'), month: dayjs(post.date).format('MMMM') },
-	// 			images: []
-	// 		};
+	const postItem: BlogPostItemDetails | undefined = $derived(
+		$postsStore &&
+			$postToImagesStore &&
+			(() => {
+				const post = $postsStore.find((post) => post.id === data.postId);
+				if (!post) {
+					goto(PagePath.travel);
+				} else {
+					return {
+						id: post.id,
+						date: new Date(post.date),
+						translations: post.translations,
+						images: $postToImagesStore.get(post.id) ?? []
+					};
+				}
+			})()
+	);
 
-	// 		currentIndex = posts.findIndex((post) => post.id === postItem.id);
-	// 		isPrevPost = currentIndex > 0;
-	// 		isNextPost = currentIndex < $dataStore.posts.length - 1;
+	const translatedTitle = $derived(
+		postItem?.translations && getTranslation<BlogPostTranslation>(postItem.translations, $locale)?.title
+	);
 
-	// 		if ($dataStore.postToCountry) {
-	// 			const countryCode = $dataStore.postToCountry.get(postItem.id);
-	// 			if (countryCode) {
-	// 				countryName = getTranslation<CountryEntryTranslation>(
-	// 					$dataStore.countries.find((country) => country.code === countryCode)?.translations ?? [],
-	// 					$locale
-	// 				)?.name;
+	const translatedDescription = $derived(
+		postItem?.translations && getTranslation<BlogPostTranslation>(postItem.translations, $locale)?.description
+	);
 
-	// 				if ($dataStore.mapItems && $dataStore.countryToPosts) {
-	// 					mapItems = $dataStore.mapItems.filter((item) =>
-	// 						$dataStore.countryToPosts.get(countryCode)?.includes(item.id)
-	// 					);
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
+	const countryCode = $derived(postItem && $postToCountryStore && $postToCountryStore.get(postItem?.id));
 
-	// $: translatedTitle = getTranslation<BlogPostTranslation>(postItem.translations, $locale)?.title;
+	const countryName = $derived(
+		countryCode &&
+			$countriesStore &&
+			getTranslation<CountryEntryTranslation>(
+				$countriesStore.find((country) => country.code === countryCode)?.translations ?? [],
+				$locale
+			)?.name
+	);
 
-	// $: translatedDescription = getTranslation<BlogPostTranslation>(postItem.translations, $locale)?.description;
+	const mapItems = $derived<MapItem[] | undefined>(
+		postItem && $mapItemsStore?.filter((item) => item.id === postItem?.id)
+	);
 
-	// const images: DirectusImageDetails[] = [];
+	async function getPrevPost(): Promise<void> {
+		if ($postsStore) {
+			const post = $postsStore[$postsStore.findIndex((post) => post.id === data.postId) - 1];
+			await goto(`${PagePath.travel}/${post.id}`);
+		}
+	}
 
-	// function getPrevPost(): void {
-	// 	if (isPrevPost && $dataStore.posts) {
-	// 		const post = $dataStore.posts[currentIndex - 1];
-	// 		goto(`${PagePath.travel}/${post.id}`);
-	// 	}
-	// }
-
-	// function getNextPost(): void {
-	// 	if (isNextPost && $dataStore.posts) {
-	// 		const post = $dataStore.posts[currentIndex + 1];
-	// 		goto(`${PagePath.travel}/${post.id}`);
-	// 	}
-	// }
+	async function getNextPost(): Promise<void> {
+		if ($postsStore) {
+			const post = $postsStore[$postsStore.findIndex((post) => post.id === data.postId) + 1];
+			await goto(`${PagePath.travel}/${post.id}`);
+		}
+	}
 </script>
 
-<!-- 
-<section class="p-3 md:px-12 md:py-4">
-	<div class="mb-3 mt-2 flex md:mt-0">
+<section class="px-3 md:px-12 md:pt-4">
+	<div class="mb-3 mt-0 flex md:mt-0">
 		{#if isPrevPost}
 			<button
-				on:click={getPrevPost}
+				onclick={getPrevPost}
 				class="flex rounded-full bg-gray-200 px-4 pt-2 align-middle text-sm font-bold leading-6 text-gray-800 hover:bg-gray-400"
 			>
 				<div class="h-5 w-5"><FaArrowLeft /></div>
@@ -111,7 +112,7 @@
 		<div class="grow"></div>
 		{#if isNextPost}
 			<button
-				on:click={getNextPost}
+				onclick={getNextPost}
 				class="flex rounded-full bg-gray-200 px-4 py-2 align-middle text-sm font-bold leading-6 text-gray-800 hover:bg-gray-400"
 			>
 				<div class="pr-2">{$t('travel.header.next-button.label')}</div>
@@ -123,7 +124,7 @@
 	</div>
 
 	<div in:fly={{ y: 50, duration: 1000 }}>
-		<Heading customSize="text-4xl md:text-5xl mt-6 md:mt-6">
+		<Heading customSize="text-4xl md:text-5xl mt-6">
 			<Secondary>{translatedTitle}</Secondary>
 		</Heading>
 		<Hr />
@@ -132,7 +133,7 @@
 			<div class="flex items-center gap-2">
 				<div class="h-6 w-6"><FaCalendar /></div>
 				<div class="pt-1 text-sm md:text-lg">
-					{formatDate(new Date(postItem.date), $locale)}
+					{$dateStore(postItem?.date, 'DD. MMMM YYYY')}
 				</div>
 			</div>
 			{#if countryCode}
@@ -152,14 +153,18 @@
 						</p>
 					</TabItem>
 				{/if}
-				{#if images.length > 0}
+				{#if postItem && postItem.images.length > 0}
 					<TabItem title={$t('travel.gallery-title')} defaultClass="text-lg">
-						<Gallery {images} posts={data.posts} />
+						<Gallery
+							images={postItem.images}
+							showDateOnDetail={false}
+							imageTransformation={DirectusImageTransformation.PREVIEW}
+						/>
 					</TabItem>
 				{/if}
 				{#if mapItems}
 					<TabItem title={$t('common.map')} defaultClass="text-lg p-0">
-						<Map items={mapItems} deactivated={true} />
+						<Map items={mapItems} {countryCode} activatable />
 					</TabItem>
 				{/if}
 			</Tabs>
@@ -172,17 +177,21 @@
 				</p>
 			{/if}
 
-			{#if images.length > 0}
+			{#if postItem && postItem.images.length > 0}
 				<Hr />
 				<div class="m-2">
-					<Gallery {images} posts={$dataStore?.posts} />
+					<Gallery
+						images={postItem.images}
+						showDateOnDetail={false}
+						imageTransformation={DirectusImageTransformation.PREVIEW}
+					/>
 				</div>
 			{/if}
 
 			{#if mapItems}
 				<Hr />
-				<Map items={mapItems} deactivated={true} />
+				<Map items={mapItems} {countryCode} activatable />
 			{/if}
 		</div>
 	</div>
-</section> -->
+</section>

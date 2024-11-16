@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Input, Spinner } from 'flowbite-svelte';
-	import { createEventDispatcher, onMount, tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import Masonry from 'svelte-bricks';
-	import { _, locale, t } from 'svelte-i18n';
+	import { _, t } from 'svelte-i18n';
 	// @ts-expect-error - Types are missing
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 	import { GalleryImage, LightboxGallery } from 'svelte-lightbox';
@@ -10,23 +10,34 @@
 	import {
 		DirectusImageTransformation,
 		PagePath,
-		type BlogPostEntry,
-		type DirectusImageDetails,
+		type ImageDetails,
 		type GalleryImageItem,
 		type LightboxController
 	} from '$lib/models';
-	import { imageCacheStore } from '$lib/stores';
-	import { debounce, formatDate, imageUrlBuilder } from '$lib/utils';
+	import { dateStore, galleryShufflePercentageStore, imageCacheStore } from '$lib/stores';
+	import { debounce, imageUrlBuilder } from '$lib/utils';
 
-	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 
-	export let images: DirectusImageDetails[] = [];
-	export let caching = true;
-	export let searchable = false;
-	export let showPostLink = false;
-	export let randomizePercentage = 0;
-	export let posts: BlogPostEntry[] = [];
+	let {
+		images,
+		caching = true,
+		searchable = false,
+		showPostLinkOnDetail = false,
+		showDateOnDetail = true,
+		randomize = true,
+		imageTransformation = DirectusImageTransformation.THUMBNAIL,
+		loaded
+	}: {
+		images: ImageDetails[] | undefined;
+		caching?: boolean;
+		searchable?: boolean;
+		showPostLinkOnDetail?: boolean;
+		showDateOnDetail?: boolean;
+		randomize?: boolean;
+		imageTransformation?: DirectusImageTransformation;
+		loaded?: (value: boolean) => void;
+	} = $props();
 
 	type GalleryArrowCharacter = '' | 'hide' | 'loop';
 
@@ -36,55 +47,58 @@
 		enableKeyboardControl: boolean;
 	}
 
-	const dispatch = createEventDispatcher();
-	let MasonryComponent: typeof Masonry;
-	let intersectionObserver: IntersectionObserver;
-	let searchTerm: string;
-	let cachedImages = new Map<string, HTMLImageElement>();
-	let programmaticController: LightboxController;
-	let initImg: string;
-
-	const debouncedSearch = debounce(async () => {
-		dispatch('loading', true);
-		galleryImagesFiltered = filterImagesBySearchTerm(galleryImages, searchTerm);
-		await tick();
-		setupObservers();
-		dispatch('loading', false);
-	}, 300);
-
-	$: if (browser && searchTerm !== undefined) {
-		debouncedSearch();
-	}
-
-	let galleryImages: GalleryImageItem[] = images.map((file) => ({
-		id: file.id,
-		src: imageUrlBuilder(file.id)!,
-		thumb: imageUrlBuilder(file.id, DirectusImageTransformation.THUMBNAIL)!,
-		title: file.title,
-		description: file.description,
-		width: file.width,
-		height: file.height,
-		date: file.uploaded_on,
-		loaded: false
-	}));
-
-	if (randomizePercentage > 0) {
-		galleryImages = partialShuffleImageOrder(randomizePercentage);
-	}
-
-	let galleryImagesFiltered = galleryImages;
-
 	const arrowsConfig: GalleryArrowsConfig = {
 		character: 'loop',
 		color: '#fff',
 		enableKeyboardControl: true
 	};
 
+	let intersectionObserver: IntersectionObserver;
+	let searchTerm = $state<string | undefined>(undefined);
+	let cachedImages = $state(new Map<string, HTMLImageElement>());
+	let programmaticController = $state<LightboxController>();
+	let placeholderImage = $state<string | undefined>(undefined);
+	let imageItemsFiltered = $state<GalleryImageItem[] | undefined>(undefined);
+	let filterTrigger = $state(0);
+
+	const imageItems = $derived<GalleryImageItem[] | undefined>(
+		images && (!randomize || $galleryShufflePercentageStore)
+			? partialShuffleImageOrder(
+					images.map((image) => ({
+						id: image.id,
+						src: imageUrlBuilder(image.id),
+						thumb: imageUrlBuilder(image.id, imageTransformation),
+						title: image.title,
+						description: image.description,
+						date: image.uploaded_on,
+						width: image.width,
+						height: image.height,
+						postId: image.postId,
+						loaded: false
+					})),
+					$galleryShufflePercentageStore
+				)
+			: undefined
+	);
+
+	$effect(() => {
+		imageItemsFiltered = imageItems;
+	});
+
+	$effect(() => {
+		debouncedFilter(imageItems, searchTerm, filterTrigger);
+	});
+
 	function openModal(idx: number): void {
-		if (caching) {
-			cacheImages();
+		if (!imageItems) {
+			return;
 		}
-		programmaticController.openImage(idx);
+		if (caching) {
+			cacheImages(imageItems);
+		}
+		if (programmaticController) {
+			programmaticController.openImage(idx);
+		}
 	}
 
 	function renderFooter(image: GalleryImageItem): void {
@@ -97,9 +111,15 @@
 								${image.title}
 							</div>
 						</div>
-						<div class="flex flex-row items-center gap-2">
-							<div class="mt-1 text-sm text-nowrap">${formatDate(getPostDateByImageId(image.id, image.date), $locale)}</div>
-						</div>
+						${
+							showDateOnDetail
+								? `
+							<div class="flex flex-row items-center gap-2">
+								<div class="mt-1 text-sm text-nowrap">${$dateStore(image.date, 'DD. MMMM YYYY')}</div>
+							</div>
+						`
+								: ''
+						}
 					</div>
 					<div class="mt-3 px-2 text-sm text-gray-100">
 						${image.description && image.description.length < 60 ? image.description : ''}
@@ -108,54 +128,70 @@
 		}
 	}
 
-	function partialShuffleImageOrder(percentage: number): GalleryImageItem[] {
-		const totalElements = galleryImages.length;
-		const elementsToShuffle = Math.round(totalElements * (percentage / 100));
+	function partialShuffleImageOrder(images: GalleryImageItem[], percentage = 0): GalleryImageItem[] {
+		if (percentage <= 0 || percentage >= 100 || images.length === 0) {
+			return images;
+		}
+		percentage = 0;
+		const totalElements = images.length;
+		const elementsToShuffle = Math.floor(totalElements * (percentage / 100));
 		let selectedIndices = new Set<number>();
 
 		while (selectedIndices.size < elementsToShuffle) {
-			const randomIndex = Math.floor(Math.random() * totalElements);
-			selectedIndices.add(randomIndex);
+			selectedIndices.add(Math.floor(Math.random() * totalElements));
 		}
 
-		let elements = Array.from(selectedIndices).map((index) => galleryImages[index]);
-
-		for (let i = elements.length - 1; i > 0; i--) {
+		const shuffledArray = [...images];
+		const indices = Array.from(selectedIndices);
+		for (let i = indices.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
-			[elements[i], elements[j]] = [elements[j], elements[i]];
+			[shuffledArray[indices[i]], shuffledArray[indices[j]]] = [shuffledArray[indices[j]], shuffledArray[indices[i]]];
 		}
-
-		const shuffledArray = [...galleryImages];
-		let shuffledIndex = 0;
-		selectedIndices.forEach((index) => {
-			shuffledArray[index] = elements[shuffledIndex++];
-		});
 
 		return shuffledArray;
 	}
 
-	function filterImagesBySearchTerm(images: GalleryImageItem[], term: string): GalleryImageItem[] {
-		const lowerCaseTerm = term.toLowerCase();
-		return images.filter(
-			(image) =>
-				image.title?.toLowerCase().includes(lowerCaseTerm) || image.description?.toLowerCase().includes(lowerCaseTerm)
-		);
+	function debouncedFilter(items: GalleryImageItem[] | undefined, term: string | undefined, _: number): void {
+		debounce(async () => {
+			loaded?.(false);
+			imageItemsFiltered = getFilteredImages(items, term);
+			await tick();
+			setupObservers();
+			loaded?.(true);
+		}, 300)();
 	}
 
-	function cacheImages(): void {
+	function getFilteredImages(
+		images: GalleryImageItem[] | undefined,
+		term: string | undefined
+	): GalleryImageItem[] | undefined {
+		return images?.filter((image) => {
+			const matchesTerm = term
+				? image &&
+					(image.title?.toLowerCase().includes(term.toLowerCase()) ||
+						image.description?.toLowerCase().includes(term.toLowerCase()))
+				: true;
+			return matchesTerm;
+		});
+	}
+
+	function cacheImages(images: GalleryImageItem[]): void {
 		imageCacheStore.update((cache) => {
 			cachedImages = cache;
-			cacheImagesSequentially(cache);
+			cacheImagesSequentially(images, cache);
 			return cache;
 		});
 	}
 
-	async function cacheImagesSequentially(cache: Map<string, HTMLImageElement>): Promise<void> {
-		for (let i = 0; i < galleryImages.length; i++) {
-			const img = await loadDetailImage(galleryImages[i]);
-			if (!cache.has(galleryImages[i].id)) {
-				cache.set(galleryImages[i].id, img);
-				cachedImages.set(galleryImages[i].id, img);
+	async function cacheImagesSequentially(
+		images: GalleryImageItem[],
+		cache: Map<string, HTMLImageElement>
+	): Promise<void> {
+		for (let i = 0; i < images.length; i++) {
+			const img = await loadDetailImage(images[i]);
+			if (!cache.has(images[i].id)) {
+				cache.set(images[i].id, img);
+				cachedImages.set(images[i].id, img);
 			}
 		}
 	}
@@ -163,11 +199,8 @@
 	async function loadDetailImage(imageItem: GalleryImageItem): Promise<HTMLImageElement> {
 		return new Promise((resolve, reject) => {
 			const img = new Image();
-
 			img.onload = () => resolve(img);
-
 			img.onerror = reject;
-
 			img.src = imageItem.src;
 		});
 	}
@@ -211,15 +244,7 @@
 	}
 
 	async function gotoPost(id: string): Promise<void> {
-		const post = posts?.find((post) => post.images?.find((image) => image.directus_files_id === id));
-		if (post) {
-			return goto(`${PagePath.travel}/${post.id}`);
-		}
-	}
-
-	function getPostDateByImageId(id: string, fallback: string): Date {
-		const post = posts?.find((post) => post.images?.find((image) => image.directus_files_id === id));
-		return new Date(post?.date || fallback);
+		return goto(`${PagePath.travel}/${id}`);
 	}
 
 	function getPlaceholderImage(image: GalleryImageItem): string {
@@ -241,12 +266,10 @@
 	}
 
 	onMount(async () => {
-		initImg = createInitImage();
-		const masonryModule = await import('svelte-bricks');
-		MasonryComponent = masonryModule.default;
+		placeholderImage = createInitImage();
 		await tick();
 		setupObservers();
-		dispatch('loading', false);
+		loaded?.(true);
 	});
 </script>
 
@@ -264,17 +287,18 @@
 	</div>
 {/if}
 
-{#if browser}
-	<div class:has-post-link={showPostLink}>
+{#if imageItemsFiltered}
+	<div class:has-post-link={showPostLinkOnDetail}>
 		<LightboxGallery bind:programmaticController {arrowsConfig}>
-			{#each galleryImagesFiltered as image}
+			{#each imageItemsFiltered as image}
 				<GalleryImage>
-					{#if showPostLink && (cachedImages.has(image.id) || image.loaded)}
+					{#if showPostLinkOnDetail && (cachedImages.has(image.id) || image.loaded)}
 						<div class="absolute left-0 top-0 mt-[-36px] flex justify-center pb-3">
-							<!-- svelte-ignore a11y-no-static-element-interactions -->
-							<!-- svelte-ignore a11y-click-events-have-key-events -->
 							<div
-								on:click={() => gotoPost(image.id)}
+								role="button"
+								tabindex="0"
+								onclick={async () => await gotoPost(image.postId)}
+								onkeydown={async (e) => e.key === 'Enter' && (await gotoPost(image.postId))}
 								class="cursor-pointer rounded-full bg-gray-200 px-2 py-1 text-gray-800 hover:bg-gray-400"
 							>
 								{$t('components.gallery.lightbox.post-button')}
@@ -286,7 +310,7 @@
 							class="m-auto"
 							src={cachedImages.get(image.id)?.src}
 							alt={image.title}
-							on:load={() => renderFooter(image)}
+							onload={() => renderFooter(image)}
 						/>
 					{:else}
 						{#if !image.loaded}
@@ -300,7 +324,7 @@
 							alt={image.title}
 							style:opacity={image.loaded ? '1' : '0'}
 							class="m-auto transition-opacity duration-100"
-							on:load={() => {
+							onload={() => {
 								renderFooter(image);
 								image.loaded = true;
 							}}
@@ -315,66 +339,51 @@
 	</div>
 {/if}
 
-{#if galleryImagesFiltered.length === 0}
+{#if !imageItemsFiltered}
+	<div class="flex h-screen items-center justify-center">
+		<Spinner size="24" color="blue" />
+	</div>
+{/if}
+{#if imageItemsFiltered && imageItemsFiltered.length === 0}
 	<div class="flex justify-center">
 		<div>{$_('components.gallery.no_results')}</div>
 	</div>
-{/if}
-
-{#if browser}
+{:else if imageItemsFiltered}
 	<div class="hidden md:block">
-		<svelte:component
-			this={MasonryComponent}
-			animate={false}
-			items={galleryImagesFiltered}
-			minColWidth={200}
-			maxColWidth={800}
-			gap={20}
-			let:item
-			let:idx
-		>
+		<Masonry animate={false} items={imageItemsFiltered} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
 			<div class="placeholder relative w-full bg-gray-500" style="padding-bottom: {(item.height / item.width) * 100}%;">
-				<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 				<img
 					class="absolute left-0 top-0 cursor-pointer transition delay-150 duration-300 ease-in-out hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02]"
 					decoding="async"
-					src={initImg}
-					data-src={item.src}
+					src={placeholderImage}
+					data-src={item.thumb}
 					alt={item.title}
 					width={item.width}
 					height={item.height}
-					on:click={() => openModal(idx)}
+					onclick={() => openModal(idx)}
 				/>
 			</div>
-		</svelte:component>
+		</Masonry>
 	</div>
 	<div class="block md:hidden">
-		<svelte:component
-			this={MasonryComponent}
-			animate={false}
-			items={galleryImagesFiltered}
-			minColWidth={150}
-			maxColWidth={800}
-			gap={10}
-			let:item
-			let:idx
-		>
+		<Masonry animate={false} items={imageItemsFiltered} minColWidth={150} maxColWidth={800} gap={10} let:item let:idx>
 			<div class="placeholder relative w-full bg-gray-500" style="padding-bottom: {(item.height / item.width) * 100}%;">
-				<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 				<img
 					class="absolute left-0 top-0 cursor-pointer transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 md:hover:scale-[1.05] lg:hover:scale-[1.02]"
 					decoding="async"
-					src={initImg}
-					data-src={item.src}
+					src={placeholderImage}
+					data-src={item.thumb}
 					alt={item.title}
 					width={item.width}
 					height={item.height}
-					on:click={() => openModal(idx)}
+					onclick={() => openModal(idx)}
 				/>
 			</div>
-		</svelte:component>
+		</Masonry>
 	</div>
 {/if}
 

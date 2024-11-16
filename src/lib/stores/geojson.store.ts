@@ -8,34 +8,31 @@ import type { Readable } from 'svelte/store';
 import type { BoundingBoxEntry, CustomGeoJsonProperties, GeoCountry } from '$lib/models';
 import { getHostUrl } from '$lib/utils';
 
-interface CountryStore extends Readable<Map<string, string>> {
+import { alertStore } from './alert.store';
+
+type GeoJsonStore = Readable<Map<string, string>> & {
 	getCountryCode(location: Position): Promise<string | undefined>;
 	getGeoCountry(code: string): Promise<GeoCountry | undefined>;
-}
+};
 
-function createCountryStore(): CountryStore {
+function createGeoJsonStore(): GeoJsonStore {
 	const { subscribe, update } = writable<Map<string, string>>(new Map());
 
-	const countryDataCache = new Map<string, GeoCountry>(); // Cache for country GeoJSON data
-	const countryCodeCache = new Map<string, string | undefined>(); // Cache for location to country code
-	let countryGeoBoundingBoxes: BoundingBoxEntry[] | undefined = undefined; // Will be loaded from JSON file
-	let boundingBoxFetchPromise: Promise<BoundingBoxEntry[]> | null = null;
+	const countryDataCache = new Map<string, GeoCountry>();
+	const countryCodeCache = new Map<string, string | undefined>();
+	let countryGeoBoundingBoxes: BoundingBoxEntry[] | undefined = undefined;
+	let boundingBoxFetchPromise: Promise<BoundingBoxEntry[]> | undefined = undefined;
 	const countryDataPromises = new Map<string, Promise<GeoCountry | undefined>>();
 
-	// Function to load country bounding boxes
-
 	async function loadCountryGeoBoundingBoxes(): Promise<BoundingBoxEntry[]> {
-		// If bounding boxes are already loaded, return them
 		if (countryGeoBoundingBoxes) {
 			return countryGeoBoundingBoxes;
 		}
 
-		// If a fetch is already in progress, return the ongoing promise
 		if (boundingBoxFetchPromise) {
 			return boundingBoxFetchPromise;
 		}
 
-		// Start fetching and store the promise
 		boundingBoxFetchPromise = (async () => {
 			try {
 				const response = await fetch(`${getHostUrl()}/json/geo_bounding_boxes.json`);
@@ -49,34 +46,31 @@ function createCountryStore(): CountryStore {
 			} catch (error) {
 				console.error(error);
 				countryGeoBoundingBoxes = [];
+				alertStore.setAlert('Failed to load data.');
 				return countryGeoBoundingBoxes;
 			} finally {
-				// Clear the fetch promise after it resolves or rejects
-				boundingBoxFetchPromise = null;
+				boundingBoxFetchPromise = undefined;
 			}
 		})();
 
 		return boundingBoxFetchPromise;
 	}
 
-	// Function to load country GeoJSON data
 	async function loadGeoCountry(countryCode: string): Promise<GeoCountry | undefined> {
-		// Check if the country data is already in the cache
 		if (countryDataCache.has(countryCode)) {
 			return countryDataCache.get(countryCode);
 		}
 
-		// Check if a fetch is already in progress
 		if (countryDataPromises.has(countryCode)) {
 			return countryDataPromises.get(countryCode);
 		}
 
-		// Start a new fetch and store the promise
 		const fetchPromise = (async () => {
 			try {
 				const response = await fetch(`${getHostUrl()}/json/geo/${countryCode}.json`);
 				if (!response.ok) {
-					throw new Error(`Failed to load country data for ${countryCode}`);
+					alertStore.setAlert(`Failed to load country data for ${countryCode}`);
+					throw new Error(response.statusText);
 				}
 
 				const feature: Feature<Polygon | MultiPolygon, CustomGeoJsonProperties> = await response.json();
@@ -85,53 +79,44 @@ function createCountryStore(): CountryStore {
 					feature
 				};
 
-				// Store the fetched data in the cache
 				countryDataCache.set(countryCode, countryData);
 				return countryData;
 			} catch (error) {
 				console.error(error);
+				alertStore.setAlert(`Failed to load country data`);
 				return undefined;
 			} finally {
-				// Remove the promise from the cache when done
 				countryDataPromises.delete(countryCode);
 			}
 		})();
 
-		// Store the promise in the cache
 		countryDataPromises.set(countryCode, fetchPromise);
 		return fetchPromise;
 	}
 
 	async function getGeoCountry(code: string): Promise<GeoCountry | undefined> {
-		// Check if the data is already cached
 		if (countryDataCache.has(code)) {
 			return countryDataCache.get(code);
 		}
 
-		// Check if a fetch is already in progress
 		if (countryDataPromises.has(code)) {
 			return countryDataPromises.get(code);
 		}
 
-		// Otherwise, fetch and cache the data
 		return await loadGeoCountry(code);
 	}
 
-	// Main function to get the country code
 	async function getCountryCode(location: Position): Promise<string | undefined> {
 		const cacheKey = `${location[0]},${location[1]}`;
 
-		// Check cache first
 		if (countryCodeCache.has(cacheKey)) {
 			return countryCodeCache.get(cacheKey);
 		}
 
-		// Ensure country bounding boxes are loaded
 		if (!countryGeoBoundingBoxes) {
 			await loadCountryGeoBoundingBoxes();
 		}
 
-		// Find candidate countries based on bounding boxes
 		const candidates = countryGeoBoundingBoxes!.filter((country) => {
 			const bbox = country.bounds;
 			const inLongitudeRange = location[0] >= bbox.min_lon && location[0] <= bbox.max_lon;
@@ -144,12 +129,10 @@ function createCountryStore(): CountryStore {
 			const code = country.code;
 			let countryData = countryDataCache.get(code);
 			if (!countryData) {
-				// Load the country data using the updated function
 				countryData = await loadGeoCountry(code);
 				if (!countryData) {
 					continue;
 				}
-				// The data is already cached in loadGeoCountry
 			}
 
 			const point = turf.point(location);
@@ -179,7 +162,6 @@ function createCountryStore(): CountryStore {
 			}
 		}
 
-		// If no country found
 		countryCodeCache.set(cacheKey, undefined);
 		return undefined;
 	}
@@ -191,4 +173,4 @@ function createCountryStore(): CountryStore {
 	};
 }
 
-export const countryStore = createCountryStore();
+export const geoJsonStore = createGeoJsonStore();

@@ -1,9 +1,8 @@
 <script lang="ts">
 	import BlogPosts from '$lib/components/BlogPosts.svelte';
-	import Content from '$lib/components/calendar/Content.svelte';
 	import { postsStore } from '$lib/stores';
 </script>
 
-<Content animate>
+<section class="p-4 pt-0 md:pt-4">
 	<BlogPosts posts={$postsStore} searchable={true} />
-</Content>
+</section>

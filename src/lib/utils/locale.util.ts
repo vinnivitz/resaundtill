@@ -21,15 +21,15 @@ export function getLocaleCode(value: string | null | undefined): string {
 }
 
 export function getTranslation<T = Translations>(
-	translations: Translations[],
+	translations: Translations[] | undefined,
 	locale: string | null | undefined
 ): T | undefined {
-	return translations?.find(
-		(translation) =>
-			translation.languages_code === getLocaleCode(locale) || ['de-DE', 'en-US'].includes(translation.languages_code)
-	) as T;
+	if (!translations) return undefined;
+	return (
+		(translations.find((translation) => translation.languages_code === getLocaleCode(locale)) as T) ??
+		(translations.find((translation) => ['de-DE', 'en-US'].includes(translation.languages_code)) as T)
+	);
 }
-
 /**
  * Determines the current locale and saves it to local storage
  * @returns The current locale

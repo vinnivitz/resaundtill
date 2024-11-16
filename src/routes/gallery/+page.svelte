@@ -1,34 +1,15 @@
-<!-- <script lang="ts">
-	import { Spinner } from 'flowbite-svelte';
-	import { fly } from 'svelte/transition';
-
+<script lang="ts">
 	import Gallery from '$lib/components/Gallery.svelte';
+	import { imagesStore } from '$lib/stores';
 
-	import { browser } from '$app/environment';
-
-	import type { PageData } from './$types';
-
-	export let data: PageData;
-
-	const images = [...data.files.map((file) => file.directus_files_id)].reverse();
-
-	const galleryShufflePercentage = data.galleryShufflePercentage || 0;
-	let isLoading = true;
+	const images = $derived(
+		$imagesStore &&
+			new Date($imagesStore[0].date).getTime() > new Date($imagesStore[$imagesStore.length - 1].date).getTime()
+			? $imagesStore.reverse()
+			: $imagesStore
+	);
 </script>
 
-{#if !browser || isLoading}
-	<div class="absolute z-10 mt-[-100px] flex h-screen w-screen items-center justify-center">
-		<Spinner size="24" color="blue" />
-	</div>
-{/if}
-<section class="px-5 pb-5 pt-5 md:pb-16 md:pt-8" in:fly={{ y: 50, duration: 1000 }}>
-	<Gallery
-		posts={data.posts}
-		showPostLink
-		{images}
-		caching={false}
-		searchable
-		randomizePercentage={galleryShufflePercentage}
-		on:loading={(event) => (isLoading = event.detail)}
-	/>
-</section> -->
+<section class="px-5 pb-5 pt-5 md:pb-16 md:pt-8">
+	<Gallery {images} showPostLinkOnDetail caching={false} searchable />
+</section>
