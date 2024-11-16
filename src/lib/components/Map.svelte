@@ -4,7 +4,7 @@
 	import { Button, Spinner } from 'flowbite-svelte';
 	import type { Map, Icon, IconOptions, LayerGroup } from 'leaflet';
 	import { onMount } from 'svelte';
-	import { _ } from 'svelte-i18n';
+	import { t } from 'svelte-i18n';
 
 	import type { MapItem } from '$lib/models';
 	import { geoJsonStore, currentCoordinatesStore } from '$lib/stores';
@@ -166,7 +166,7 @@
 			class={`map-button absolute left-[calc(50%-75px)] top-[calc(100%-100px)] z-50 ${deactivated ? 'opacity-80' : 'opacity-40'}`}
 		>
 			<Button onclick={() => toggleActivation()} color="blue" pill={true}
-				>{$_('components.map.activate-button.label', { values: { pre: deactivated ? '' : 'de' } })}
+				>{$t('components.map.activate-button.label', { values: { pre: deactivated ? '' : 'de' } })}
 			</Button>
 		</div>
 	{/if}

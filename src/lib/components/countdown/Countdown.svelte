@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { _ } from 'svelte-i18n';
+	import { t } from 'svelte-i18n';
 
 	import Card from '$lib/components/countdown/Card.svelte';
 
@@ -39,9 +39,9 @@
 
 {#if show}
 	<div class="flex-column flex scale-[0.85] transform gap-5 opacity-90">
-		<Card callback={handleTick} name={$_('components.countdown.days')} number={time.days} />
-		<Card callback={handleTick} name={$_('components.countdown.hours')} number={time.hours} />
-		<Card callback={handleTick} name={$_('components.countdown.minutes')} number={time.minutes} />
-		<Card callback={handleTick} name={$_('components.countdown.seconds')} number={time.seconds} />
+		<Card callback={handleTick} name={$t('components.countdown.days')} number={time.days} />
+		<Card callback={handleTick} name={$t('components.countdown.hours')} number={time.hours} />
+		<Card callback={handleTick} name={$t('components.countdown.minutes')} number={time.minutes} />
+		<Card callback={handleTick} name={$t('components.countdown.seconds')} number={time.seconds} />
 	</div>
 {/if}

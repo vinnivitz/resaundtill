@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Input, Spinner } from 'flowbite-svelte';
+	import { Input, Progressbar, Spinner } from 'flowbite-svelte';
 	import { onMount, tick } from 'svelte';
 	import Masonry from 'svelte-bricks';
-	import { _, t } from 'svelte-i18n';
+	import { t } from 'svelte-i18n';
 	// @ts-expect-error - Types are missing
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 	import { GalleryImage, LightboxGallery } from 'svelte-lightbox';
@@ -74,6 +74,8 @@
 						width: image.width,
 						height: image.height,
 						postId: image.postId,
+						progress: 0,
+						requested: false,
 						loaded: false
 					})),
 					$galleryShufflePercentageStore
@@ -90,11 +92,11 @@
 	});
 
 	function openModal(idx: number): void {
-		if (!imageItems) {
+		if (!imageItemsFiltered) {
 			return;
 		}
 		if (caching) {
-			cacheImages(imageItems);
+			cacheImages(imageItemsFiltered);
 		}
 		if (programmaticController) {
 			programmaticController.openImage(idx);
@@ -205,6 +207,41 @@
 		});
 	}
 
+	async function loadDetailImageWithProgress(image: GalleryImageItem): Promise<void> {
+		return new Promise((resolve, reject) => {
+			image.progress = 0;
+			const xhr = new XMLHttpRequest();
+			xhr.open('GET', image.src, true);
+			xhr.responseType = 'blob';
+
+			xhr.onprogress = (event) => {
+				if (event.lengthComputable) {
+					image.progress = Math.floor((event.loaded / event.total) * 100);
+					if (imageItemsFiltered) {
+						imageItemsFiltered = [...imageItemsFiltered];
+					}
+				}
+			};
+
+			xhr.onload = () => {
+				if (xhr.status === 200) {
+					const blob = xhr.response;
+					image.src = URL.createObjectURL(blob);
+					image.loaded = true;
+					resolve();
+				} else {
+					reject(new Error(`Failed to load image: ${xhr.statusText}`));
+				}
+			};
+
+			xhr.onerror = () => {
+				reject(new Error('Network error'));
+			};
+
+			xhr.send();
+		});
+	}
+
 	function handleIntersection(entries: IntersectionObserverEntry[]): void {
 		entries.forEach((entry) => {
 			if (entry.isIntersecting) {
@@ -248,6 +285,7 @@
 	}
 
 	function getPlaceholderImage(image: GalleryImageItem): string {
+		loadDetailImageWithProgress(image);
 		const canvas = document.createElement('canvas');
 		canvas.width = image.width;
 		canvas.height = image.height;
@@ -281,7 +319,7 @@
 		<Input
 			id="search-navbar"
 			class="pl-14"
-			placeholder={$_('components.gallery.searchbar.placeholder')}
+			placeholder={$t('components.gallery.searchbar.placeholder')}
 			bind:value={searchTerm}
 		/>
 	</div>
@@ -291,7 +329,7 @@
 	<div class:has-post-link={showPostLinkOnDetail}>
 		<LightboxGallery bind:programmaticController {arrowsConfig}>
 			{#each imageItemsFiltered as image}
-				<GalleryImage>
+				<GalleryImage title={image.title}>
 					{#if showPostLinkOnDetail && (cachedImages.has(image.id) || image.loaded)}
 						<div class="absolute left-0 top-0 mt-[-36px] flex justify-center pb-3">
 							<div
@@ -307,27 +345,25 @@
 					{/if}
 					{#if cachedImages.has(image.id)}
 						<img
+							decoding="async"
 							class="m-auto"
-							src={cachedImages.get(image.id)?.src}
+							src={cachedImages.get(image.id)!.src}
 							alt={image.title}
 							onload={() => renderFooter(image)}
 						/>
+					{:else if !image.loaded}
+						<div class="absolute z-10 flex items-center justify-center" style="width: 100vw; height: 100vh;">
+							<Progressbar progress={image.progress} color="green" class="w-80" size="lg" labelInside></Progressbar>
+						</div>
+						<img class="m-auto" id={image.id} src={getPlaceholderImage(image)} alt={image.title} />
 					{:else}
-						{#if !image.loaded}
-							<div class="absolute z-10 flex items-center justify-center" style="width: 100vw; height: 100vh;">
-								<Spinner size="24" color="blue" />
-							</div>
-							<img class="m-auto" id={image.id} src={getPlaceholderImage(image)} alt={image.title} />
-						{/if}
 						<img
+							decoding="async"
 							src={image.src}
 							alt={image.title}
 							style:opacity={image.loaded ? '1' : '0'}
 							class="m-auto transition-opacity duration-100"
-							onload={() => {
-								renderFooter(image);
-								image.loaded = true;
-							}}
+							onload={() => renderFooter(image)}
 						/>
 					{/if}
 					{#if image.description && image.description.length >= 60}
@@ -346,7 +382,7 @@
 {/if}
 {#if imageItemsFiltered && imageItemsFiltered.length === 0}
 	<div class="flex justify-center">
-		<div>{$_('components.gallery.no_results')}</div>
+		<div>{$t('components.gallery.no_results')}</div>
 	</div>
 {:else if imageItemsFiltered}
 	<div class="hidden md:block">

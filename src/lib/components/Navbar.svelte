@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
-	import { _, t } from 'svelte-i18n';
+	import { t } from 'svelte-i18n';
 
 	import { PagePath } from '$lib/models';
 	import { clickOutside } from '$lib/utils';
@@ -38,19 +38,19 @@
 			<div class="text-base lg:text-xl">{$t('nav.map')}</div>
 		</NavLi>
 		<NavLi href={PagePath.travel}>
-			<span class="text-base lg:text-xl">{$_('nav.travel')}</span>
+			<span class="text-base lg:text-xl">{$t('nav.travel')}</span>
 		</NavLi>
 		<NavLi href={PagePath.countries}>
-			<span class="text-base lg:text-xl">{$_('nav.countries')}</span>
+			<span class="text-base lg:text-xl">{$t('nav.countries')}</span>
 		</NavLi>
 		<NavLi href={PagePath.gallery}>
-			<span class="text-base lg:text-xl">{$_('nav.gallery')}</span>
+			<span class="text-base lg:text-xl">{$t('nav.gallery')}</span>
 		</NavLi>
 		<NavLi href={PagePath.support}>
-			<span class="text-base lg:text-xl">{$_('nav.about')}</span>
+			<span class="text-base lg:text-xl">{$t('nav.about')}</span>
 		</NavLi>
 		<NavLi href={PagePath.legals}>
-			<span class="text-base lg:text-xl">{$_('nav.legals')}</span>
+			<span class="text-base lg:text-xl">{$t('nav.legals')}</span>
 		</NavLi>
 		<NavLi>
 			<div class="mt-3 flex items-center justify-center gap-4 md:mt-[5.5px]">

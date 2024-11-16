@@ -57,7 +57,7 @@
 				if (postIds) {
 					return postIds
 						.map((postId) => $postsStore?.find((post) => post.id === postId))
-						.filter((post): post is BlogPostEntry => post !== undefined)
+						.filter((post) => post !== undefined)
 						.sort((a, b) => (new Date(a.date).getTime() > new Date(b.date).getTime() ? -1 : 1));
 				}
 			}
@@ -127,7 +127,7 @@
 					{/if}
 					<TabItem title={$t('common.map')} defaultClass="text-lg p-0">
 						<Map
-							items={countryItem.mapItems}
+							items={mapItems}
 							countryCode={countryItem.code}
 							activatable={true}
 							navigate={async (id) => await goto(`${PagePath.travel}/${id}`)}
