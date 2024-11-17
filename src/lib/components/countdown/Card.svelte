@@ -3,15 +3,13 @@
 
 	import { onInterval } from '$lib/utils';
 
-	export let callback: () => void;
-	export let number_: number;
-	export let name: string;
+	let { callback, number_, name }: { callback: () => void; number_: number; name: string } = $props();
 
-	$: numbers = calculateLength(number_);
-	let topFront: string[] = [];
-	let bottomFront: string[] = [];
-	let topFlip: string[] = [];
-	let bottomFlip: string[] = [];
+	const numbers = $derived(calculateLength(number_));
+	let topFront = $state<string[]>([]);
+	let bottomFront = $state<string[]>([]);
+	let topFlip = $state<string[]>([]);
+	let bottomFlip = $state<string[]>([]);
 
 	function calculateLength(number_: number): string[] {
 		let array = [...number_.toString()];
