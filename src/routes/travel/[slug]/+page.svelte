@@ -35,7 +35,7 @@
 
 	let { data }: { data: PageData } = $props();
 
-	const isPrevPost = $derived($postsStore && ($postsStore.findIndex((post) => post.id === data.postId) ?? 0) > 0);
+	const isPreviousPost = $derived($postsStore && ($postsStore.findIndex((post) => post.id === data.postId) ?? 0) > 0);
 	const isNextPost = $derived(
 		$postsStore && ($postsStore.findIndex((post) => post.id === data.postId) ?? 0) < $postsStore.length - 1
 	);
@@ -45,7 +45,7 @@
 			$postToImagesStore &&
 			(() => {
 				const post = $postsStore.find((post) => post.id === data.postId);
-				if (!post) {
+				if (post === undefined) {
 					goto(PagePath.travel);
 				} else {
 					return {
@@ -81,7 +81,7 @@
 		postItem && $mapItemsStore?.filter((item) => item.id === postItem?.id)
 	);
 
-	async function getPrevPost(): Promise<void> {
+	async function getPreviousPost(): Promise<void> {
 		if ($postsStore) {
 			const post = $postsStore[$postsStore.findIndex((post) => post.id === data.postId) - 1];
 			await goto(`${PagePath.travel}/${post.id}`);
@@ -98,9 +98,9 @@
 
 <section class="px-3 md:px-12 md:pt-4">
 	<div class="mb-3 mt-0 flex md:mt-0">
-		{#if isPrevPost}
+		{#if isPreviousPost}
 			<button
-				onclick={getPrevPost}
+				onclick={getPreviousPost}
 				class="flex rounded-full bg-gray-200 px-4 pt-2 align-middle text-sm font-bold leading-6 text-gray-800 hover:bg-gray-400"
 			>
 				<div class="h-5 w-5"><FaArrowLeft /></div>

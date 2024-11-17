@@ -12,8 +12,8 @@
 
 	const observers: HTMLDivElement[] = [];
 	let observer: IntersectionObserver;
-	let searchTerm = $state<string | undefined>(undefined);
-	let countriesFiltered = $state<CountryItem[] | undefined>(undefined);
+	let searchTerm = $state<string | undefined>();
+	let countriesFiltered = $state<CountryItem[] | undefined>();
 	let filterTrigger = $state(0);
 
 	const countryItems = $derived<CountryItem[] | undefined>(
@@ -47,7 +47,7 @@
 	}
 
 	function lazyLoadBackground(entries: IntersectionObserverEntry[]): void {
-		entries.forEach((entry) => {
+		for (const entry of entries) {
 			if (entry.isIntersecting) {
 				const element = entry.target as HTMLDivElement;
 				if (element) {
@@ -55,7 +55,7 @@
 					observer.unobserve(element);
 				}
 			}
-		});
+		}
 	}
 
 	function registerObserver(node: HTMLDivElement): { destroy: () => void } {
@@ -70,11 +70,13 @@
 
 	onMount(() => {
 		observer = new IntersectionObserver(lazyLoadBackground, {
-			root: null,
+			root: undefined,
 			rootMargin: '0px',
 			threshold: 0.01
 		});
-		observers.forEach((obs) => observer.observe(obs));
+		for (const obs of observers) {
+			observer.observe(obs);
+		}
 	});
 </script>
 

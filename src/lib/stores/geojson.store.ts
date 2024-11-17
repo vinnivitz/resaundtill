@@ -84,7 +84,6 @@ function createGeoJsonStore(): GeoJsonStore {
 			} catch (error) {
 				console.error(error);
 				alertStore.setAlert(`Failed to load country data`);
-				return undefined;
 			} finally {
 				countryDataPromises.delete(countryCode);
 			}
@@ -117,13 +116,7 @@ function createGeoJsonStore(): GeoJsonStore {
 			await loadCountryGeoBoundingBoxes();
 		}
 
-		const candidates = countryGeoBoundingBoxes!.filter((country) => {
-			const bbox = country.bounds;
-			const inLongitudeRange = location[0] >= bbox.min_lon && location[0] <= bbox.max_lon;
-			const inLatitudeRange = location[1] >= bbox.min_lat && location[1] <= bbox.max_lat;
-
-			return inLongitudeRange && inLatitudeRange;
-		});
+		const candidates = getCandidates(location);
 
 		for (const country of candidates) {
 			const code = country.code;
@@ -135,23 +128,7 @@ function createGeoJsonStore(): GeoJsonStore {
 				}
 			}
 
-			const point = turf.point(location);
-			const polygon = countryData.feature;
-			let isInside = false;
-
-			if (polygon.geometry.type === 'Polygon') {
-				isInside = turf.booleanPointInPolygon(point, polygon);
-			} else if (polygon.geometry.type === 'MultiPolygon') {
-				for (const coords of polygon.geometry.coordinates) {
-					const poly = turf.polygon(coords);
-					if (turf.booleanPointInPolygon(point, poly)) {
-						isInside = true;
-						break;
-					}
-				}
-			}
-
-			if (isInside) {
+			if (isInsidePolygon(location, countryData.feature.geometry)) {
 				const isoA2 = countryData.feature.properties.ISO_A2;
 				countryCodeCache.set(cacheKey, isoA2);
 				update((store) => {
@@ -166,11 +143,38 @@ function createGeoJsonStore(): GeoJsonStore {
 		return undefined;
 	}
 
+	function getCandidates(location: Position): BoundingBoxEntry[] {
+		return countryGeoBoundingBoxes!.filter((country) => {
+			const bbox = country.bounds;
+			const inLongitudeRange = location[0] >= bbox.min_lon && location[0] <= bbox.max_lon;
+			const inLatitudeRange = location[1] >= bbox.min_lat && location[1] <= bbox.max_lat;
+
+			return inLongitudeRange && inLatitudeRange;
+		});
+	}
+
 	return {
 		subscribe,
 		getCountryCode,
 		getGeoCountry
 	};
+}
+
+function isInsidePolygon(location: Position, polygon: Polygon | MultiPolygon): boolean {
+	const point = turf.point(location);
+
+	if (polygon.type === 'Polygon') {
+		return turf.booleanPointInPolygon(point, polygon);
+	} else if (polygon.type === 'MultiPolygon') {
+		for (const coords of polygon.coordinates) {
+			const poly = turf.polygon(coords);
+			if (turf.booleanPointInPolygon(point, poly)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 export const geoJsonStore = createGeoJsonStore();

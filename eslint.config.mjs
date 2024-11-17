@@ -3,9 +3,15 @@ import { fileURLToPath } from 'node:url';
 
 import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import eslintPluginTypescript from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
-import esLintPluginImport from 'eslint-plugin-import';
+import { plugin as pluginExceptionHandling } from 'eslint-plugin-exception-handling';
+import pluginImport from 'eslint-plugin-import';
+import pluginSecurity from 'eslint-plugin-security';
+import pluginSonarjs from 'eslint-plugin-sonarjs';
+import pluginSvelte from 'eslint-plugin-svelte';
+import pluginTailwindcss from 'eslint-plugin-tailwindcss';
+import pluginUnicorn from 'eslint-plugin-unicorn';
 import globals from 'globals';
 import parser from 'svelte-eslint-parser';
 
@@ -26,12 +32,20 @@ export default [
 		'eslint:recommended',
 		'plugin:@typescript-eslint/recommended',
 		'plugin:svelte/recommended',
-		'prettier'
+		'prettier',
+		'plugin:unicorn/recommended',
+		'plugin:tailwindcss/recommended'
 	),
+	pluginSonarjs.configs.recommended,
+	pluginSecurity.configs.recommended,
 	{
 		plugins: {
-			'@typescript-eslint': typescriptEslint,
-			import: esLintPluginImport
+			'@typescript-eslint': eslintPluginTypescript,
+			svelte: pluginSvelte,
+			import: pluginImport,
+			unicorn: pluginUnicorn,
+			tailwindcss: pluginTailwindcss,
+			exceptionHandling: pluginExceptionHandling
 		},
 
 		languageOptions: {
@@ -119,7 +133,11 @@ export default [
 					allowExpressions: true,
 					allowTypedFunctionExpressions: true
 				}
-			]
+			],
+			'unicorn/prefer-at': 'off',
+			'unicorn/filename-case': 'off',
+			'unicorn/no-array-reduce': 'off',
+			'security/detect-object-injection': 'off'
 		}
 	},
 	{

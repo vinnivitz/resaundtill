@@ -4,20 +4,20 @@
 	import { onInterval } from '$lib/utils';
 
 	export let callback: () => void;
-	export let number: number;
+	export let number_: number;
 	export let name: string;
 
-	$: numbers = calculateLength(number);
+	$: numbers = calculateLength(number_);
 	let topFront: string[] = [];
 	let bottomFront: string[] = [];
 	let topFlip: string[] = [];
 	let bottomFlip: string[] = [];
 
-	function calculateLength(num: number): string[] {
-		let arr = num.toString().split('');
-		let res = arr.length === 1 ? ['0', ...arr] : arr;
+	function calculateLength(number_: number): string[] {
+		let array = [...number_.toString()];
+		let result = array.length === 1 ? ['0', ...array] : array;
 
-		return res;
+		return result;
 	}
 
 	function topFlipStart(): void {
@@ -42,26 +42,26 @@
 </script>
 
 <div class="container">
-	{#key number}
+	{#key number_}
 		<div class="wrapper">
 			<div class="top-front">
-				{#each topFront as num}
-					<span>{num}</span>
+				{#each topFront as number_}
+					<span>{number_}</span>
 				{/each}
 			</div>
 			<div class="top-flip" on:animationstart={topFlipStart} on:animationend={topFlipEnd}>
-				{#each topFlip as num}
-					<span>{num}</span>
+				{#each topFlip as number_}
+					<span>{number_}</span>
 				{/each}
 			</div>
 			<div class="bottom-front">
-				{#each bottomFront as num}
-					<span>{num}</span>
+				{#each bottomFront as number_}
+					<span>{number_}</span>
 				{/each}
 			</div>
 			<div class="bottom-flip" on:animationend={bottomFlipEnd} on:animationstart={bottomFlipStart}>
-				{#each bottomFlip as num}
-					<span>{num}</span>
+				{#each bottomFlip as number_}
+					<span>{number_}</span>
 				{/each}
 			</div>
 		</div>

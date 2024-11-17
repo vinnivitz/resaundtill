@@ -2,7 +2,7 @@
 	import 'leaflet/dist/leaflet.css';
 
 	import { Button, Spinner } from 'flowbite-svelte';
-	import type { Map, Icon, IconOptions, LayerGroup } from 'leaflet';
+	import type { Map, Icon, IconOptions, LayerGroup, Marker } from 'leaflet';
 	import { onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
 
@@ -29,13 +29,10 @@
 	let resaTillIcon: Icon<IconOptions>;
 	let deactivated = $state(true);
 	let layerGroup: LayerGroup;
+	let initialized = false;
 
 	const currentCoordinates = $derived(
-		items && $currentCoordinatesStore
-			? items.length > 0
-				? items[items.length - 1].location.coordinates
-				: $currentCoordinatesStore
-			: undefined
+		items && $currentCoordinatesStore ? items[items.length - 1].location.coordinates : $currentCoordinatesStore
 	);
 
 	$effect(() => {
@@ -54,7 +51,7 @@
 						map.fitBounds(geoJson.getBounds());
 					} else {
 						map.setView(
-							currentCoordinates ? [currentCoordinates[1], currentCoordinates[0]] : [51.053719, 13.737908],
+							currentCoordinates ? [currentCoordinates[1], currentCoordinates[0]] : [51.053_719, 13.737_908],
 							10
 						);
 					}
@@ -67,30 +64,20 @@
 		if (items && map && defaultIcon && resaTillIcon) {
 			layerGroup?.clearLayers();
 			layerGroup = L.layerGroup().addTo(map);
-			const markers = items.map((item, index) => {
-				return L.marker([item.location.coordinates[1], item.location.coordinates[0]], {
-					icon: index === items.length - 1 ? resaTillIcon : defaultIcon
-				})
-					.on('click', () => navigate?.(item.id))
-					.addTo(layerGroup);
-			});
+			const markers = getMarkers(items);
 			if (markers.length > 1) {
-				markers.forEach((marker, index) => {
+				for (let index = 0; index < markers.length; index++) {
 					if (index < markers.length - 1) {
-						const nextMarker = markers[index + 1];
-						L.polyline([marker.getLatLng(), nextMarker.getLatLng()], {
-							color: 'blue',
-							dashArray: items[index + 1].isFlight ? '6' : '',
-							opacity: items[index + 1].isFlight ? 0.2 : 0.5
-						}).addTo(layerGroup);
+						addPolyLine(markers[index], markers[index + 1], items[index + 1]);
 					}
-				});
+				}
 			}
 		}
 	});
 
 	$effect(() => {
-		if (!map && currentCoordinates) {
+		if (!initialized && currentCoordinates) {
+			initialized = true;
 			import('leaflet').then(async (leaflet) => {
 				L = leaflet;
 				await initializeMap();
@@ -105,6 +92,24 @@
 		spinnerElement.style.display = 'block';
 	});
 
+	function addPolyLine(markerA: Marker, markerB: Marker, item: MapItem): void {
+		L.polyline([markerA.getLatLng(), markerB.getLatLng()], {
+			color: 'blue',
+			dashArray: item.isFlight ? '6' : '',
+			opacity: item.isFlight ? 0.2 : 0.5
+		}).addTo(layerGroup);
+	}
+
+	function getMarkers(items: MapItem[]): Marker[] {
+		return items.map((item, index) => {
+			return L.marker([item.location.coordinates[1], item.location.coordinates[0]], {
+				icon: index === items.length - 1 ? resaTillIcon : defaultIcon
+			})
+				.on('click', () => navigate?.(item.id))
+				.addTo(layerGroup);
+		});
+	}
+
 	async function initializeMap(): Promise<void> {
 		// const coords = getValidCoords();
 		map = L.map('map');
@@ -115,7 +120,7 @@
 			maxZoom: 19,
 			attribution: '© OpenStreetMap'
 		}).addTo(map);
-		map.setView(currentCoordinates ? [currentCoordinates[1], currentCoordinates[0]] : [51.053719, 13.737908], 10);
+		map.setView(currentCoordinates ? [currentCoordinates[1], currentCoordinates[0]] : [51.053_719, 13.737_908], 10);
 		defaultIcon = L.icon({
 			iconUrl: '/images/map/marker.png',
 			iconSize: [20, 35],

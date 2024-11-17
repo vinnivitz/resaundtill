@@ -54,11 +54,11 @@
 	};
 
 	let intersectionObserver: IntersectionObserver;
-	let searchTerm = $state<string | undefined>(undefined);
+	let searchTerm = $state<string | undefined>();
 	let cachedImages = $state(new Map<string, HTMLImageElement>());
 	let programmaticController = $state<LightboxController>();
-	let placeholderImage = $state<string | undefined>(undefined);
-	let imageItemsFiltered = $state<GalleryImageItem[] | undefined>(undefined);
+	let placeholderImage = $state<string | undefined>();
+	let imageItemsFiltered = $state<GalleryImageItem[] | undefined>();
 	let filterTrigger = $state(0);
 
 	const imageItems = $derived<GalleryImageItem[] | undefined>(
@@ -91,7 +91,7 @@
 		debouncedFilter(imageItems, searchTerm, filterTrigger);
 	});
 
-	function openModal(idx: number): void {
+	function openModal(index: number): void {
 		if (!imageItemsFiltered) {
 			return;
 		}
@@ -99,7 +99,7 @@
 			cacheImages(imageItemsFiltered);
 		}
 		if (programmaticController) {
-			programmaticController.openImage(idx);
+			programmaticController.openImage(index);
 		}
 	}
 
@@ -140,14 +140,17 @@
 		let selectedIndices = new Set<number>();
 
 		while (selectedIndices.size < elementsToShuffle) {
-			selectedIndices.add(Math.floor(Math.random() * totalElements));
+			selectedIndices.add(globalThis.crypto.getRandomValues(new Uint32Array(1))[0] % totalElements);
 		}
 
 		const shuffledArray = [...images];
-		const indices = Array.from(selectedIndices);
-		for (let i = indices.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[shuffledArray[indices[i]], shuffledArray[indices[j]]] = [shuffledArray[indices[j]], shuffledArray[indices[i]]];
+		const indices = [...selectedIndices];
+		for (let index = indices.length - 1; index > 0; index--) {
+			const randomIndex = globalThis.crypto.getRandomValues(new Uint32Array(1))[0] % (index + 1);
+			[shuffledArray[indices[index]], shuffledArray[indices[randomIndex]]] = [
+				shuffledArray[indices[randomIndex]],
+				shuffledArray[indices[index]]
+			];
 		}
 
 		return shuffledArray;
@@ -189,11 +192,11 @@
 		images: GalleryImageItem[],
 		cache: Map<string, HTMLImageElement>
 	): Promise<void> {
-		for (let i = 0; i < images.length; i++) {
-			const img = await loadDetailImage(images[i]);
-			if (!cache.has(images[i].id)) {
-				cache.set(images[i].id, img);
-				cachedImages.set(images[i].id, img);
+		for (const image of images) {
+			const img = await loadDetailImage(image);
+			if (!cache.has(image.id)) {
+				cache.set(image.id, img);
+				cachedImages.set(image.id, img);
 			}
 		}
 	}
@@ -201,8 +204,8 @@
 	async function loadDetailImage(imageItem: GalleryImageItem): Promise<HTMLImageElement> {
 		return new Promise((resolve, reject) => {
 			const img = new Image();
-			img.onload = () => resolve(img);
-			img.onerror = reject;
+			img.addEventListener('load', () => resolve(img));
+			img.addEventListener('error', () => reject);
 			img.src = imageItem.src;
 		});
 	}
@@ -214,16 +217,16 @@
 			xhr.open('GET', image.src, true);
 			xhr.responseType = 'blob';
 
-			xhr.onprogress = (event) => {
+			xhr.addEventListener('progress', (event) => {
 				if (event.lengthComputable) {
 					image.progress = Math.floor((event.loaded / event.total) * 100);
 					if (imageItemsFiltered) {
 						imageItemsFiltered = [...imageItemsFiltered];
 					}
 				}
-			};
+			});
 
-			xhr.onload = () => {
+			xhr.addEventListener('load', () => {
 				if (xhr.status === 200) {
 					const blob = xhr.response;
 					image.src = URL.createObjectURL(blob);
@@ -232,27 +235,25 @@
 				} else {
 					reject(new Error(`Failed to load image: ${xhr.statusText}`));
 				}
-			};
+			});
 
-			xhr.onerror = () => {
-				reject(new Error('Network error'));
-			};
+			xhr.addEventListener('error', () => reject(new Error('Network error')));
 
 			xhr.send();
 		});
 	}
 
 	function handleIntersection(entries: IntersectionObserverEntry[]): void {
-		entries.forEach((entry) => {
+		for (const entry of entries) {
 			if (entry.isIntersecting) {
 				const placeholder = entry.target as HTMLDivElement;
 				const image = placeholder.firstElementChild as HTMLImageElement;
-				image.onload = () => (placeholder.dataset.loaded = 'true');
+				image.addEventListener('load', () => (placeholder.dataset.loaded = 'true'));
 				image.src = image.dataset.src!;
 				intersectionObserver.unobserve(placeholder);
 				observeNextImage();
 			}
-		});
+		}
 	}
 
 	function observeNextImage(): void {
@@ -268,15 +269,15 @@
 		}
 
 		intersectionObserver = new IntersectionObserver(handleIntersection, {
-			root: null,
+			root: undefined,
 			rootMargin: '0px',
 			threshold: 0
 		});
 
 		const placeholders = document.querySelectorAll('.placeholder');
-		placeholders.forEach((placeholder) => {
+		for (const placeholder of placeholders) {
 			intersectionObserver.observe(placeholder);
-		});
+		}
 		observeNextImage();
 	}
 
@@ -289,8 +290,8 @@
 		const canvas = document.createElement('canvas');
 		canvas.width = image.width;
 		canvas.height = image.height;
-		const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-		ctx.clearRect(0, 0, image.width, image.height);
+		const context = canvas.getContext('2d') as CanvasRenderingContext2D;
+		context.clearRect(0, 0, image.width, image.height);
 		return canvas.toDataURL('image/webp');
 	}
 
@@ -298,8 +299,8 @@
 		const canvas = document.createElement('canvas');
 		canvas.width = 1;
 		canvas.height = 1;
-		const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-		ctx.clearRect(0, 0, 1, 1);
+		const context = canvas.getContext('2d') as CanvasRenderingContext2D;
+		context.clearRect(0, 0, 1, 1);
 		return canvas.toDataURL('image/webp');
 	}
 
@@ -336,7 +337,7 @@
 								role="button"
 								tabindex="0"
 								onclick={async () => await gotoPost(image.postId)}
-								onkeydown={async (e) => e.key === 'Enter' && (await gotoPost(image.postId))}
+								onkeydown={async (event_) => event_.key === 'Enter' && (await gotoPost(image.postId))}
 								class="cursor-pointer rounded-full bg-gray-200 px-2 py-1 text-gray-800 hover:bg-gray-400"
 							>
 								{$t('components.gallery.lightbox.post-button')}
@@ -386,7 +387,15 @@
 	</div>
 {:else if imageItemsFiltered}
 	<div class="hidden md:block">
-		<Masonry animate={false} items={imageItemsFiltered} minColWidth={200} maxColWidth={800} gap={20} let:item let:idx>
+		<Masonry
+			animate={false}
+			items={imageItemsFiltered}
+			minColWidth={200}
+			maxColWidth={800}
+			gap={20}
+			let:item
+			let:idx={index}
+		>
 			<div class="placeholder relative w-full bg-gray-500" style="padding-bottom: {(item.height / item.width) * 100}%;">
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -398,13 +407,21 @@
 					alt={item.title}
 					width={item.width}
 					height={item.height}
-					onclick={() => openModal(idx)}
+					onclick={() => openModal(index)}
 				/>
 			</div>
 		</Masonry>
 	</div>
 	<div class="block md:hidden">
-		<Masonry animate={false} items={imageItemsFiltered} minColWidth={150} maxColWidth={800} gap={10} let:item let:idx>
+		<Masonry
+			animate={false}
+			items={imageItemsFiltered}
+			minColWidth={150}
+			maxColWidth={800}
+			gap={10}
+			let:item
+			let:idx={index}
+		>
 			<div class="placeholder relative w-full bg-gray-500" style="padding-bottom: {(item.height / item.width) * 100}%;">
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -416,7 +433,7 @@
 					alt={item.title}
 					width={item.width}
 					height={item.height}
-					onclick={() => openModal(idx)}
+					onclick={() => openModal(index)}
 				/>
 			</div>
 		</Masonry>

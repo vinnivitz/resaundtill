@@ -36,7 +36,7 @@ export function getTranslation<T = Translations>(
  */
 export function determineLocale(): Locale {
 	const locale = browser
-		? getLocale(localStorage.getItem('locale')) || getLocale(window.navigator.language) || Locale.DE
+		? getLocale(localStorage.getItem('locale')) || getLocale(globalThis.navigator.language) || Locale.DE
 		: Locale.DE;
 	if (browser) {
 		localStorage.setItem('locale', locale);

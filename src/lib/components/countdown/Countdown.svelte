@@ -8,7 +8,6 @@
 
 	let show = $state(false);
 
-	// Set default values to 9 days
 	let time = {
 		days: 9,
 		hours: 0,
@@ -39,9 +38,9 @@
 
 {#if show}
 	<div class="flex-column flex scale-[0.85] transform gap-5 opacity-90">
-		<Card callback={handleTick} name={$t('components.countdown.days')} number={time.days} />
-		<Card callback={handleTick} name={$t('components.countdown.hours')} number={time.hours} />
-		<Card callback={handleTick} name={$t('components.countdown.minutes')} number={time.minutes} />
-		<Card callback={handleTick} name={$t('components.countdown.seconds')} number={time.seconds} />
+		<Card callback={handleTick} name={$t('components.countdown.days')} number_={time.days} />
+		<Card callback={handleTick} name={$t('components.countdown.hours')} number_={time.hours} />
+		<Card callback={handleTick} name={$t('components.countdown.minutes')} number_={time.minutes} />
+		<Card callback={handleTick} name={$t('components.countdown.seconds')} number_={time.seconds} />
 	</div>
 {/if}

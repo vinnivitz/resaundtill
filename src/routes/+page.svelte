@@ -7,7 +7,7 @@
 	import { goto } from '$app/navigation';
 </script>
 
-<Map items={$mapItemsStore} navigate={async (e) => await goto(`${PagePath.travel}/${e}`)} />
+<Map items={$mapItemsStore} navigate={async (postId) => await goto(`${PagePath.travel}/${postId}`)} />
 {#if ($departureStore?.getTime() ?? 0) > Date.now()}
 	<div class="absolute inset-0 flex items-center justify-center">
 		<Countdown date={$departureStore} />

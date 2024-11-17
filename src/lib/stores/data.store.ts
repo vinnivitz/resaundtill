@@ -19,17 +19,17 @@ import { alertStore } from './alert.store';
 import { geoJsonStore } from './';
 
 // Define individual stores for each property
-export const postsStore = writable<BlogPostEntry[] | undefined>(undefined);
-export const postToImagesStore = writable<Map<string, ImageDetails[]> | undefined>(undefined);
-export const imagesStore = writable<ImageDetails[] | undefined>(undefined);
-export const countriesStore = writable<CountryEntry[] | undefined>(undefined);
-export const departureStore = writable<Date | undefined>(undefined);
-export const supportInfoStore = writable<SupportInfoEntry | undefined>(undefined);
-export const galleryShufflePercentageStore = writable<number | undefined>(undefined);
-export const currentCoordinatesStore = writable<Position | undefined>(undefined);
-export const mapItemsStore = writable<MapItem[] | undefined>(undefined);
-export const countryToPostsStore = writable<Map<string, string[]> | undefined>(undefined);
-export const postToCountryStore = writable<Map<string, string> | undefined>(undefined);
+export const postsStore = writable<BlogPostEntry[] | undefined>();
+export const postToImagesStore = writable<Map<string, ImageDetails[]> | undefined>();
+export const imagesStore = writable<ImageDetails[] | undefined>();
+export const countriesStore = writable<CountryEntry[] | undefined>();
+export const departureStore = writable<Date | undefined>();
+export const supportInfoStore = writable<SupportInfoEntry | undefined>();
+export const galleryShufflePercentageStore = writable<number | undefined>();
+export const currentCoordinatesStore = writable<Position | undefined>();
+export const mapItemsStore = writable<MapItem[] | undefined>();
+export const countryToPostsStore = writable<Map<string, string[]> | undefined>();
+export const postToCountryStore = writable<Map<string, string> | undefined>();
 
 let initialized = false;
 
@@ -53,21 +53,19 @@ async function initDataStores(fetch: FetchInterface): Promise<void> {
 			readItems('resaundtill_posts', { limit: -1, fields: ['id', 'date', 'images.*.*'] })
 		);
 		const postToImages = new Map<string, ImageDetails[]>();
-		posts.forEach((post) => {
+		for (const post of posts) {
 			if (post.images) {
 				postToImages.set(
 					post.id,
 					post.images.map((image) => ({ ...image.directus_files_id, postId: post.id, date: post.date }))
 				);
 			}
-		});
+		}
 		postToImagesStore.set(postToImages);
 		imagesStore.set(
-			Array.from(postToImages.values())
-				.flat()
-				.sort((a, b) => {
-					return new Date(a.date).getTime() - new Date(b.date).getTime();
-				})
+			[...postToImages.values()].flat().sort((a, b) => {
+				return new Date(a.date).getTime() - new Date(b.date).getTime();
+			})
 		);
 	}
 

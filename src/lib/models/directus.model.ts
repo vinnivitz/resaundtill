@@ -79,8 +79,8 @@ export type DirectusImage<T = string> = {
 };
 
 export enum BlogPostStatus {
-	public = 'public',
-	private = 'private'
+	PUBLIC = 'public',
+	PRIVATE = 'private'
 }
 
 export type Collections = {

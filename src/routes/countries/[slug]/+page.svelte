@@ -43,8 +43,6 @@
 						description: '',
 						mapItems: []
 					};
-				} else {
-					return undefined;
 				}
 			}
 		})()
@@ -61,7 +59,6 @@
 						.sort((a, b) => (new Date(a.date).getTime() > new Date(b.date).getTime() ? -1 : 1));
 				}
 			}
-			return undefined;
 		})()
 	);
 

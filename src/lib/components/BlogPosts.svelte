@@ -45,13 +45,13 @@
 	let observer: IntersectionObserver;
 	const observers: HTMLDivElement[] = [];
 
-	let searchTerm: string | undefined = $state(undefined);
-	let countrySearchTerm: string | undefined = $state(undefined);
+	let searchTerm: string | undefined = $state();
+	let countrySearchTerm: string | undefined = $state();
 	let filterTrigger = $state(0);
 	let initCalendar = $state<CalendarModel>({});
 
-	let postsItemsFiltered = $state<BlogPostItem[] | undefined>(undefined);
-	let countrySearchItemsFiltered = $state<BlogPostCountrySearchItem[] | undefined>(undefined);
+	let postsItemsFiltered = $state<BlogPostItem[] | undefined>();
+	let countrySearchItemsFiltered = $state<BlogPostCountrySearchItem[] | undefined>();
 
 	const postItems: BlogPostItem[] | undefined = $derived(
 		posts && $postToImagesStore
@@ -122,7 +122,7 @@
 			countryFilter && countrySearchTerm
 				? countrySearchItems?.map((country) => ({
 						...country,
-						visible: country.name.toLowerCase().indexOf(countrySearchTerm!.toLowerCase()) !== -1
+						visible: country.name.toLowerCase().includes(countrySearchTerm!.toLowerCase())
 					}))
 				: countrySearchItems;
 	});
@@ -189,7 +189,7 @@
 	}
 
 	function lazyLoadBackground(entries: IntersectionObserverEntry[]): void {
-		entries.forEach((entry) => {
+		for (const entry of entries) {
 			if (entry.isIntersecting) {
 				const element = entry.target as HTMLDivElement;
 				if (element) {
@@ -197,7 +197,7 @@
 					observer.unobserve(element);
 				}
 			}
-		});
+		}
 	}
 
 	function registerObserver(node: HTMLDivElement): { destroy: () => void } {
@@ -244,11 +244,11 @@
 
 	onMount(async () => {
 		observer = new IntersectionObserver(lazyLoadBackground, {
-			root: null,
+			root: undefined,
 			rootMargin: '0px',
 			threshold: 0.01
 		});
-		observers.forEach((obs) => observer.observe(obs));
+		for (const obs of observers) observer.observe(obs);
 	});
 
 	onDestroy(() => observer?.disconnect());
