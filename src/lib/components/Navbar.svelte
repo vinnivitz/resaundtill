@@ -42,7 +42,7 @@
 		{hidden}
 		activeUrl={$page.url.pathname}
 		slideParams={{ delay: 0, duration: 250 }}
-		activeClass="text-black dark:text-white bg-gray-700"
+		activeClass="md:text-black dark:text-white md:bg-white md:font-medium bg-gray-200 dark:bg-gray-700 dark:md:bg-gray-800"
 		ulClass="flex flex-col text-center py-4 px-2 lg:p-4 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium"
 	>
 		<NavLi href={PagePath.home}>
