@@ -4,7 +4,7 @@
 	// @ts-expect-error - Ignore this error
 	import FaSun from 'svelte-icons/fa/FaSun.svelte';
 
-	export let isDark: boolean;
+	let { isDark }: { isDark: boolean } = $props();
 </script>
 
 <div class="relative h-4 w-12 cursor-pointer rounded-full bg-gray-300">

@@ -25,7 +25,17 @@
 	</NavBrand>
 
 	<div use:clickOutside oncanplay={() => (hidden = true)}>
-		<NavHamburger menuClass="outline-none" onClick={() => (hidden = !hidden)} />
+		<div class="flex items-center justify-center gap-4">
+			<button onclick={toggleTheme}>
+				<ThemeSwitcher {isDark} />
+			</button>
+			<button onclick={toggleLocale} class="block md:hidden">
+				<LocaleSwitcher />
+			</button>
+			<button class="m-0 p-0">
+				<NavHamburger menuClass="outline-none h-10 w-10" class="" onClick={() => (hidden = !hidden)} />
+			</button>
+		</div>
 	</div>
 
 	<NavUl
@@ -35,34 +45,27 @@
 		ulClass="flex flex-col text-center py-4 px-2 lg:p-4 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium"
 	>
 		<NavLi href={PagePath.home}>
-			<div class="text-base lg:text-xl">{$t('nav.map')}</div>
+			<div class="text-lg md:text-base lg:text-xl">{$t('nav.map')}</div>
 		</NavLi>
 		<NavLi href={PagePath.travel}>
-			<span class="text-base lg:text-xl">{$t('nav.travel')}</span>
+			<span class="text-lg md:text-base lg:text-xl">{$t('nav.travel')}</span>
 		</NavLi>
 		<NavLi href={PagePath.countries}>
-			<span class="text-base lg:text-xl">{$t('nav.countries')}</span>
+			<span class="text-lg md:text-base lg:text-xl">{$t('nav.countries')}</span>
 		</NavLi>
 		<NavLi href={PagePath.gallery}>
-			<span class="text-base lg:text-xl">{$t('nav.gallery')}</span>
+			<span class="text-lg md:text-base lg:text-xl">{$t('nav.gallery')}</span>
 		</NavLi>
 		<NavLi href={PagePath.support}>
-			<span class="text-base lg:text-xl">{$t('nav.about')}</span>
+			<span class="text-lg md:text-base lg:text-xl">{$t('nav.about')}</span>
 		</NavLi>
 		<NavLi href={PagePath.legals}>
-			<span class="text-base lg:text-xl">{$t('nav.legals')}</span>
+			<span class="text-lg md:text-base lg:text-xl">{$t('nav.legals')}</span>
 		</NavLi>
-		<NavLi>
-			<div class="mt-3 flex items-center justify-center gap-4 md:mt-[5.5px]">
-				<button onclick={toggleTheme}>
-					<ThemeSwitcher {isDark} />
-				</button>
-				<button onclick={toggleLocale} class="block md:hidden">
-					<LocaleSwitcher />
-				</button>
-			</div>
+		<NavLi class="hidden md:block" onclick={toggleTheme}>
+			<ThemeSwitcher {isDark} />
 		</NavLi>
-		<NavLi on:click={toggleLocale} class="hidden md:block">
+		<NavLi onclick={toggleLocale} class="hidden md:block">
 			<LocaleSwitcher />
 		</NavLi>
 	</NavUl>

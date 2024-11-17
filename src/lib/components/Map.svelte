@@ -181,10 +181,6 @@
 	.wrapper,
 	#map {
 		height: calc(100vh - var(--nav-height));
-
-		@media only screen and (max-width: 726px) {
-			height: calc(100vh - var(--nav-height-mobile));
-		}
 	}
 
 	:global(.map-button button) {
