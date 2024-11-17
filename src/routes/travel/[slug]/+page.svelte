@@ -97,7 +97,7 @@
 </script>
 
 <section class="px-3 md:px-12 md:pt-4">
-	<div class="mb-3 pt-2 md:pt-0 flex">
+	<div class="mb-3 flex pt-2 md:pt-0">
 		{#if isPreviousPost}
 			<button
 				onclick={getPreviousPost}

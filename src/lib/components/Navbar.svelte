@@ -19,20 +19,20 @@
 <Navbar>
 	<NavBrand href="/">
 		<img src="/images/favicon.png" class="mr-3 h-6 dark:invert sm:h-9" alt="Logo" />
-		<span class=" whitespace-nowrap text-2xl font-semibold dark:text-white">
+		<span class="whitespace-nowrap text-2xl font-semibold dark:text-white">
 			Resa<span class="text-red-600">&#10084;</span>Till
 		</span>
 	</NavBrand>
 
 	<div use:clickOutside oncanplay={() => (hidden = true)}>
 		<div class="flex items-center justify-center gap-4">
-			<button onclick={toggleTheme}>
+			<button onclick={toggleTheme} class="block md:hidden">
 				<ThemeSwitcher {isDark} />
 			</button>
 			<button onclick={toggleLocale} class="block md:hidden">
 				<LocaleSwitcher />
 			</button>
-			<button class="m-0 p-0">
+			<button>
 				<NavHamburger menuClass="outline-none h-10 w-10" class="" onClick={() => (hidden = !hidden)} />
 			</button>
 		</div>
@@ -41,7 +41,8 @@
 	<NavUl
 		{hidden}
 		activeUrl={$page.url.pathname}
-		activeClass="text-black dark:text-white"
+		slideParams={{ delay: 0, duration: 250 }}
+		activeClass="text-black dark:text-white bg-gray-700"
 		ulClass="flex flex-col text-center py-4 px-2 lg:p-4 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium"
 	>
 		<NavLi href={PagePath.home}>
@@ -62,7 +63,7 @@
 		<NavLi href={PagePath.legals}>
 			<span class="text-lg md:text-base lg:text-xl">{$t('nav.legals')}</span>
 		</NavLi>
-		<NavLi class="hidden md:block" onclick={toggleTheme}>
+		<NavLi class="mt-[6px] hidden md:block" onclick={toggleTheme}>
 			<ThemeSwitcher {isDark} />
 		</NavLi>
 		<NavLi onclick={toggleLocale} class="hidden md:block">

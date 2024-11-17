@@ -2,7 +2,7 @@
 	import 'leaflet/dist/leaflet.css';
 
 	import { Button, Spinner } from 'flowbite-svelte';
-	import type { Map, Icon, IconOptions, LayerGroup, Marker } from 'leaflet';
+	import { type Map, type Icon, type IconOptions, type LayerGroup, type Marker } from 'leaflet';
 	import { onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
 
@@ -28,42 +28,47 @@
 	let defaultIcon: Icon<IconOptions>;
 	let resaTillIcon: Icon<IconOptions>;
 	let deactivated = $state(true);
-	let layerGroup: LayerGroup;
+	let markerLayerGroup: LayerGroup;
+	let countryBoundariesLayerGroup: LayerGroup;
 	let initialized = false;
 
 	const currentCoordinates = $derived(
-		items && $currentCoordinatesStore ? items[items.length - 1].location.coordinates : $currentCoordinatesStore
+		items && items.length > 0 && $currentCoordinatesStore
+			? items[items.length - 1].location.coordinates
+			: $currentCoordinatesStore
 	);
 
 	$effect(() => {
 		if (map && countryCode) {
+			countryBoundariesLayerGroup?.clearLayers();
+			countryBoundariesLayerGroup = L.layerGroup().addTo(map);
 			geoJsonStore.getGeoCountry(countryCode).then((country) => {
-				if (map) {
-					if (country) {
-						const geoJson = L.geoJSON(country.feature, {
-							style: {
-								fillColor: 'transparent',
-								color: 'black',
-								weight: 2,
-								opacity: 0.5
-							}
-						}).addTo(map);
-						map.fitBounds(geoJson.getBounds());
-					} else {
-						map.setView(
-							currentCoordinates ? [currentCoordinates[1], currentCoordinates[0]] : [51.053_719, 13.737_908],
-							10
-						);
-					}
+				if (country) {
+					const geoJson = L.geoJSON(country.feature, {
+						style: {
+							fillColor: 'transparent',
+							color: 'black',
+							weight: 2,
+							opacity: 0.5
+						}
+					}).addTo(countryBoundariesLayerGroup);
+					map?.fitBounds(geoJson.getBounds());
+				} else {
+					map?.setView(
+						currentCoordinates ? [currentCoordinates[1], currentCoordinates[0]] : [51.053_719, 13.737_908],
+						10
+					);
 				}
 			});
+		} else {
+			countryBoundariesLayerGroup?.clearLayers();
 		}
 	});
 
 	$effect(() => {
 		if (items && map && defaultIcon && resaTillIcon) {
-			layerGroup?.clearLayers();
-			layerGroup = L.layerGroup().addTo(map);
+			markerLayerGroup?.clearLayers();
+			markerLayerGroup = L.layerGroup().addTo(map);
 			const markers = getMarkers(items);
 			if (markers.length > 1) {
 				for (let index = 0; index < markers.length; index++) {
@@ -97,7 +102,7 @@
 			color: 'blue',
 			dashArray: item.isFlight ? '6' : '',
 			opacity: item.isFlight ? 0.2 : 0.5
-		}).addTo(layerGroup);
+		}).addTo(markerLayerGroup);
 	}
 
 	function getMarkers(items: MapItem[]): Marker[] {
@@ -106,7 +111,7 @@
 				icon: index === items.length - 1 ? resaTillIcon : defaultIcon
 			})
 				.on('click', () => navigate?.(item.id))
-				.addTo(layerGroup);
+				.addTo(markerLayerGroup);
 		});
 	}
 
