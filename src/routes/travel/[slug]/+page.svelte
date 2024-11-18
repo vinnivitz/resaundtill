@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Heading, Secondary, Hr, Tabs, TabItem } from 'flowbite-svelte';
+	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { t, locale } from 'svelte-i18n';
 	// @ts-expect-error - no types available
@@ -81,6 +82,10 @@
 		postItem && $mapItemsStore?.filter((item) => item.id === postItem?.id)
 	);
 
+	onMount(() => {
+		globalThis.scrollTo(0, 0);
+	});
+
 	async function getPreviousPost(): Promise<void> {
 		if ($postsStore) {
 			const post = $postsStore[$postsStore.findIndex((post) => post.id === data.postId) - 1];
@@ -93,6 +98,10 @@
 			const post = $postsStore[$postsStore.findIndex((post) => post.id === data.postId) + 1];
 			await goto(`${PagePath.travel}/${post.id}`);
 		}
+	}
+
+	function gotoCountry(): Promise<void> {
+		return goto(`${PagePath.countries}/${countryCode}`);
 	}
 </script>
 
@@ -137,10 +146,13 @@
 				</div>
 			</div>
 			{#if countryCode}
-				<div class="flex items-center gap-2 text-xl">
+				<button
+					class="flex items-center gap-2 rounded bg-gray-100 p-1 text-xl hover:bg-gray-300 dark:border-gray-700 dark:bg-gray-800 hover:dark:bg-gray-900"
+					onclick={gotoCountry}
+				>
 					<div class={`fi fi-${countryCode}`}></div>
 					<div>{countryName}</div>
-				</div>
+				</button>
 			{/if}
 		</div>
 

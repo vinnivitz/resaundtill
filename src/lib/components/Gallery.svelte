@@ -1,21 +1,16 @@
 <script lang="ts">
 	import { Input, Progressbar, Spinner } from 'flowbite-svelte';
-	import { onMount, tick } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
 	import Masonry from 'svelte-bricks';
 	import { t } from 'svelte-i18n';
-	// @ts-expect-error - Types are missing
-	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
-	import { GalleryImage, LightboxGallery } from 'svelte-lightbox';
+	import { Icon } from 'svelte-icons-pack';
+	import { BiSearch } from 'svelte-icons-pack/bi';
+	import { ImCross } from 'svelte-icons-pack/im';
+	import { RiArrowsArrowLeftSLine, RiArrowsArrowRightSLine } from 'svelte-icons-pack/ri';
 
-	import {
-		DirectusImageTransformation,
-		PagePath,
-		type ImageDetails,
-		type GalleryImageItem,
-		type LightboxController
-	} from '$lib/models';
+	import { DirectusImageTransformation, PagePath, type ImageDetails, type GalleryImageItem } from '$lib/models';
 	import { dateStore, galleryShufflePercentageStore, imageCacheStore } from '$lib/stores';
-	import { debounce, imageUrlBuilder } from '$lib/utils';
+	import { clickOutside, debounce, imageUrlBuilder } from '$lib/utils';
 
 	import { goto } from '$app/navigation';
 
@@ -24,10 +19,9 @@
 		caching = true,
 		searchable = false,
 		showPostLinkOnDetail = false,
-		showDateOnDetail = true,
+		showDateOnDetail = false,
 		randomize = true,
-		imageTransformation = DirectusImageTransformation.THUMBNAIL,
-		loaded
+		imageTransformation = DirectusImageTransformation.THUMBNAIL
 	}: {
 		images: ImageDetails[] | undefined;
 		caching?: boolean;
@@ -36,30 +30,17 @@
 		showDateOnDetail?: boolean;
 		randomize?: boolean;
 		imageTransformation?: DirectusImageTransformation;
-		loaded?: (value: boolean) => void;
 	} = $props();
-
-	type GalleryArrowCharacter = '' | 'hide' | 'loop';
-
-	interface GalleryArrowsConfig {
-		color: string;
-		character: GalleryArrowCharacter;
-		enableKeyboardControl: boolean;
-	}
-
-	const arrowsConfig: GalleryArrowsConfig = {
-		character: 'loop',
-		color: '#fff',
-		enableKeyboardControl: true
-	};
 
 	let intersectionObserver: IntersectionObserver;
 	let searchTerm = $state<string | undefined>();
 	let cachedImages = $state(new Map<string, HTMLImageElement>());
-	let programmaticController = $state<LightboxController>();
 	let placeholderImage = $state<string | undefined>();
 	let imageItemsFiltered = $state<GalleryImageItem[] | undefined>();
 	let filterTrigger = $state(0);
+	let modalOpen = $state(false);
+	let modalIndex = $state(0);
+	let modalImage = $state<GalleryImageItem | undefined>();
 
 	const imageItems = $derived<GalleryImageItem[] | undefined>(
 		images && (!randomize || $galleryShufflePercentageStore)
@@ -83,7 +64,44 @@
 			: undefined
 	);
 
+	onMount(async () => {
+		globalThis.addEventListener('keydown', modalKeyNavigation);
+		placeholderImage = createInitImage();
+		await tick();
+		setupObservers();
+	});
+
+	onDestroy(() => {
+		if (globalThis) {
+			globalThis.removeEventListener('keydown', modalKeyNavigation);
+			if (intersectionObserver) {
+				intersectionObserver.disconnect();
+			}
+		}
+	});
+
 	$effect(() => debouncedFilter(imageItems, searchTerm, filterTrigger));
+
+	function modalKeyNavigation(event: KeyboardEvent): void {
+		switch (event.key) {
+			case 'ArrowRight': {
+				nextImage();
+
+				break;
+			}
+			case 'ArrowLeft': {
+				previousImage();
+
+				break;
+			}
+			case 'Escape': {
+				modalOpen = false;
+
+				break;
+			}
+			// No default
+		}
+	}
 
 	function openModal(index: number): void {
 		if (!imageItemsFiltered) {
@@ -92,36 +110,9 @@
 		if (caching) {
 			cacheImages(imageItemsFiltered);
 		}
-		if (programmaticController) {
-			programmaticController.openImage(index);
-		}
-	}
-
-	function renderFooter(image: GalleryImageItem): void {
-		const footer = document.querySelector('.svelte-lightbox-footer');
-		if (footer) {
-			footer.innerHTML = `
-					<div class="mt-2 px-2 mx-auto flex flex-row items-start justify-between gap-4">
-						<div>
-							<div class="text-gray-100">
-								${image.title}
-							</div>
-						</div>
-						${
-							showDateOnDetail
-								? `
-							<div class="flex flex-row items-center gap-2">
-								<div class="mt-1 text-sm text-nowrap">${$dateStore(image.date, 'DD. MMMM YYYY')}</div>
-							</div>
-						`
-								: ''
-						}
-					</div>
-					<div class="mt-3 px-2 text-sm text-gray-100">
-						${image.description && image.description.length < 60 ? image.description : ''}
-					</div>
-				`;
-		}
+		modalIndex = index;
+		modalImage = imageItemsFiltered[index];
+		modalOpen = true;
 	}
 
 	function partialShuffleImageOrder(images: GalleryImageItem[], percentage = 0): GalleryImageItem[] {
@@ -152,11 +143,9 @@
 
 	function debouncedFilter(items: GalleryImageItem[] | undefined, term: string | undefined, _: number): void {
 		debounce(async () => {
-			loaded?.(false);
 			imageItemsFiltered = getFilteredImages(items, term);
 			await tick();
 			setupObservers();
-			loaded?.(true);
 		}, 300)();
 	}
 
@@ -205,14 +194,16 @@
 	}
 
 	async function loadDetailImageWithProgress(image: GalleryImageItem): Promise<void> {
+		if (image.requested) {
+			return;
+		}
 		return new Promise((resolve, reject) => {
-			image.progress = 0;
 			const xhr = new XMLHttpRequest();
 			xhr.open('GET', image.src, true);
 			xhr.responseType = 'blob';
-
 			xhr.addEventListener('progress', (event) => {
 				if (event.lengthComputable) {
+					image.requested = true;
 					image.progress = Math.floor((event.loaded / event.total) * 100);
 					if (imageItemsFiltered) {
 						imageItemsFiltered = [...imageItemsFiltered];
@@ -220,10 +211,11 @@
 				}
 			});
 
-			xhr.addEventListener('load', () => {
+			xhr.addEventListener('load', async () => {
 				if (xhr.status === 200) {
 					const blob = xhr.response;
 					image.src = URL.createObjectURL(blob);
+					cachedImages.set(image.id, await loadDetailImage(image));
 					image.loaded = true;
 					resolve();
 				} else {
@@ -279,14 +271,9 @@
 		return goto(`${PagePath.travel}/${id}`);
 	}
 
-	function getPlaceholderImage(image: GalleryImageItem): string {
+	function getPlaceholderImageAndInitLoading(image: GalleryImageItem): string {
 		loadDetailImageWithProgress(image);
-		const canvas = document.createElement('canvas');
-		canvas.width = image.width;
-		canvas.height = image.height;
-		const context = canvas.getContext('2d') as CanvasRenderingContext2D;
-		context.clearRect(0, 0, image.width, image.height);
-		return canvas.toDataURL('image/webp');
+		return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='${image.width}' height='${image.height}'><rect width='100%' height='100%' fill="transparent"/></svg>`;
 	}
 
 	function createInitImage(): string {
@@ -298,18 +285,29 @@
 		return canvas.toDataURL('image/webp');
 	}
 
-	onMount(async () => {
-		placeholderImage = createInitImage();
-		await tick();
-		setupObservers();
-		loaded?.(true);
-	});
+	function nextImage(): void {
+		if (modalIndex === imageItemsFiltered!.length - 1) {
+			modalIndex = 0;
+		} else {
+			modalIndex++;
+		}
+		modalImage = imageItemsFiltered![modalIndex];
+	}
+
+	function previousImage(): void {
+		if (modalIndex === 0) {
+			modalIndex = imageItemsFiltered!.length - 1;
+		} else {
+			modalIndex--;
+		}
+		modalImage = imageItemsFiltered![modalIndex];
+	}
 </script>
 
 {#if searchable}
 	<div class="relative mb-5 w-full md:w-72">
 		<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
-			<FaSearch />
+			<Icon src={BiSearch} size="18"></Icon>
 		</div>
 		<Input
 			id="search-navbar"
@@ -320,53 +318,88 @@
 	</div>
 {/if}
 
-{#if imageItemsFiltered}
-	<div class:has-post-link={showPostLinkOnDetail}>
-		<LightboxGallery bind:programmaticController {arrowsConfig}>
-			{#each imageItemsFiltered as image}
-				<GalleryImage title={image.title}>
-					{#if showPostLinkOnDetail && (cachedImages.has(image.id) || image.loaded)}
-						<div class="absolute left-0 top-0 mt-[-36px] flex justify-center pb-3">
-							<div
-								role="button"
-								tabindex="0"
-								onclick={async () => await gotoPost(image.postId)}
-								onkeydown={async (event_) => event_.key === 'Enter' && (await gotoPost(image.postId))}
-								class="cursor-pointer rounded-full bg-gray-200 px-2 py-1 text-gray-800 hover:bg-gray-400"
-							>
-								{$t('components.gallery.lightbox.post-button')}
-							</div>
-						</div>
+{#if modalOpen && modalImage}
+	<div class="fixed bottom-0 left-0 right-0 top-0 z-10 flex items-center justify-center bg-black bg-opacity-80">
+		<button
+			class="absolute right-5 top-5 z-20 flex cursor-pointer justify-end invert"
+			onclick={() => (modalOpen = false)}
+		>
+			<Icon src={ImCross} size="38"></Icon>
+		</button>
+		<div class="relative" use:clickOutside oncanplay={() => (modalOpen = false)}>
+			<button
+				class="absolute left-0 top-0 z-20 flex h-full w-1/2 cursor-pointer items-center justify-start outline-none"
+				tabindex="0"
+				onclick={previousImage}
+			>
+				<Icon src={RiArrowsArrowLeftSLine} size="64" color="white"></Icon>
+			</button>
+			<button
+				class="absolute right-0 top-0 z-20 flex h-full w-1/2 cursor-pointer items-center justify-end outline-none"
+				tabindex="0"
+				onclick={nextImage}
+			>
+				<Icon src={RiArrowsArrowRightSLine} size="64" color="white"></Icon>
+			</button>
+			{#if showPostLinkOnDetail}
+				<div class="absolute -top-16 flex justify-between pl-3 pt-3 md:pl-0">
+					<div
+						role="button"
+						tabindex="0"
+						onclick={async () => await gotoPost(modalImage!.postId)}
+						onkeydown={async (event) => event.key === 'Enter' && (await gotoPost(modalImage!.postId))}
+						class="cursor-pointer rounded-full bg-gray-200 px-2 py-1 text-gray-800 hover:bg-gray-400"
+					>
+						{$t('components.gallery.lightbox.post-button')}
+					</div>
+				</div>
+			{/if}
+			{#if cachedImages.has(modalImage.id)}
+				<img
+					src={cachedImages.get(modalImage.id)!.src}
+					width={modalImage.width}
+					height={modalImage.height}
+					alt={modalImage.title}
+					class="block h-auto max-h-[85vh] w-auto max-w-full object-contain"
+				/>
+			{:else if !modalImage.loaded}
+				<img
+					src={getPlaceholderImageAndInitLoading(modalImage)}
+					width={modalImage.width}
+					height={modalImage.height}
+					alt={modalImage.title}
+					class="block h-auto max-h-[85vh] w-auto max-w-full object-contain"
+				/>
+				<div class="absolute bottom-0 left-0 right-0 top-0 flex w-full items-center justify-center">
+					<Progressbar progress={modalImage.progress} color="green" size="lg" class="mx-16 w-full md:mx-48" labelInside
+					></Progressbar>
+				</div>
+			{:else}
+				<img
+					src={modalImage.src}
+					width={modalImage.width}
+					height={modalImage.height}
+					alt={modalImage.title}
+					class="block h-auto max-h-[85vh] w-auto max-w-full object-contain"
+				/>
+			{/if}
+			<div class="text-shadow -bottom-18 absolute left-0 w-full p-3 font-bold text-white">
+				<div class="flex items-center justify-between">
+					<div>{modalImage.title}</div>
+					{#if showDateOnDetail}
+						<div class="text-nowrap text-xs">{$dateStore(modalImage.date, 'DD. MMMM YYYY')}</div>
 					{/if}
-					{#if cachedImages.has(image.id)}
-						<img
-							decoding="async"
-							class="m-auto"
-							src={cachedImages.get(image.id)!.src}
-							alt={image.title}
-							onload={() => renderFooter(image)}
-						/>
-					{:else if !image.loaded}
-						<div class="absolute z-10 flex items-center justify-center" style="width: 100vw; height: 100vh;">
-							<Progressbar progress={image.progress} color="green" class="w-80" size="lg" labelInside></Progressbar>
-						</div>
-						<img class="m-auto" id={image.id} src={getPlaceholderImage(image)} alt={image.title} />
-					{:else}
-						<img
-							decoding="async"
-							src={image.src}
-							alt={image.title}
-							style:opacity={image.loaded ? '1' : '0'}
-							class="m-auto transition-opacity duration-100"
-							onload={() => renderFooter(image)}
-						/>
-					{/if}
-					{#if image.description && image.description.length >= 60}
-						<div class="text-shadow absolute bottom-0 left-1 right-1 text-sm text-gray-100">{image.description}</div>
-					{/if}
-				</GalleryImage>
-			{/each}
-		</LightboxGallery>
+				</div>
+				{#if modalImage.description && modalImage.description.length < 60}
+					<div class="text-sm">{modalImage.description}</div>
+				{/if}
+			</div>
+			{#if modalImage.description && modalImage.description.length >= 60}
+				<div class="text-shadow absolute bottom-0 left-0 right-0 w-full p-3 text-sm font-bold text-white">
+					{modalImage.description}
+				</div>
+			{/if}
+		</div>
 	</div>
 {/if}
 

@@ -26,15 +26,27 @@
 
 	<div use:clickOutside oncanplay={() => (hidden = true)}>
 		<div class="flex items-center justify-center gap-4">
-			<button onclick={toggleTheme} class="block md:hidden">
+			<div
+				role="button"
+				onclick={toggleTheme}
+				tabindex="0"
+				onkeydown={(event) => event.key === 'Enter' && toggleTheme()}
+				class="block md:hidden"
+				aria-label="Toggle Theme"
+			>
 				<ThemeSwitcher {isDark} />
-			</button>
-			<button onclick={toggleLocale} class="block md:hidden">
+			</div>
+			<div
+				role="button"
+				onclick={toggleLocale}
+				tabindex="0"
+				onkeydown={(event) => event.key === 'Enter' && toggleTheme()}
+				class="block md:hidden"
+				aria-label="Toggle Locale"
+			>
 				<LocaleSwitcher />
-			</button>
-			<button>
-				<NavHamburger menuClass="outline-none h-10 w-10" class="" onClick={() => (hidden = !hidden)} />
-			</button>
+			</div>
+			<NavHamburger menuClass="outline-none h-10 w-10" onclick={() => (hidden = !hidden)} />
 		</div>
 	</div>
 
