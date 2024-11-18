@@ -4,7 +4,6 @@ import { writable } from 'svelte/store';
 
 import {
 	type BlogPostEntry,
-	type Departure,
 	type SupportInfoEntry,
 	type GalleryShufflePercentage,
 	type CountryEntry,
@@ -23,7 +22,6 @@ export const postsStore = writable<BlogPostEntry[] | undefined>();
 export const postToImagesStore = writable<Map<string, ImageDetails[]> | undefined>();
 export const imagesStore = writable<ImageDetails[] | undefined>();
 export const countriesStore = writable<CountryEntry[] | undefined>();
-export const departureStore = writable<Date | undefined>();
 export const supportInfoStore = writable<SupportInfoEntry | undefined>();
 export const galleryShufflePercentageStore = writable<number | undefined>();
 export const currentCoordinatesStore = writable<Position | undefined>();
@@ -76,11 +74,6 @@ async function initDataStores(fetch: FetchInterface): Promise<void> {
 			})
 		);
 		countriesStore.set(countries);
-	}
-
-	async function getDeparture(): Promise<void> {
-		const departure = await sdk(fetch).request<Departure>(readSingleton('resaundtill_departure', { fields: ['date'] }));
-		departureStore.set(new Date(departure.date));
 	}
 
 	async function getSupportInfo(): Promise<void> {
@@ -158,7 +151,6 @@ async function initDataStores(fetch: FetchInterface): Promise<void> {
 			getPosts(),
 			getImages(),
 			getCountries(),
-			getDeparture(),
 			getSupportInfo(),
 			getGalleryShufflePercentage(),
 			mapItems(),

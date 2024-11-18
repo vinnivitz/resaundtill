@@ -46,7 +46,7 @@
 </header>
 
 <main
-	class="no-scrollbar relative h-screen overflow-scroll bg-gradient-to-b from-gray-200 to-20% pt-20 dark:from-gray-800"
+	class="no-scrollbar relative h-screen overflow-scroll bg-gradient-to-b from-gray-200 to-20% pt-[67px] md:pt-20 dark:from-gray-800"
 >
 	{@render children?.()}
 </main>

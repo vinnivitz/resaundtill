@@ -114,10 +114,6 @@
 	const filterApplied = $derived(postsItemsFiltered && postsItemsFiltered.length !== postItems?.length);
 
 	$effect(() => {
-		countrySearchItemsFiltered = countrySearchItems;
-	});
-
-	$effect(() => {
 		countrySearchItemsFiltered =
 			countryFilter && countrySearchTerm
 				? countrySearchItems?.map((country) => ({
@@ -133,9 +129,7 @@
 		}
 	});
 
-	$effect(() => {
-		debouncedFilter(postItems, searchTerm, calendar, countrySearchItemsFiltered, filterTrigger);
-	});
+	$effect(() => debouncedFilter(postItems, searchTerm, calendar, countrySearchItemsFiltered, filterTrigger));
 
 	function selectDate(event: CustomEvent<{ from: Date; to: Date }>): void {
 		const { from, to } = event.detail;

@@ -83,13 +83,7 @@
 			: undefined
 	);
 
-	$effect(() => {
-		imageItemsFiltered = imageItems;
-	});
-
-	$effect(() => {
-		debouncedFilter(imageItems, searchTerm, filterTrigger);
-	});
+	$effect(() => debouncedFilter(imageItems, searchTerm, filterTrigger));
 
 	function openModal(index: number): void {
 		if (!imageItemsFiltered) {
