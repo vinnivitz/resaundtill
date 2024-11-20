@@ -1,7 +1,7 @@
 <script>
 	import { FooterCopyright, FooterIcon } from 'flowbite-svelte';
 
-	let year = new Date().getFullYear();
+	const year = new Date().getFullYear();
 </script>
 
 <footer

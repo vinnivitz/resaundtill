@@ -5,10 +5,7 @@ export function createAlertStore(): Readable<string | undefined> & { setAlert: (
 
 	function setAlert(message: string): void {
 		set(message);
-
-		setTimeout(() => {
-			set(undefined);
-		}, 5000);
+		setTimeout(() => set(undefined), 5000);
 	}
 
 	return {

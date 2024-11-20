@@ -5,7 +5,6 @@ import dayjs from 'dayjs';
 import { writable, type Readable } from 'svelte/store';
 import { locale } from 'svelte-i18n';
 
-import { Locale } from '$lib/models';
 import { getLocale } from '$lib/utils';
 
 function createDateStore(): Readable<(date: Date | string | undefined, formatString?: string) => string> {
@@ -14,12 +13,7 @@ function createDateStore(): Readable<(date: Date | string | undefined, formatStr
 	);
 
 	locale.subscribe(async (newLocale) => {
-		try {
-			dayjs.locale(getLocale(newLocale));
-		} catch (error) {
-			console.error(error);
-			dayjs.locale(Locale.EN);
-		}
+		dayjs.locale(getLocale(newLocale));
 		set((date, formatString = 'DD. MMMM YYYY') => dayjs(date).format(formatString));
 	});
 

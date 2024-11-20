@@ -72,12 +72,8 @@
 	});
 
 	onDestroy(() => {
-		if (globalThis) {
-			globalThis.removeEventListener('keydown', modalKeyNavigation);
-			if (intersectionObserver) {
-				intersectionObserver.disconnect();
-			}
-		}
+		globalThis?.removeEventListener?.('keydown', modalKeyNavigation);
+		intersectionObserver?.disconnect?.();
 	});
 
 	$effect(() => debouncedFilter(imageItems, searchTerm, filterTrigger));

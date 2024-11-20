@@ -13,9 +13,10 @@
 		></script>
 		<script>
 			const colorTheme = localStorage.getItem('color-theme');
-			colorTheme === 'dark' || (!colorTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
-				? document.documentElement.classList.add('dark')
-				: document.documentElement.classList.remove('dark');
+			document.documentElement.classList.toggle(
+				'dark',
+				colorTheme === 'dark' || (!colorTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+			);
 		</script>
 		%sveltekit.head%
 	</head>

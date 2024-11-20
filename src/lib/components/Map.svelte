@@ -2,12 +2,14 @@
 	import 'leaflet/dist/leaflet.css';
 
 	import { Button, Spinner } from 'flowbite-svelte';
+	import type { Position } from 'geojson';
 	import { type Map, type Icon, type IconOptions, type LayerGroup, type Marker } from 'leaflet';
 	import { onMount } from 'svelte';
-	import { t } from 'svelte-i18n';
+	import { locale, t } from 'svelte-i18n';
 
-	import type { MapItem } from '$lib/models';
-	import { geoJsonStore, currentCoordinatesStore } from '$lib/stores';
+	import type { BlogPostTranslation, MapItem } from '$lib/models';
+	import { geoJsonStore, currentCoordinatesStore, dateStore } from '$lib/stores';
+	import { getTranslation } from '$lib/utils';
 
 	const {
 		items,
@@ -17,7 +19,7 @@
 	}: {
 		items: MapItem[] | undefined;
 		activatable?: boolean;
-		countryCode?: string | null;
+		countryCode?: string | undefined;
 		navigate?: (id: string) => void;
 	} = $props();
 
@@ -32,17 +34,24 @@
 	let countryBoundariesLayerGroup: LayerGroup;
 	let initialized = false;
 
-	const currentCoordinates = $derived(
-		items && items.length > 0 && $currentCoordinatesStore
-			? items[items.length - 1].location.coordinates
-			: $currentCoordinatesStore
-	);
+	const currentCoordinates = $derived(items?.[items.length - 1]?.location.coordinates ?? $currentCoordinatesStore);
 
-	$effect(() => {
-		if (map && countryCode) {
+	$effect(() => addCountryBoundaries(map, countryCode));
+
+	$effect(() => addMarkers(items, map, defaultIcon, resaTillIcon));
+
+	$effect(() => initView(currentCoordinates));
+
+	onMount(() => {
+		mapElement.style.opacity = '0';
+		spinnerElement.style.display = 'block';
+	});
+
+	function addCountryBoundaries(map?: Map, code?: string): void {
+		if (map && code) {
 			countryBoundariesLayerGroup?.clearLayers();
 			countryBoundariesLayerGroup = L.layerGroup().addTo(map);
-			geoJsonStore.getGeoCountry(countryCode).then((country) => {
+			geoJsonStore.getGeoCountry(code).then((country) => {
 				if (country) {
 					const geoJson = L.geoJSON(country.feature, {
 						style: {
@@ -63,25 +72,10 @@
 		} else {
 			countryBoundariesLayerGroup?.clearLayers();
 		}
-	});
+	}
 
-	$effect(() => {
-		if (items && map && defaultIcon && resaTillIcon) {
-			markerLayerGroup?.clearLayers();
-			markerLayerGroup = L.layerGroup().addTo(map);
-			const markers = getMarkers(items);
-			if (markers.length > 1) {
-				for (let index = 0; index < markers.length; index++) {
-					if (index < markers.length - 1) {
-						addPolyLine(markers[index], markers[index + 1], items[index + 1]);
-					}
-				}
-			}
-		}
-	});
-
-	$effect(() => {
-		if (!initialized && currentCoordinates) {
+	function initView(coordinates?: Position): void {
+		if (!initialized && coordinates) {
 			initialized = true;
 			import('leaflet').then(async (leaflet) => {
 				L = leaflet;
@@ -90,12 +84,36 @@
 				spinnerElement.style.display = 'none';
 			});
 		}
-	});
+	}
 
-	onMount(async () => {
-		mapElement.style.opacity = '0';
-		spinnerElement.style.display = 'block';
-	});
+	function addMarkers(items?: MapItem[], map?: Map, defaultIcon?: Icon, resaTillIcon?: Icon): void {
+		if (items && map && defaultIcon && resaTillIcon) {
+			markerLayerGroup?.clearLayers();
+			markerLayerGroup = L.layerGroup().addTo(map);
+			const markers = getMarkers(items);
+			if (markers.length > 1) {
+				for (let index = 0; index < markers.length; index++) {
+					if (index < markers.length - 1) {
+						addTooltip(markers[index], items[index]);
+						addPolyLine(markers[index], markers[index + 1], items[index + 1]);
+					}
+				}
+			}
+		}
+	}
+
+	function addTooltip(marker: Marker, item: MapItem): void {
+		const tooltip = L.tooltip({
+			direction: 'top',
+			offset: [0, -37]
+		}).setContent(`
+			<div class="flex flex-col items-center gap-2">
+				<div>${getTranslation<BlogPostTranslation>(item.translations, $locale)?.title}</div>
+				<div>${$dateStore(item.date)}</div>
+			</div>
+		`);
+		marker.bindTooltip(tooltip).closeTooltip();
+	}
 
 	function addPolyLine(markerA: Marker, markerB: Marker, item: MapItem): void {
 		L.polyline([markerA.getLatLng(), markerB.getLatLng()], {
@@ -116,7 +134,6 @@
 	}
 
 	async function initializeMap(): Promise<void> {
-		// const coords = getValidCoords();
 		map = L.map('map');
 		if (activatable) {
 			disableMapInteractions();
@@ -186,6 +203,9 @@
 	.wrapper,
 	#map {
 		height: calc(100vh - var(--nav-height));
+		@media only screen and (max-width: 768px) {
+			height: calc(100vh - var(--nav-height-mobile));
+		}
 	}
 
 	:global(.map-button button) {

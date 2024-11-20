@@ -24,10 +24,11 @@
 		type BlogPostItem,
 		type BlogPostTranslation,
 		type CalendarModel,
-		type CountryEntryTranslation
+		type CountryEntry,
+		type CountryEntryTranslation,
+		type ImageDetails
 	} from '$lib/models';
-	import { dateStore } from '$lib/stores';
-	import { countriesStore, countryToPostsStore, postToImagesStore } from '$lib/stores/data.store';
+	import { countriesStore, countryToPostsStore, postToImagesStore, dateStore } from '$lib/stores';
 	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
 
 	let {
@@ -42,94 +43,62 @@
 		sort?: BlogPostSort;
 	} = $props();
 
-	let observer: IntersectionObserver;
 	const observers: HTMLDivElement[] = [];
+	let observer: IntersectionObserver;
 
 	let searchTerm: string | undefined = $state();
 	let countrySearchTerm: string | undefined = $state();
 	let filterTrigger = $state(0);
-	let initCalendar = $state<CalendarModel>({});
-
 	let postsItemsFiltered = $state<BlogPostItem[] | undefined>();
-	let countrySearchItemsFiltered = $state<BlogPostCountrySearchItem[] | undefined>();
+	let initCalendar = $state<CalendarModel | undefined>();
 
-	const postItems: BlogPostItem[] | undefined = $derived(
-		posts && $postToImagesStore
-			? posts.map((post) => {
-					const imageId = $postToImagesStore.get(post.id)?.[0]?.id;
-					return {
-						id: post.id,
-						date: new Date(post.date),
-						translations: post.translations,
-						thumbnailUrl: imageUrlBuilder(imageId, DirectusImageTransformation.PREVIEW)
-					};
-				})
+	const postItems = $derived(getPosts(posts, $postToImagesStore));
+
+	const countrySearchItems = $derived(
+		getCountrySearchItems(countryFilter, postItems, $countriesStore, $countryToPostsStore)
+	);
+
+	const initFromRange = $derived(
+		searchable
+			? normalizeDate(
+					postItems?.reduce((earliest, current) => (current.date < earliest.date ? current : earliest)).date
+				)
 			: undefined
 	);
 
-	const countrySearchItems: BlogPostCountrySearchItem[] | undefined = $derived(
-		countryFilter && postItems && $countriesStore && $countryToPostsStore
-			? [
-					...$countriesStore.map((country) => ({
-						name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
-						checked: true,
-						visible: true,
-						code: country.code,
-						postIds: $countryToPostsStore.get(country.code) ?? []
-					})),
-					{
-						name: $t('components.posts.country-filter-not-categorized'),
-						checked: true,
-						visible: true,
-						code: '',
-						postIds: postItems
-							.filter((post) => {
-								const categorizedPostIds = new Set(
-									$countriesStore.flatMap((country) => $countryToPostsStore.get(country.code) ?? [])
-								);
-								return !categorizedPostIds.has(post.id);
-							})
-							.map((post) => post.id)
-					}
-				]
+	const initToRange = $derived(
+		searchable
+			? normalizeDate(postItems?.reduce((latest, current) => (current.date > latest.date ? current : latest)).date)
 			: undefined
 	);
 
-	const initFromRange: Date | undefined = $derived(
-		searchable && postItems
-			? normalizeDate(postItems.reduce((earliest, current) => (current.date < earliest.date ? current : earliest)).date)
-			: undefined
-	);
+	const calendar = $derived(initCalendar);
 
-	const initToRange: Date | undefined = $derived(
-		searchable && postItems
-			? normalizeDate(postItems.reduce((latest, current) => (current.date > latest.date ? current : latest)).date)
-			: undefined
-	);
+	const filterApplied = $derived(!!postsItemsFiltered && postsItemsFiltered?.length !== postItems?.length);
 
-	const calendar: CalendarModel | undefined = $derived(
-		initFromRange && initToRange ? { from: initFromRange, to: initToRange } : undefined
-	);
-
-	const filterApplied = $derived(postsItemsFiltered && postsItemsFiltered.length !== postItems?.length);
+	const countrySearchItemsFiltered = $derived(getCountrySearchItemsFiltered(countrySearchItems));
 
 	$effect(() => {
-		countrySearchItemsFiltered =
-			countryFilter && countrySearchTerm
-				? countrySearchItems?.map((country) => ({
-						...country,
-						visible: country.name.toLowerCase().includes(countrySearchTerm!.toLowerCase())
-					}))
-				: countrySearchItems;
-	});
-
-	$effect(() => {
-		if (searchable && initFromRange && initToRange) {
-			initCalendar = { from: initFromRange, to: initToRange };
+		if (searchable) {
+			initCalendar = getCalendar(initFromRange, initToRange);
 		}
 	});
 
 	$effect(() => debouncedFilter(postItems, searchTerm, calendar, countrySearchItemsFiltered, filterTrigger));
+
+	function getCalendar(from?: Date, to?: Date): CalendarModel | undefined {
+		if (!from || !to) {
+			return;
+		}
+		return { from, to };
+	}
+
+	function getCountrySearchItemsFiltered(items?: BlogPostCountrySearchItem[]): BlogPostCountrySearchItem[] | undefined {
+		return items?.map((country) => ({
+			...country,
+			visible: country.name.toLowerCase().includes(countrySearchTerm?.toLowerCase() ?? '')
+		}));
+	}
 
 	function selectDate(event: CustomEvent<{ from: Date; to: Date }>): void {
 		const { from, to } = event.detail;
@@ -138,6 +107,51 @@
 			calendar.to = to;
 			filterTrigger++;
 		}
+	}
+
+	function getPosts(
+		items?: BlogPostEntry[],
+		postToImagesMap?: Map<string, ImageDetails[]>
+	): BlogPostItem[] | undefined {
+		if (!items || !postToImagesMap) {
+			return;
+		}
+		return items.map((post) => {
+			const imageId = postToImagesMap.get(post.id)?.[0]?.id;
+			return {
+				id: post.id,
+				date: new Date(post.date),
+				translations: post.translations,
+				thumbnailUrl: imageUrlBuilder(imageId, DirectusImageTransformation.PREVIEW)
+			};
+		});
+	}
+
+	function getCountrySearchItems(
+		filter: boolean,
+		items?: BlogPostItem[],
+		countries?: CountryEntry[],
+		countryToPostsMap?: Map<string, string[]>
+	): BlogPostCountrySearchItem[] | undefined {
+		if (!filter || !items || !countries || !countryToPostsMap) {
+			return;
+		}
+		const result = countries.map((country) => ({
+			name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
+			checked: true,
+			visible: true,
+			code: country.code,
+			postIds: countryToPostsMap.get(country.code) ?? []
+		}));
+		const categorizedPostIds = new Set(countries.flatMap((country) => countryToPostsMap.get(country.code) ?? []));
+		result.push({
+			name: $t('components.posts.country-filter-not-categorized'),
+			checked: true,
+			visible: true,
+			code: '',
+			postIds: items.filter((post) => !categorizedPostIds.has(post.id)).map((post) => post.id)
+		});
+		return result;
 	}
 
 	function debouncedFilter(
@@ -152,7 +166,10 @@
 		}
 	}
 
-	function normalizeDate(date: Date): Date {
+	function normalizeDate(date?: Date): Date | undefined {
+		if (!date) {
+			return;
+		}
 		const newDate = new Date(date);
 		newDate.setHours(0, 0, 0, 0);
 		return newDate;
@@ -212,14 +229,9 @@
 	}
 
 	function resetFilter(): void {
-		searchTerm = '';
-		countrySearchTerm = '';
-		if (calendar && initFromRange && initToRange) {
-			calendar.from = initFromRange;
-			calendar.to = initToRange;
-			initCalendar = { from: initFromRange, to: initToRange };
-		}
-		filterTrigger++;
+		searchTerm = undefined;
+		countrySearchTerm = undefined;
+		initCalendar = getCalendar(initFromRange, initToRange);
 	}
 
 	function toggleSorting(): void {
@@ -242,7 +254,9 @@
 			rootMargin: '0px',
 			threshold: 0.01
 		});
-		for (const obs of observers) observer.observe(obs);
+		for (const obs of observers) {
+			observer.observe(obs);
+		}
 	});
 
 	onDestroy(() => observer?.disconnect());
@@ -390,6 +404,14 @@
 		</div>
 	{/if}
 </div>
+
+<!-- {#if showToTopButton}
+	<div class="fixed bottom-5 right-5 z-50">
+		<Button pill color="blue" class="p-2 focus:ring-0" onclick={scrollTop}>
+			<Icon src={ImArrowUp2} size="32" className="invert"></Icon>
+		</Button>
+	</div>
+{/if} -->
 
 <style lang="postcss">
 	.text-shadow {

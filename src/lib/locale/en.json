@@ -47,7 +47,10 @@
 		"area": "Area",
 		"currency": "Currency",
 		"capital": "Capital",
-		"posts": "Posts"
+		"posts": "Posts",
+		"api": {
+			"fetch-failed": "Failed to load some data"
+		}
 	},
 	"components": {
 		"map": {

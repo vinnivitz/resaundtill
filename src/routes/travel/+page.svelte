@@ -4,5 +4,5 @@
 </script>
 
 <section class="p-4 pt-0 md:pt-4">
-	<BlogPosts posts={$postsStore} searchable={true} />
+	<BlogPosts posts={$postsStore} searchable showToTopButton />
 </section>

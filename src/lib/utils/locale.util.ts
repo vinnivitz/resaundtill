@@ -24,7 +24,7 @@ export function getTranslation<T = Translations>(
 	translations: Translations[] | undefined,
 	locale: string | null | undefined
 ): T | undefined {
-	if (!translations) return undefined;
+	if (!translations) return;
 	return (
 		(translations.find((translation) => translation.languages_code === getLocaleCode(locale)) as T) ??
 		(translations.find((translation) => ['de-DE', 'en-US'].includes(translation.languages_code)) as T)

@@ -49,7 +49,10 @@
 		"area": "Fläche",
 		"currency": "Währungen",
 		"capital": "Hauptstadt",
-		"posts": "Beiträge"
+		"posts": "Beiträge",
+		"api": {
+			"fetch-failed": "Einige Daten konnten nicht geladen werden"
+		}
 	},
 	"components": {
 		"map": {

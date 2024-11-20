@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Heading, Secondary, Hr, Tabs, TabItem, Spinner } from 'flowbite-svelte';
+	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { locale, t } from 'svelte-i18n';
 	// @ts-expect-error - Typings are missing
@@ -14,12 +15,13 @@
 	import {
 		PagePath,
 		type BlogPostEntry,
+		type CountryEntry,
 		type CountryEntryTranslation,
 		type CountryItemDetails,
 		type MapItem
 	} from '$lib/models';
 	import { countriesStore, countryToPostsStore, postsStore } from '$lib/stores';
-	import { getTranslation } from '$lib/utils';
+	import { getTranslation, isDefined, scrollTop } from '$lib/utils';
 
 	import { goto } from '$app/navigation';
 
@@ -27,48 +29,55 @@
 
 	const { data }: { data: PageData } = $props();
 
-	const countryItem = $derived<CountryItemDetails | undefined>(
-		(() => {
-			if (data?.countryCode && $countriesStore && $countryToPostsStore && postsStore) {
-				const country = $countriesStore?.find((country) => country.code === data.countryCode);
-				if (country) {
-					return {
-						code: country.code,
-						area: country.area,
-						capital: country.capital,
-						currency: country.currency,
-						name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
-						population: country.population,
-						posts: undefined,
-						description: '',
-						mapItems: []
-					};
-				}
-			}
-		})()
-	);
+	const countryItem = $derived<CountryItemDetails | undefined>(getCountryItem(data?.countryCode, $countriesStore));
 
-	const posts = $derived<BlogPostEntry[] | undefined>(
-		(() => {
-			if (data.countryCode && $postsStore && $countryToPostsStore) {
-				const postIds = $countryToPostsStore.get(data.countryCode);
-				if (postIds) {
-					return postIds
-						.map((postId) => $postsStore?.find((post) => post.id === postId))
-						.filter((post) => post !== undefined)
-						.sort((a, b) => (new Date(a.date).getTime() > new Date(b.date).getTime() ? -1 : 1));
-				}
-			}
-		})()
-	);
+	const posts = $derived<BlogPostEntry[] | undefined>(getPosts(data?.countryCode, $postsStore, $countryToPostsStore));
 
-	const mapItems = $derived<MapItem[] | undefined>(
-		posts
-			? posts
-					.filter((post) => post.location)
-					.map((post) => ({ id: post.id, isFlight: post.isFlight, location: post.location! }))
-			: undefined
-	);
+	const mapItems = $derived<MapItem[] | undefined>(getMapItems(posts));
+
+	onMount(() => scrollTop(false));
+
+	function getPosts(
+		code?: string,
+		posts?: BlogPostEntry[],
+		countryToPostsMap?: globalThis.Map<string, string[]>
+	): BlogPostEntry[] | undefined {
+		if (!code || !posts || !countryToPostsMap) {
+			return;
+		}
+		const postIds = countryToPostsMap.get(data.countryCode);
+		if (postIds) {
+			return postIds
+				.map((postId) => $postsStore?.find((post) => post.id === postId))
+				.filter((post) => isDefined(post))
+				.sort((a, b) => (new Date(a.date).getTime() > new Date(b.date).getTime() ? -1 : 1));
+		}
+	}
+
+	function getCountryItem(code?: string, countries?: CountryEntry[]): CountryItemDetails | undefined {
+		if (!code || !countries) {
+			return;
+		}
+		const country = countries.find((country) => country.code === code);
+		if (country) {
+			return {
+				code: country.code,
+				area: country.area,
+				capital: country.capital,
+				currency: country.currency,
+				name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
+				population: country.population,
+				description: ''
+			};
+		}
+	}
+
+	function getMapItems(posts: BlogPostEntry[] | undefined): MapItem[] | undefined {
+		if (!posts) {
+			return;
+		}
+		return posts.filter((post) => post.location) as MapItem[];
+	}
 </script>
 
 <section class="p-3 md:px-12 md:py-4">

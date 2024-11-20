@@ -6,6 +6,8 @@
 	import { Toast } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import { locale } from 'svelte-i18n';
+	import { Icon } from 'svelte-icons-pack';
+	import { BiSolidErrorAlt } from 'svelte-icons-pack/bi';
 
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { LayoutTheme, Locale } from '$lib/models';
@@ -48,9 +50,17 @@
 <main
 	class="no-scrollbar relative h-screen overflow-scroll bg-gradient-to-b from-gray-200 to-20% pt-[67px] dark:from-gray-800 md:pt-20"
 >
+	<div id="scroll-anchor"></div>
 	{@render children?.()}
 </main>
 
 {#if $alertStore}
-	<Toast>{$alertStore}</Toast>
+	<div class="absolute bottom-5 left-0 right-0 flex w-full items-center justify-center">
+		<Toast color="red">
+			<div class="flex items-center gap-4">
+				<Icon src={BiSolidErrorAlt} size="32" color="red"></Icon>
+				<div class="text-lg">{$alertStore}</div>
+			</div>
+		</Toast>
+	</div>
 {/if}

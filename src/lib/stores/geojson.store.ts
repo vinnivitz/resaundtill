@@ -4,11 +4,14 @@ import * as turf from '@turf/turf';
 import type { Feature, MultiPolygon, Polygon, Position } from 'geojson';
 import { writable } from 'svelte/store';
 import type { Readable } from 'svelte/store';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 
 import type { BoundingBoxEntry, CustomGeoJsonProperties, GeoCountry } from '$lib/models';
 import { getHostUrl } from '$lib/utils';
 
 import { alertStore } from './alert.store';
+
+const $t = unwrapFunctionStore(_);
 
 type GeoJsonStore = Readable<Map<string, string>> & {
 	getCountryCode(location: Position): Promise<string | undefined>;
@@ -37,7 +40,7 @@ function createGeoJsonStore(): GeoJsonStore {
 			try {
 				const response = await fetch(`${getHostUrl()}/json/geo_bounding_boxes.json`);
 				if (!response.ok) {
-					throw new Error('Failed to load country bounding boxes');
+					throw new Error($t('common.api.fetch-failed'));
 				}
 
 				const data: BoundingBoxEntry[] = await response.json();
@@ -46,7 +49,7 @@ function createGeoJsonStore(): GeoJsonStore {
 			} catch (error) {
 				console.error(error);
 				countryGeoBoundingBoxes = [];
-				alertStore.setAlert('Failed to load data.');
+				alertStore.setAlert($t('common.api.fetch-failed'));
 				return countryGeoBoundingBoxes;
 			} finally {
 				boundingBoxFetchPromise = undefined;
@@ -69,7 +72,7 @@ function createGeoJsonStore(): GeoJsonStore {
 			try {
 				const response = await fetch(`${getHostUrl()}/json/geo/${countryCode}.json`);
 				if (!response.ok) {
-					alertStore.setAlert(`Failed to load country data for ${countryCode}`);
+					alertStore.setAlert($t('common.api.fetch-failed'));
 					throw new Error(response.statusText);
 				}
 
@@ -83,7 +86,7 @@ function createGeoJsonStore(): GeoJsonStore {
 				return countryData;
 			} catch (error) {
 				console.error(error);
-				alertStore.setAlert(`Failed to load country data`);
+				alertStore.setAlert($t('common.api.fetch-failed'));
 			} finally {
 				countryDataPromises.delete(countryCode);
 			}

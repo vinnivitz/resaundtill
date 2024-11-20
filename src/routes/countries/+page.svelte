@@ -6,8 +6,14 @@
 	// @ts-expect-error - Typings are missing
 	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
 
-	import { DirectusImageTransformation, PagePath, type CountryEntryTranslation, type CountryItem } from '$lib/models';
-	import { countriesStore } from '$lib/stores';
+	import {
+		DirectusImageTransformation,
+		PagePath,
+		type CountryEntry,
+		type CountryEntryTranslation,
+		type CountryItem
+	} from '$lib/models';
+	import { countriesStore, countryToPostsStore } from '$lib/stores';
 	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
 
 	const observers: HTMLDivElement[] = [];
@@ -16,22 +22,21 @@
 	let countriesFiltered = $state<CountryItem[] | undefined>();
 	let filterTrigger = $state(0);
 
-	const countryItems = $derived<CountryItem[] | undefined>(
-		$countriesStore?.map((country) => ({
+	const countryItems = $derived<CountryItem[] | undefined>(getCountryItems($countriesStore));
+
+	$effect(() => debouncedFilter(countryItems, searchTerm, filterTrigger));
+
+	function getCountryItems(items?: CountryEntry[]): CountryItem[] | undefined {
+		if (!items) {
+			return;
+		}
+		return items.map((country) => ({
 			id: country.id,
 			name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
 			code: country.code,
 			thumbnailUrl: imageUrlBuilder(country.thumbnail, DirectusImageTransformation.PREVIEW)
-		}))
-	);
-
-	$effect(() => {
-		countriesFiltered = countryItems;
-	});
-
-	$effect(() => {
-		debouncedFilter(countryItems, searchTerm, filterTrigger);
-	});
+		}));
+	}
 
 	function debouncedFilter(items: CountryItem[] | undefined, term: string | undefined, _: number): void {
 		if (items) {
@@ -104,7 +109,7 @@
 				{#each countriesFiltered as country}
 					<a
 						href={`${PagePath.countries}/${country.code}`}
-						class="xl:transition xl:delay-150 xl:duration-300 xl:ease-in-out xl:hover:-translate-y-1 xl:hover:scale-110"
+						class="relative xl:transition xl:delay-150 xl:duration-300 xl:ease-in-out xl:hover:-translate-y-1 xl:hover:scale-110"
 					>
 						<div
 							class="relative flex h-96 w-full items-end justify-start bg-cover bg-center text-left dark:bg-gray-500"
@@ -127,6 +132,13 @@
 									</span>
 								</div>
 							</div>
+						</div>
+						<div
+							class="absolute bottom-0 left-0 right-0 flex h-1/2 items-end bg-gradient-to-t from-black to-transparent p-2 font-normal text-gray-300"
+						>
+							{#if $countryToPostsStore}
+								{$t('countries.posts')}: {$countryToPostsStore.get(country.code)?.length ?? 0}
+							{/if}
 						</div>
 					</a>
 				{/each}

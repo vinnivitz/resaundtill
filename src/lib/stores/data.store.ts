@@ -1,6 +1,7 @@
 import { readItems, readSingleton, type FetchInterface } from '@directus/sdk';
 import type { Position } from 'geojson';
 import { writable } from 'svelte/store';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 
 import {
 	type BlogPostEntry,
@@ -13,11 +14,8 @@ import {
 } from '$lib/models';
 import { sdk } from '$lib/sdk';
 
-import { alertStore } from './alert.store';
+import { alertStore, geoJsonStore } from './';
 
-import { geoJsonStore } from './';
-
-// Define individual stores for each property
 export const postsStore = writable<BlogPostEntry[] | undefined>();
 export const postToImagesStore = writable<Map<string, ImageDetails[]> | undefined>();
 export const imagesStore = writable<ImageDetails[] | undefined>();
@@ -29,6 +27,7 @@ export const mapItemsStore = writable<MapItem[] | undefined>();
 export const countryToPostsStore = writable<Map<string, string[]> | undefined>();
 export const postToCountryStore = writable<Map<string, string> | undefined>();
 
+const $t = unwrapFunctionStore(_);
 let initialized = false;
 
 async function initDataStores(fetch: FetchInterface): Promise<void> {
@@ -61,9 +60,7 @@ async function initDataStores(fetch: FetchInterface): Promise<void> {
 		}
 		postToImagesStore.set(postToImages);
 		imagesStore.set(
-			[...postToImages.values()].flat().sort((a, b) => {
-				return new Date(a.date).getTime() - new Date(b.date).getTime();
-			})
+			[...postToImages.values()].flat().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 		);
 	}
 
@@ -107,7 +104,7 @@ async function initDataStores(fetch: FetchInterface): Promise<void> {
 			readItems('resaundtill_posts', {
 				limit: -1,
 				sort: ['date'],
-				fields: ['id', 'location', 'isFlight']
+				fields: ['id', 'location', 'isFlight', 'translations.*', 'date']
 			})
 		);
 		mapItemsStore.set(posts.filter((post) => post.location) as MapItem[]);
@@ -158,7 +155,7 @@ async function initDataStores(fetch: FetchInterface): Promise<void> {
 		]);
 	} catch (error) {
 		console.error(error);
-		alertStore.setAlert('Failed to load data');
+		alertStore.setAlert($t('common.api.fetch-failed'));
 	}
 }
 

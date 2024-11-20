@@ -9,8 +9,8 @@ export type CountryItemDetails = {
 	area: number;
 	capital: string;
 	currency: string;
-	posts: BlogPostEntry[] | undefined;
-	mapItems: MapItem[];
+	posts?: BlogPostEntry[];
+	mapItems?: MapItem[];
 };
 
 export type CountryItem = {

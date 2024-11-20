@@ -15,9 +15,11 @@
 	import {
 		DirectusImageTransformation,
 		PagePath,
+		type BlogPostEntry,
 		type BlogPostItemDetails,
 		type BlogPostTranslation,
 		type CountryEntryTranslation,
+		type ImageDetails,
 		type MapItem
 	} from '$lib/models';
 	import {
@@ -28,7 +30,7 @@
 		postToCountryStore,
 		postToImagesStore
 	} from '$lib/stores';
-	import { getTranslation } from '$lib/utils';
+	import { getTranslation, scrollTop } from '$lib/utils';
 
 	import { goto } from '$app/navigation';
 
@@ -36,71 +38,74 @@
 
 	let { data }: { data: PageData } = $props();
 
-	const isPreviousPost = $derived($postsStore && ($postsStore.findIndex((post) => post.id === data.postId) ?? 0) > 0);
-	const isNextPost = $derived(
-		$postsStore && ($postsStore.findIndex((post) => post.id === data.postId) ?? 0) < $postsStore.length - 1
+	const postItem: BlogPostItemDetails | undefined = $derived(getPostItems($postsStore, $postToImagesStore));
+
+	const isNextPost = $derived($postsStore && ($postsStore.findIndex((post) => post.id === data.postId) ?? 0) > 0);
+	const isPreviousPost = $derived(
+		($postsStore?.findIndex((post) => post.id === data.postId) ?? 0) < ($postsStore?.length ?? 1) - 1
 	);
 
-	const postItem: BlogPostItemDetails | undefined = $derived(
-		$postsStore &&
-			$postToImagesStore &&
-			(() => {
-				const post = $postsStore.find((post) => post.id === data.postId);
-				if (post === undefined) {
-					goto(PagePath.travel);
-				} else {
-					return {
-						id: post.id,
-						date: new Date(post.date),
-						translations: post.translations,
-						images: $postToImagesStore.get(post.id) ?? []
-					};
-				}
-			})()
-	);
-
-	const translatedTitle = $derived(
-		postItem?.translations && getTranslation<BlogPostTranslation>(postItem.translations, $locale)?.title
-	);
+	const translatedTitle = $derived(getTranslation<BlogPostTranslation>(postItem?.translations, $locale)?.title);
 
 	const translatedDescription = $derived(
-		postItem?.translations && getTranslation<BlogPostTranslation>(postItem.translations, $locale)?.description
+		getTranslation<BlogPostTranslation>(postItem?.translations, $locale)?.description
 	);
 
 	const countryCode = $derived(postItem && $postToCountryStore && $postToCountryStore.get(postItem?.id));
 
 	const countryName = $derived(
-		countryCode &&
-			$countriesStore &&
-			getTranslation<CountryEntryTranslation>(
-				$countriesStore.find((country) => country.code === countryCode)?.translations ?? [],
-				$locale
-			)?.name
+		getTranslation<CountryEntryTranslation>(
+			$countriesStore?.find((country) => country.code === countryCode)?.translations ?? [],
+			$locale
+		)?.name
 	);
 
-	const mapItems = $derived<MapItem[] | undefined>(
-		postItem && $mapItemsStore?.filter((item) => item.id === postItem?.id)
-	);
+	const mapItems = $derived<MapItem[] | undefined>(getMapItems(postItem?.id, $mapItemsStore));
 
-	onMount(() => {
-		globalThis.scrollTo(0, 0);
-	});
+	onMount(() => scrollTop(false));
 
-	async function getPreviousPost(): Promise<void> {
+	function getPostItems(
+		items?: BlogPostEntry[],
+		postToImageMap?: globalThis.Map<string, ImageDetails[]>
+	): BlogPostItemDetails | undefined {
+		if (!items || !postToImageMap) {
+			return;
+		}
+		const post = items?.find((post) => post.id === data.postId);
+		if (!post) {
+			goto(PagePath.travel);
+			return;
+		}
+		return {
+			id: post.id,
+			date: new Date(post.date),
+			translations: post.translations,
+			images: postToImageMap.get(post.id) ?? []
+		};
+	}
+
+	async function getNextPost(): Promise<void> {
 		if ($postsStore) {
 			const post = $postsStore[$postsStore.findIndex((post) => post.id === data.postId) - 1];
 			await goto(`${PagePath.travel}/${post.id}`);
 		}
 	}
 
-	async function getNextPost(): Promise<void> {
+	async function getPreviousPost(): Promise<void> {
 		if ($postsStore) {
 			const post = $postsStore[$postsStore.findIndex((post) => post.id === data.postId) + 1];
 			await goto(`${PagePath.travel}/${post.id}`);
 		}
 	}
 
-	function gotoCountry(): Promise<void> {
+	function getMapItems(postId?: string, items?: MapItem[]): MapItem[] | undefined {
+		if (!postId || !items) {
+			return;
+		}
+		return items.filter((item) => item.id === postId);
+	}
+
+	async function gotoCountry(): Promise<void> {
 		return goto(`${PagePath.countries}/${countryCode}`);
 	}
 </script>
@@ -110,9 +115,9 @@
 		{#if isPreviousPost}
 			<button
 				onclick={getPreviousPost}
-				class="flex rounded-full bg-gray-200 px-4 pt-2 align-middle text-sm font-bold leading-6 text-gray-800 hover:bg-gray-400"
+				class="flex rounded-full bg-gray-200 px-4 py-2 align-middle text-sm font-bold leading-6 text-gray-800 hover:bg-gray-400"
 			>
-				<div class="h-5 w-5"><FaArrowLeft /></div>
+				<div class="h-6 w-6"><FaArrowLeft /></div>
 				<div class="pl-2">{$t('travel.header.prev-button.label')}</div>
 			</button>
 		{:else}
