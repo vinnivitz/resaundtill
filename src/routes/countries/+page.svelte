@@ -3,8 +3,8 @@
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { locale, t } from 'svelte-i18n';
-	// @ts-expect-error - Typings are missing
-	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
+	import { Icon } from 'svelte-icons-pack';
+	import { IoSearch } from 'svelte-icons-pack/io';
 
 	import {
 		DirectusImageTransformation,
@@ -88,8 +88,8 @@
 <section in:fly={{ y: 50, duration: 1000 }} class="mx-auto max-w-screen-xl p-5 dark:text-gray-100">
 	<div class="mx-auto max-w-screen-xl p-5 dark:text-gray-100">
 		<div class="relative mb-5 w-full md:w-72">
-			<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
-				<FaSearch />
+			<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+				<Icon src={IoSearch} size="24"></Icon>
 			</div>
 			<Input
 				id="search-navbar"

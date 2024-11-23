@@ -9,6 +9,14 @@ export type GalleryImageItem = {
 	loaded: boolean;
 	height: number;
 	width: number;
-	date: string;
+	date: Date;
 	progress: number;
+};
+
+export type GalleryItemCountrySearchItem = {
+	name: string;
+	code: string;
+	checked: boolean;
+	visible: boolean;
+	imageIds: string[];
 };

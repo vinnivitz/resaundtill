@@ -69,7 +69,6 @@ export type DirectusImageDetails = {
 
 export type ImageDetails = DirectusImageDetails & {
 	postId: string;
-	date: string;
 };
 
 export type DirectusImage<T = string> = {

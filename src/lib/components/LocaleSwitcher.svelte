@@ -5,16 +5,10 @@
 	import { getLocale } from '$lib/utils';
 
 	import { browser } from '$app/environment';
-
-	let flagUrl = $derived(
-		getLocale($locale) === Locale.DE ? '/images/locale/uk-flag.svg' : '/images/locale/german-flag.svg'
-	);
 </script>
 
 {#if browser}
-	<img
-		class="h-7 w-10 cursor-pointer object-cover opacity-80 transition-all duration-300 hover:opacity-100"
-		src={flagUrl}
-		alt="Locale Switcher"
-	/>
+	<div
+		class={`fi fi-${getLocale($locale) === Locale.DE ? 'gb' : 'de'} cursor-pointer text-2xl opacity-80 transition-all duration-300 hover:opacity-100`}
+	></div>
 {/if}

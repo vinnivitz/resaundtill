@@ -48,7 +48,7 @@
 </header>
 
 <main
-	class="no-scrollbar relative h-screen overflow-scroll bg-gradient-to-b from-gray-200 to-20% pt-[67px] dark:from-gray-800 md:pt-20"
+	class="no-scrollbar relative h-screen overflow-scroll bg-gradient-to-b from-gray-200 to-20% pt-[64px] dark:from-gray-800 md:pt-[72px]"
 >
 	<div id="scroll-anchor"></div>
 	{@render children?.()}
@@ -59,7 +59,7 @@
 		<Toast color="red">
 			<div class="flex items-center gap-4">
 				<Icon src={BiSolidErrorAlt} size="32" color="red"></Icon>
-				<div class="text-lg">{$alertStore}</div>
+				<div>{$alertStore}</div>
 			</div>
 		</Toast>
 	</div>

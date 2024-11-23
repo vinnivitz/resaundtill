@@ -1,16 +1,34 @@
 <script lang="ts">
-	import { Input, Progressbar, Spinner } from 'flowbite-svelte';
+	import dayjs from 'dayjs';
+	import { Button, Checkbox, Datepicker, Dropdown, Input, Progressbar, Search, Spinner } from 'flowbite-svelte';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import Masonry from 'svelte-bricks';
-	import { t } from 'svelte-i18n';
+	import { locale, t } from 'svelte-i18n';
 	import { Icon } from 'svelte-icons-pack';
-	import { BiSearch } from 'svelte-icons-pack/bi';
+	import { FaSolidChevronDown, FaSolidTrashCan } from 'svelte-icons-pack/fa';
 	import { ImCross } from 'svelte-icons-pack/im';
+	import { IoSearch } from 'svelte-icons-pack/io';
 	import { RiArrowsArrowLeftSLine, RiArrowsArrowRightSLine } from 'svelte-icons-pack/ri';
 
-	import { DirectusImageTransformation, PagePath, type ImageDetails, type GalleryImageItem } from '$lib/models';
-	import { dateStore, galleryShufflePercentageStore, imageCacheStore } from '$lib/stores';
-	import { clickOutside, debounce, imageUrlBuilder } from '$lib/utils';
+	import {
+		DirectusImageTransformation,
+		PagePath,
+		type ImageDetails,
+		type GalleryImageItem,
+		type CalendarModel,
+		type CountryEntry,
+		type CountryEntryTranslation,
+		type GalleryItemCountrySearchItem
+	} from '$lib/models';
+	import {
+		countriesStore,
+		countryToPostsStore,
+		dateStore,
+		galleryShufflePercentageStore,
+		imageCacheStore,
+		postToImagesStore
+	} from '$lib/stores';
+	import { clickOutside, debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
 
 	import { goto } from '$app/navigation';
 
@@ -36,33 +54,49 @@
 	let searchTerm = $state<string | undefined>();
 	let cachedImages = $state(new Map<string, HTMLImageElement>());
 	let placeholderImage = $state<string | undefined>();
-	let imageItemsFiltered = $state<GalleryImageItem[] | undefined>();
+	let galleryItemsFiltered = $state<GalleryImageItem[] | undefined>();
 	let filterTrigger = $state(0);
 	let modalOpen = $state(false);
 	let modalIndex = $state(0);
 	let modalImage = $state<GalleryImageItem | undefined>();
+	let initCalendar = $state<CalendarModel | undefined>();
+	let countrySearchTerm = $state<string | undefined>();
 
-	const imageItems = $derived<GalleryImageItem[] | undefined>(
-		images && (!randomize || $galleryShufflePercentageStore)
-			? partialShuffleImageOrder(
-					images.map((image) => ({
-						id: image.id,
-						src: imageUrlBuilder(image.id),
-						thumb: imageUrlBuilder(image.id, imageTransformation),
-						title: image.title,
-						description: image.description,
-						date: image.uploaded_on,
-						width: image.width,
-						height: image.height,
-						postId: image.postId,
-						progress: 0,
-						requested: false,
-						loaded: false
-					})),
-					$galleryShufflePercentageStore
+	const galleryItems = $derived<GalleryImageItem[] | undefined>(
+		getGalleryItems(images, $galleryShufflePercentageStore, randomize)
+	);
+
+	const countrySearchItems = $derived(
+		getCountrySearchItems(galleryItems, $countriesStore, $countryToPostsStore, $postToImagesStore)
+	);
+
+	const initFromRange = $derived(
+		searchable
+			? normalizeDate(
+					galleryItems?.reduce((earliest, current) => (current.date < earliest.date ? current : earliest)).date
 				)
 			: undefined
 	);
+
+	const initToRange = $derived(
+		searchable
+			? normalizeDate(galleryItems?.reduce((latest, current) => (current.date > latest.date ? current : latest)).date)
+			: undefined
+	);
+
+	const calendar = $derived(initCalendar);
+
+	const filterApplied = $derived(!!galleryItemsFiltered && galleryItemsFiltered?.length !== galleryItems?.length);
+
+	const countrySearchItemsFiltered = $derived(getCountrySearchItemsFiltered(countrySearchItems));
+
+	$effect(() => {
+		if (searchable) {
+			initCalendar = getCalendar(initFromRange, initToRange);
+		}
+	});
+
+	$effect(() => debouncedFilter(galleryItems, searchTerm, calendar, countrySearchItemsFiltered, filterTrigger));
 
 	onMount(async () => {
 		globalThis.addEventListener('keydown', modalKeyNavigation);
@@ -76,38 +110,129 @@
 		intersectionObserver?.disconnect?.();
 	});
 
-	$effect(() => debouncedFilter(imageItems, searchTerm, filterTrigger));
+	function getGalleryItems(
+		items: ImageDetails[] | undefined,
+		shufflePercentage: number | undefined,
+		randomized: boolean
+	): GalleryImageItem[] | undefined {
+		if (!items) {
+			return;
+		}
+		const result = items.map((image) => ({
+			id: image.id,
+			src: imageUrlBuilder(image.id),
+			thumb: imageUrlBuilder(image.id, imageTransformation),
+			title: image.title,
+			description: image.description,
+			date: new Date(image.uploaded_on),
+			width: image.width,
+			height: image.height,
+			postId: image.postId,
+			progress: 0,
+			requested: false,
+			loaded: false
+		}));
+		return randomized ? partialShuffleImageOrder(result, shufflePercentage) : result;
+	}
+
+	function getCalendar(from?: Date, to?: Date): CalendarModel | undefined {
+		if (!from || !to) {
+			return;
+		}
+		return { from, to };
+	}
+
+	function getCountrySearchItemsFiltered(
+		items?: GalleryItemCountrySearchItem[]
+	): GalleryItemCountrySearchItem[] | undefined {
+		return items?.map((country) => ({
+			...country,
+			visible: country.name.toLowerCase().includes(countrySearchTerm?.toLowerCase() ?? '')
+		}));
+	}
+
+	function getCountrySearchItems(
+		items: GalleryImageItem[] | undefined,
+		countries: CountryEntry[] | undefined,
+		countryToPostsMap: Map<string, string[]> | undefined,
+		postToImagesMap: Map<string, ImageDetails[]> | undefined
+	): GalleryItemCountrySearchItem[] | undefined {
+		if (!items || !countries || !countryToPostsMap) {
+			return;
+		}
+		const result: GalleryItemCountrySearchItem[] = countries.map((country) => ({
+			name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
+			checked: true,
+			visible: true,
+			code: country.code,
+			imageIds:
+				countryToPostsMap
+					.get(country.code)
+					?.flatMap((postId) => postToImagesMap?.get(postId)?.map((image) => image.id) ?? []) ?? []
+		}));
+		const categorizedImageIds = new Set(result.flatMap((item) => item.imageIds));
+		result.push({
+			name: $t('components.posts.country-filter-not-categorized'),
+			checked: true,
+			visible: true,
+			code: '',
+			imageIds: items.filter((item) => !categorizedImageIds.has(item.id)).map((item) => item.id)
+		});
+		return result;
+	}
+
+	function normalizeDate(date?: Date): Date | undefined {
+		if (!date) {
+			return;
+		}
+		const newDate = new Date(date);
+		newDate.setHours(0, 0, 0, 0);
+		return newDate;
+	}
 
 	function modalKeyNavigation(event: KeyboardEvent): void {
 		switch (event.key) {
 			case 'ArrowRight': {
 				nextImage();
-
 				break;
 			}
 			case 'ArrowLeft': {
 				previousImage();
-
 				break;
 			}
 			case 'Escape': {
 				modalOpen = false;
-
 				break;
 			}
-			// No default
+		}
+	}
+
+	function resetFilter(): void {
+		searchTerm = undefined;
+		countrySearchTerm = undefined;
+		for (const country of countrySearchItemsFiltered ?? []) {
+			country.checked = true;
+		}
+		initCalendar = getCalendar(initFromRange, initToRange);
+	}
+
+	function toggleCountry(code: string): void {
+		const country = countrySearchItemsFiltered?.find((country) => country.code === code);
+		if (country) {
+			country.checked = !country.checked;
+			filterTrigger++;
 		}
 	}
 
 	function openModal(index: number): void {
-		if (!imageItemsFiltered) {
+		if (!galleryItemsFiltered) {
 			return;
 		}
 		if (caching) {
-			cacheImages(imageItemsFiltered);
+			cacheImages(galleryItemsFiltered);
 		}
 		modalIndex = index;
-		modalImage = imageItemsFiltered[index];
+		modalImage = galleryItemsFiltered[index];
 		modalOpen = true;
 	}
 
@@ -137,25 +262,39 @@
 		return shuffledArray;
 	}
 
-	function debouncedFilter(items: GalleryImageItem[] | undefined, term: string | undefined, _: number): void {
-		debounce(async () => {
-			imageItemsFiltered = getFilteredImages(items, term);
-			await tick();
-			setupObservers();
-		}, 300)();
+	function debouncedFilter(
+		items: GalleryImageItem[] | undefined,
+		term: string | undefined,
+		calendar: CalendarModel | undefined,
+		countries: GalleryItemCountrySearchItem[] | undefined,
+		_: number
+	): void {
+		if (items && (!searchable || (calendar?.from && calendar?.to && countries))) {
+			debounce(async () => {
+				galleryItemsFiltered = getFilteredGalleryItems(items, term, calendar, countries);
+				await tick();
+				setupObservers();
+			}, 300)();
+		}
 	}
 
-	function getFilteredImages(
-		images: GalleryImageItem[] | undefined,
-		term: string | undefined
+	function getFilteredGalleryItems(
+		items: GalleryImageItem[] | undefined,
+		term: string | undefined,
+		calendar: CalendarModel | undefined,
+		countries: GalleryItemCountrySearchItem[] | undefined
 	): GalleryImageItem[] | undefined {
-		return images?.filter((image) => {
-			const matchesTerm = term
-				? image &&
-					(image.title?.toLowerCase().includes(term.toLowerCase()) ||
-						image.description?.toLowerCase().includes(term.toLowerCase()))
-				: true;
-			return matchesTerm;
+		return items?.filter((item) => {
+			if (!searchable) {
+				return true;
+			}
+			const isTermMatched = term ? item.title?.toLowerCase().includes(term.toLowerCase()) : true;
+			const itemDate = dayjs(item.date);
+			const isDateInRange =
+				itemDate.isAfter(dayjs(calendar?.from).subtract(1, 'hour')) &&
+				itemDate.isBefore(dayjs(calendar?.to).add(1, 'day'));
+			const isCountryMatched = countries?.some((country) => country.checked && country.imageIds.includes(item.id));
+			return isTermMatched && isDateInRange && isCountryMatched;
 		});
 	}
 
@@ -201,8 +340,8 @@
 				if (event.lengthComputable) {
 					image.requested = true;
 					image.progress = Math.floor((event.loaded / event.total) * 100);
-					if (imageItemsFiltered) {
-						imageItemsFiltered = [...imageItemsFiltered];
+					if (galleryItemsFiltered) {
+						galleryItemsFiltered = [...galleryItemsFiltered];
 					}
 				}
 			});
@@ -267,6 +406,15 @@
 		return goto(`${PagePath.travel}/${id}`);
 	}
 
+	function selectDate(event: CustomEvent<{ from: Date; to: Date }>): void {
+		const { from, to } = event.detail;
+		if (calendar && from && to) {
+			calendar.from = from;
+			calendar.to = to;
+			filterTrigger++;
+		}
+	}
+
 	function getPlaceholderImageAndInitLoading(image: GalleryImageItem): string {
 		loadDetailImageWithProgress(image);
 		return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='${image.width}' height='${image.height}'><rect width='100%' height='100%' fill="transparent"/></svg>`;
@@ -282,37 +430,23 @@
 	}
 
 	function nextImage(): void {
-		if (modalIndex === imageItemsFiltered!.length - 1) {
+		if (modalIndex === galleryItemsFiltered!.length - 1) {
 			modalIndex = 0;
 		} else {
 			modalIndex++;
 		}
-		modalImage = imageItemsFiltered![modalIndex];
+		modalImage = galleryItemsFiltered![modalIndex];
 	}
 
 	function previousImage(): void {
 		if (modalIndex === 0) {
-			modalIndex = imageItemsFiltered!.length - 1;
+			modalIndex = galleryItemsFiltered!.length - 1;
 		} else {
 			modalIndex--;
 		}
-		modalImage = imageItemsFiltered![modalIndex];
+		modalImage = galleryItemsFiltered![modalIndex];
 	}
 </script>
-
-{#if searchable}
-	<div class="relative mb-5 w-full md:w-72">
-		<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
-			<Icon src={BiSearch} size="18"></Icon>
-		</div>
-		<Input
-			id="search-navbar"
-			class="pl-14"
-			placeholder={$t('components.gallery.searchbar.placeholder')}
-			bind:value={searchTerm}
-		/>
-	</div>
-{/if}
 
 {#if modalOpen && modalImage}
 	<div class="fixed bottom-0 left-0 right-0 top-0 z-10 flex items-center justify-center bg-black bg-opacity-80">
@@ -399,20 +533,105 @@
 	</div>
 {/if}
 
-{#if !imageItemsFiltered}
+{#if searchable}
+	<div class="mb-7 flex-row items-center justify-between md:flex">
+		<div class="flex items-center gap-2">
+			<div class="relative w-full md:w-72">
+				<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
+					<Icon src={IoSearch}></Icon>
+				</div>
+				<Input
+					id="search-navbar"
+					class="pl-14"
+					placeholder={$t('components.gallery.searchbar.placeholder')}
+					bind:value={searchTerm}
+				/>
+			</div>
+			{#if filterApplied}
+				<div class="block md:hidden">
+					<Button color="red" onclick={resetFilter}>
+						<Icon src={FaSolidTrashCan} size="16"></Icon>
+					</Button>
+				</div>
+			{/if}
+		</div>
+		<div class="mt-1 flex items-center justify-center gap-2 md:mt-0">
+			{#if filterApplied}
+				<div class="hidden md:block">
+					<Button color="red" onclick={resetFilter}>
+						<Icon src={FaSolidTrashCan} size="16"></Icon>
+					</Button>
+				</div>
+			{/if}
+			{#if initCalendar && initCalendar.from && initCalendar.to}
+				<div class="flex-1 md:w-80 md:flex-auto">
+					<div class="block md:hidden">
+						<Datepicker
+							inputClass="cursor-pointer"
+							color="blue"
+							rangeFrom={initCalendar.from}
+							rangeTo={initCalendar.to}
+							range
+							dateFormat={{ formatMatcher: 'best fit', day: '2-digit', month: '2-digit', year: '2-digit' }}
+							locale={$locale ?? undefined}
+							on:select={selectDate}
+						></Datepicker>
+					</div>
+					<div class="hidden md:block">
+						<Datepicker
+							inputClass="cursor-pointer"
+							color="blue"
+							rangeFrom={initCalendar.from}
+							rangeTo={initCalendar.to}
+							range
+							locale={$locale ?? undefined}
+							on:select={selectDate}
+							defaultDate={initCalendar.from}
+						></Datepicker>
+					</div>
+				</div>
+			{/if}
+			{#if countrySearchItemsFiltered}
+				<div class="flex-1">
+					<Button
+						class="flex w-full gap-2 border border-gray-600 px-2 py-1 text-lg text-black focus:ring-2 dark:text-white"
+					>
+						{$t('components.posts.select-countries')}
+						<Icon src={FaSolidChevronDown} size="16"></Icon></Button
+					>
+					<Dropdown class="h-44 overflow-y-auto px-3 pb-3 text-sm">
+						<div slot="header" class="p-3">
+							<Search size="md" bind:value={countrySearchTerm} />
+						</div>
+						{#each countrySearchItemsFiltered as country (country.code)}
+							{#if country.visible}
+								<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+									<Checkbox checked={country.checked} on:change={() => toggleCountry(country.code)}>
+										{country.name}
+									</Checkbox>
+								</li>
+							{/if}
+						{/each}
+					</Dropdown>
+				</div>
+			{/if}
+		</div>
+	</div>
+{/if}
+{#if !galleryItemsFiltered}
 	<div class="flex h-screen items-center justify-center">
 		<Spinner size="24" color="blue" />
 	</div>
 {/if}
-{#if imageItemsFiltered && imageItemsFiltered.length === 0}
+{#if galleryItemsFiltered && galleryItemsFiltered.length === 0}
 	<div class="flex justify-center">
 		<div>{$t('components.gallery.no_results')}</div>
 	</div>
-{:else if imageItemsFiltered}
+{:else if galleryItemsFiltered}
 	<div class="hidden md:block">
 		<Masonry
 			animate={false}
-			items={imageItemsFiltered}
+			items={galleryItemsFiltered}
 			minColWidth={200}
 			maxColWidth={800}
 			gap={20}
@@ -438,7 +657,7 @@
 	<div class="block md:hidden">
 		<Masonry
 			animate={false}
-			items={imageItemsFiltered}
+			items={galleryItemsFiltered}
 			minColWidth={150}
 			maxColWidth={800}
 			gap={10}

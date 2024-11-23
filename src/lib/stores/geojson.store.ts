@@ -23,8 +23,8 @@ function createGeoJsonStore(): GeoJsonStore {
 
 	const countryDataCache = new Map<string, GeoCountry>();
 	const countryCodeCache = new Map<string, string | undefined>();
-	let countryGeoBoundingBoxes: BoundingBoxEntry[] | undefined = undefined;
-	let boundingBoxFetchPromise: Promise<BoundingBoxEntry[]> | undefined = undefined;
+	let countryGeoBoundingBoxes: BoundingBoxEntry[] | undefined;
+	let boundingBoxFetchPromise: Promise<BoundingBoxEntry[]> | undefined;
 	const countryDataPromises = new Map<string, Promise<GeoCountry | undefined>>();
 
 	async function loadCountryGeoBoundingBoxes(): Promise<BoundingBoxEntry[]> {

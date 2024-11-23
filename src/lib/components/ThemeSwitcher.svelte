@@ -1,22 +1,20 @@
 <script lang="ts">
-	// @ts-expect-error - Ignore this error
-	import FaMoon from 'svelte-icons/fa/FaMoon.svelte';
-	// @ts-expect-error - Ignore this error
-	import FaSun from 'svelte-icons/fa/FaSun.svelte';
+	import { Icon } from 'svelte-icons-pack';
+	import { FaSolidMoon, FaSolidSun } from 'svelte-icons-pack/fa';
 
 	let { isDark }: { isDark: boolean } = $props();
 </script>
 
-<div class="relative h-4 w-12 cursor-pointer rounded-full bg-gray-300">
+<div class="relative h-4 w-10 cursor-pointer rounded-full bg-gray-300">
 	<div
-		class="absolute -top-2 h-8 w-8 rounded-full bg-gray-200 p-[0.1rem] text-amber-300 shadow-xl transition-all duration-300 dark:bg-gray-800 dark:text-gray-200"
-		class:left-0={!isDark}
+		class="absolute -top-[4px] -mt-[2px] rounded-full bg-gray-200 p-[2px] text-amber-300 shadow-xl transition-all duration-300 dark:-mt-1 dark:bg-gray-800 dark:text-gray-200"
+		class:-left-1={!isDark}
 		class:left-4={isDark}
 	>
 		{#if isDark}
-			<FaMoon />
+			<Icon src={FaSolidMoon} size="28"></Icon>
 		{:else}
-			<FaSun />
+			<Icon src={FaSolidSun} size="26"></Icon>
 		{/if}
 	</div>
 </div>

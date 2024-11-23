@@ -16,35 +16,41 @@
 	let hidden = $state(true);
 </script>
 
-<Navbar>
+<Navbar class="py-1 md:py-3">
 	<NavBrand href="/">
-		<img src="/images/favicon.png" class="mr-3 h-6 dark:invert sm:h-9" alt="Logo" />
-		<span class="whitespace-nowrap text-2xl font-semibold dark:text-white">
-			Resa<span class="text-red-600">&#10084;</span>Till
-		</span>
+		<div class="flex items-center gap-2 md:gap-3">
+			<img src="/images/favicon.png" class="h-8 dark:invert md:h-9" alt="Logo" />
+			<div class="flex whitespace-nowrap text-xl font-semibold dark:text-white">
+				Resa
+				<div class="text-red-600">&#10084;</div>
+				Till
+			</div>
+		</div>
 	</NavBrand>
 
 	<div use:clickOutside oncanplay={() => (hidden = true)}>
-		<div class="flex items-center justify-center gap-4">
-			<div
-				role="button"
-				onclick={toggleTheme}
-				tabindex="0"
-				onkeydown={(event) => event.key === 'Enter' && toggleTheme()}
-				class="block md:hidden"
-				aria-label="Toggle Theme"
-			>
-				<ThemeSwitcher {isDark} />
-			</div>
-			<div
-				role="button"
-				onclick={toggleLocale}
-				tabindex="0"
-				onkeydown={(event) => event.key === 'Enter' && toggleTheme()}
-				class="block md:hidden"
-				aria-label="Toggle Locale"
-			>
-				<LocaleSwitcher />
+		<div class="flex items-center justify-center">
+			<div class="flex items-center justify-center gap-3">
+				<div
+					role="button"
+					onclick={toggleTheme}
+					tabindex="0"
+					onkeydown={(event) => event.key === 'Enter' && toggleTheme()}
+					class="block md:hidden"
+					aria-label="Toggle Theme"
+				>
+					<ThemeSwitcher {isDark} />
+				</div>
+				<div
+					role="button"
+					onclick={toggleLocale}
+					tabindex="0"
+					onkeydown={(event) => event.key === 'Enter' && toggleLocale()}
+					class="block md:hidden"
+					aria-label="Toggle Locale"
+				>
+					<LocaleSwitcher />
+				</div>
 			</div>
 			<NavHamburger menuClass="outline-none h-10 w-10" onclick={() => (hidden = !hidden)} />
 		</div>
@@ -55,31 +61,47 @@
 		activeUrl={$page.url.pathname}
 		slideParams={{ delay: 0, duration: 250 }}
 		activeClass="md:text-black dark:text-white md:bg-white md:font-medium bg-gray-200 dark:bg-gray-700 dark:md:bg-gray-800"
-		ulClass="flex flex-col text-center py-4 px-2 lg:p-4 mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium"
+		ulClass="flex flex-col md:flex-row md:py-3 md:flex-row md:space-x-8 text-center md:text-sm md:font-medium"
 	>
 		<NavLi href={PagePath.home}>
-			<div class="text-lg md:text-base lg:text-xl">{$t('nav.map')}</div>
+			<div class="font-semibold hover:text-black dark:hover:text-white md:text-base md:font-normal">
+				{$t('nav.map')}
+			</div>
 		</NavLi>
 		<NavLi href={PagePath.travel}>
-			<span class="text-lg md:text-base lg:text-xl">{$t('nav.travel')}</span>
+			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base md:font-normal"
+				>{$t('nav.travel')}</span
+			>
 		</NavLi>
 		<NavLi href={PagePath.countries}>
-			<span class="text-lg md:text-base lg:text-xl">{$t('nav.countries')}</span>
+			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base md:font-normal"
+				>{$t('nav.countries')}</span
+			>
 		</NavLi>
 		<NavLi href={PagePath.gallery}>
-			<span class="text-lg md:text-base lg:text-xl">{$t('nav.gallery')}</span>
+			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base md:font-normal"
+				>{$t('nav.gallery')}</span
+			>
 		</NavLi>
 		<NavLi href={PagePath.support}>
-			<span class="text-lg md:text-base lg:text-xl">{$t('nav.about')}</span>
+			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base md:font-normal"
+				>{$t('nav.about')}</span
+			>
 		</NavLi>
 		<NavLi href={PagePath.legals}>
-			<span class="text-lg md:text-base lg:text-xl">{$t('nav.legals')}</span>
+			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base md:font-normal"
+				>{$t('nav.legals')}</span
+			>
 		</NavLi>
-		<NavLi class="mt-[6px] hidden md:block" onclick={toggleTheme}>
-			<ThemeSwitcher {isDark} />
-		</NavLi>
-		<NavLi onclick={toggleLocale} class="hidden md:block">
-			<LocaleSwitcher />
+		<NavLi class="hidden md:block">
+			<div class="flex items-center justify-center gap-4">
+				<button onclick={toggleTheme}>
+					<ThemeSwitcher {isDark} />
+				</button>
+				<button onclick={toggleLocale}>
+					<LocaleSwitcher />
+				</button>
+			</div>
 		</NavLi>
 	</NavUl>
 </Navbar>

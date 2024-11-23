@@ -14,7 +14,7 @@ import {
 } from '$lib/models';
 import { sdk } from '$lib/sdk';
 
-import { alertStore, geoJsonStore } from './';
+import { alertStore, geoJsonStore } from '.';
 
 export const postsStore = writable<BlogPostEntry[] | undefined>();
 export const postToImagesStore = writable<Map<string, ImageDetails[]> | undefined>();
@@ -30,24 +30,27 @@ export const postToCountryStore = writable<Map<string, string> | undefined>();
 const $t = unwrapFunctionStore(_);
 let initialized = false;
 
-async function initDataStores(fetch: FetchInterface): Promise<void> {
+export async function initApiStores(fetch: FetchInterface): Promise<void> {
 	if (initialized) return;
 	initialized = true;
 
-	async function getPosts(): Promise<void> {
+	async function fetchPosts(): Promise<void> {
 		const posts = await sdk(fetch).request<BlogPostEntry[]>(
 			readItems('resaundtill_posts', {
 				limit: -1,
-				sort: ['-date'],
-				fields: ['id', 'date', 'location', 'translations.*']
+				sort: ['date'],
+				fields: ['id', 'date', 'location', 'isFlight', 'countryCode', 'translations.*']
 			})
 		);
-		postsStore.set(posts);
+		postsStore.set(posts.toReversed());
+		currentCoordinatesStore.set(posts[0]?.location?.coordinates || undefined);
+		mapItemsStore.set(posts.filter((post) => post.location) as MapItem[]);
+		await setCountryPostRelations(posts);
 	}
 
 	async function getImages(): Promise<void> {
 		const posts = await sdk(fetch).request<BlogPostEntry<DirectusImageDetails>[]>(
-			readItems('resaundtill_posts', { limit: -1, fields: ['id', 'date', 'images.*.*'] })
+			readItems('resaundtill_posts', { limit: -1, sort: 'date', fields: ['id', 'images.*.*'] })
 		);
 		const postToImages = new Map<string, ImageDetails[]>();
 		for (const post of posts) {
@@ -59,9 +62,7 @@ async function initDataStores(fetch: FetchInterface): Promise<void> {
 			}
 		}
 		postToImagesStore.set(postToImages);
-		imagesStore.set(
-			[...postToImages.values()].flat().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-		);
+		imagesStore.set([...postToImages.values()].flat());
 	}
 
 	async function getCountries(): Promise<void> {
@@ -75,7 +76,7 @@ async function initDataStores(fetch: FetchInterface): Promise<void> {
 
 	async function getSupportInfo(): Promise<void> {
 		const supportInfo = await sdk(fetch).request<SupportInfoEntry>(
-			// @ts-expect-error - Directus SDK typings are incorrect
+			// @ts-expect-error - translations with wildcard is not recognized correctly
 			readSingleton('resaundtill_support', { fields: ['id', 'translations.*'] })
 		);
 		supportInfoStore.set(supportInfo);
@@ -88,36 +89,7 @@ async function initDataStores(fetch: FetchInterface): Promise<void> {
 		galleryShufflePercentageStore.set(galleryShufflePercentage.value);
 	}
 
-	async function currentCoordinates(): Promise<void> {
-		const post = await sdk(fetch).request<BlogPostEntry[]>(
-			readItems('resaundtill_posts', {
-				limit: 1,
-				sort: ['-date'],
-				fields: ['location']
-			})
-		);
-		currentCoordinatesStore.set(post[0]?.location?.coordinates || undefined);
-	}
-
-	async function mapItems(): Promise<void> {
-		const posts = await sdk(fetch).request<BlogPostEntry[]>(
-			readItems('resaundtill_posts', {
-				limit: -1,
-				sort: ['date'],
-				fields: ['id', 'location', 'isFlight', 'translations.*', 'date']
-			})
-		);
-		mapItemsStore.set(posts.filter((post) => post.location) as MapItem[]);
-	}
-
-	async function countryPostRelations(): Promise<void> {
-		const posts = await sdk(fetch).request<BlogPostEntry[]>(
-			readItems('resaundtill_posts', {
-				limit: -1,
-				sort: ['date'],
-				fields: ['id', 'countryCode', 'location']
-			})
-		);
+	async function setCountryPostRelations(posts: BlogPostEntry[]): Promise<void> {
 		const countryToPosts = new Map<string, string[]>();
 		await Promise.all(
 			posts.map(async (post) => {
@@ -143,20 +115,9 @@ async function initDataStores(fetch: FetchInterface): Promise<void> {
 	}
 
 	try {
-		await Promise.all([
-			currentCoordinates(),
-			getPosts(),
-			getImages(),
-			getCountries(),
-			getSupportInfo(),
-			getGalleryShufflePercentage(),
-			mapItems(),
-			countryPostRelations()
-		]);
+		await Promise.all([fetchPosts(), getImages(), getCountries(), getSupportInfo(), getGalleryShufflePercentage()]);
 	} catch (error) {
 		console.error(error);
 		alertStore.setAlert($t('common.api.fetch-failed'));
 	}
 }
-
-export { initDataStores };

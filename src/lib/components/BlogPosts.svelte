@@ -4,16 +4,9 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { t, locale } from 'svelte-i18n';
-	// @ts-expect-error - Typings are missing
-	import FaArrowDown from 'svelte-icons/fa/FaArrowDown.svelte';
-	// @ts-expect-error - Typings are missing
-	import FaArrowUp from 'svelte-icons/fa/FaArrowUp.svelte';
-	// @ts-expect-error - Typings are missing
-	import FaChevronDown from 'svelte-icons/fa/FaChevronDown.svelte';
-	// @ts-expect-error - Typings are missing
-	import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
-	// @ts-expect-error - Typings are missing
-	import FaTrashAlt from 'svelte-icons/fa/FaTrashAlt.svelte';
+	import { Icon } from 'svelte-icons-pack';
+	import { FaSolidArrowDown, FaSolidArrowUp, FaSolidChevronDown, FaSolidTrashCan } from 'svelte-icons-pack/fa';
+	import { IoSearch } from 'svelte-icons-pack/io';
 
 	import {
 		BlogPostSort,
@@ -143,7 +136,7 @@
 			code: country.code,
 			postIds: countryToPostsMap.get(country.code) ?? []
 		}));
-		const categorizedPostIds = new Set(countries.flatMap((country) => countryToPostsMap.get(country.code) ?? []));
+		const categorizedPostIds = new Set(result.flatMap((country) => country.postIds));
 		result.push({
 			name: $t('components.posts.country-filter-not-categorized'),
 			checked: true,
@@ -182,20 +175,19 @@
 		countries: BlogPostCountrySearchItem[] | undefined
 	): BlogPostItem[] | undefined {
 		return items?.filter((post) => {
-			const matchesTerm =
-				!searchable ||
-				(term
-					? getTranslation<BlogPostTranslation>(post.translations, $locale)
-							?.title?.toLowerCase()
-							.includes(term.toLowerCase())
-					: true);
-			const matchesDate =
-				!searchable ||
-				(new Date(post.date) >= dayjs(calendar?.from).subtract(1, 'hour').toDate() &&
-					new Date(post.date) <= dayjs(calendar?.to).add(1, 'day').toDate());
-			const matchesCountries =
-				!countryFilter || countries?.some((country) => country.checked && country.postIds.includes(post.id));
-			return !searchable || (matchesTerm && matchesDate && matchesCountries);
+			if (!searchable) {
+				return true;
+			}
+			const translatedTitle =
+				getTranslation<BlogPostTranslation>(post.translations, $locale)?.title?.toLowerCase() || '';
+			const isTermMatched = !term || translatedTitle.includes(term.toLowerCase());
+			const postDate = dayjs(post.date);
+			const isDateInRange =
+				postDate.isAfter(dayjs(calendar?.from).subtract(1, 'hour')) &&
+				postDate.isBefore(dayjs(calendar?.to).add(1, 'day'));
+			const isCountryMatched =
+				!countryFilter || (countries?.some((country) => country.checked && country.postIds.includes(post.id)) ?? false);
+			return isTermMatched && isDateInRange && isCountryMatched;
 		});
 	}
 
@@ -231,6 +223,9 @@
 	function resetFilter(): void {
 		searchTerm = undefined;
 		countrySearchTerm = undefined;
+		for (const country of countrySearchItemsFiltered ?? []) {
+			country.checked = true;
+		}
 		initCalendar = getCalendar(initFromRange, initToRange);
 	}
 
@@ -264,11 +259,11 @@
 
 <div class="mx-auto max-w-screen-xl dark:text-gray-100">
 	{#if searchable}
-		<div class="mb-7 flex-row items-center justify-between md:flex">
+		<div class="mb-7 mt-2 flex-row items-center justify-between md:mt-0 md:flex">
 			<div class="flex items-center gap-2">
 				<div class="relative w-full md:w-72">
 					<div class="pointer-events-none absolute inset-y-0 left-0 flex h-10 w-10 items-center pl-3">
-						<FaSearch />
+						<Icon src={IoSearch}></Icon>
 					</div>
 					<Input
 						id="search-navbar"
@@ -280,16 +275,16 @@
 				{#if filterApplied}
 					<div class="block md:hidden">
 						<Button color="red" onclick={resetFilter}>
-							<div class="h-6 w-6"><FaTrashAlt></FaTrashAlt></div>
+							<Icon src={FaSolidTrashCan} size="19"></Icon>
 						</Button>
 					</div>
 				{/if}
 			</div>
-			<div class="mt-3 flex items-center justify-center gap-2">
+			<div class="mt-1 flex items-center justify-center gap-2 md:mt-0">
 				{#if filterApplied}
 					<div class="hidden md:block">
 						<Button color="red" onclick={resetFilter}>
-							<div class="h-[15px] w-6"><FaTrashAlt></FaTrashAlt></div>
+							<Icon src={FaSolidTrashCan} size="16"></Icon>
 						</Button>
 					</div>
 				{/if}
@@ -322,10 +317,12 @@
 					</div>
 				{/if}
 				{#if countrySearchItemsFiltered}
-					<div class="flex-1">
-						<Button class="w-full border border-gray-600 px-2 py-[5px] text-black dark:text-white">
+					<div>
+						<Button
+							class="flex w-full gap-2 border border-gray-600 px-2 py-[5px] text-lg text-black focus:ring-2 dark:text-white"
+						>
 							{$t('components.posts.select-countries')}
-							<span class="ml-2 h-6 w-6"> <FaChevronDown /></span></Button
+							<Icon src={FaSolidChevronDown} size="16"></Icon></Button
 						>
 						<Dropdown class="h-44 overflow-y-auto px-3 pb-3 text-sm">
 							<div slot="header" class="p-3">
@@ -343,15 +340,17 @@
 						</Dropdown>
 					</div>
 				{/if}
-				{#if sort === BlogPostSort.ASCENDING}
-					<button class="h-6 w-6 cursor-pointer" onclick={toggleSorting}>
-						<FaArrowUp />
-					</button>
-				{:else}
-					<button class="h-6 w-6 cursor-pointer" onclick={toggleSorting}>
-						<FaArrowDown />
-					</button>
-				{/if}
+				<div class="flex items-center justify-center rounded-lg border border-gray-600 p-2">
+					{#if sort === BlogPostSort.ASCENDING}
+						<button onclick={toggleSorting}>
+							<Icon src={FaSolidArrowUp} size="22"></Icon>
+						</button>
+					{:else}
+						<button onclick={toggleSorting}>
+							<Icon src={FaSolidArrowDown} size="22"></Icon>
+						</button>
+					{/if}
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -382,12 +381,15 @@
 							class="absolute bottom-0 left-0 right-0 top-0 z-[-1] bg-gradient-to-b dark:from-gray-900 dark:via-transparent dark:to-gray-900"
 						></div>
 						<div class="absolute left-0 right-0 top-0 mx-5 mt-3 flex items-center justify-between">
-							<div class="flex flex-col justify-start text-center text-gray-700">
+							<div class="flex flex-col justify-start text-gray-700">
 								<span class="text-shadow text-3xl font-semibold leading-none tracking-wide">
 									{$dateStore(post.date, 'DD')}
 								</span>
 								<span class="text-shadow uppercase leading-none">
 									{$dateStore(post.date, 'MMMM')}
+								</span>
+								<span class="text-shadow">
+									{$dateStore(post.date, 'YYYY')}
 								</span>
 							</div>
 						</div>
@@ -404,14 +406,6 @@
 		</div>
 	{/if}
 </div>
-
-<!-- {#if showToTopButton}
-	<div class="fixed bottom-5 right-5 z-50">
-		<Button pill color="blue" class="p-2 focus:ring-0" onclick={scrollTop}>
-			<Icon src={ImArrowUp2} size="32" className="invert"></Icon>
-		</Button>
-	</div>
-{/if} -->
 
 <style lang="postcss">
 	.text-shadow {

@@ -3,12 +3,8 @@
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { t, locale } from 'svelte-i18n';
-	// @ts-expect-error - no types available
-	import FaArrowLeft from 'svelte-icons/fa/FaArrowLeft.svelte';
-	// @ts-expect-error - no types available
-	import FaArrowRight from 'svelte-icons/fa/FaArrowRight.svelte';
-	// @ts-expect-error - no types available
-	import FaCalendar from 'svelte-icons/fa/FaCalendar.svelte';
+	import { Icon } from 'svelte-icons-pack';
+	import { FaCalendar, FaSolidArrowLeft, FaSolidArrowRight } from 'svelte-icons-pack/fa';
 
 	import Gallery from '$lib/components/Gallery.svelte';
 	import Map from '$lib/components/Map.svelte';
@@ -115,22 +111,22 @@
 		{#if isPreviousPost}
 			<button
 				onclick={getPreviousPost}
-				class="flex rounded-full bg-gray-200 px-4 py-2 align-middle text-sm font-bold leading-6 text-gray-800 hover:bg-gray-400"
+				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 hover:bg-gray-400"
 			>
-				<div class="h-6 w-6"><FaArrowLeft /></div>
-				<div class="pl-2">{$t('travel.header.prev-button.label')}</div>
+				<Icon src={FaSolidArrowLeft} size="18" />
+				<div>{$t('travel.header.prev-button.label')}</div>
 			</button>
 		{:else}
-			<div class="invisible flex rounded-full px-4 pt-2"></div>
+			<div class="invisible flex rounded-full p-2"></div>
 		{/if}
 		<div class="grow"></div>
 		{#if isNextPost}
 			<button
 				onclick={getNextPost}
-				class="flex rounded-full bg-gray-200 px-4 py-2 align-middle text-sm font-bold leading-6 text-gray-800 hover:bg-gray-400"
+				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 hover:bg-gray-400"
 			>
-				<div class="pr-2">{$t('travel.header.next-button.label')}</div>
-				<div class="h-6 w-6"><FaArrowRight /></div>
+				<div>{$t('travel.header.next-button.label')}</div>
+				<Icon src={FaSolidArrowRight} size="18" />
 			</button>
 		{:else}
 			<div class="invisible flex rounded-full px-4 py-2"></div>
@@ -141,11 +137,13 @@
 		<Heading customSize="text-4xl md:text-5xl mt-6">
 			<Secondary>{translatedTitle}</Secondary>
 		</Heading>
-		<Hr />
+		<!-- <Hr classHr="my-4" /> -->
 
-		<div class="flex flex-wrap items-center justify-between gap-4">
+		<div
+			class="mt-3 flex flex-wrap items-center justify-between gap-4 rounded border border-x-transparent p-2 dark:border-gray-700 dark:border-x-transparent"
+		>
 			<div class="flex items-center gap-2">
-				<div class="h-6 w-6"><FaCalendar /></div>
+				<Icon src={FaCalendar}></Icon>
 				<div class="pt-1 text-sm md:text-lg">
 					{$dateStore(postItem?.date, 'DD. MMMM YYYY')}
 				</div>
@@ -161,7 +159,7 @@
 			{/if}
 		</div>
 
-		<div class="mt-7 block md:hidden">
+		<div class="mb-3 block md:hidden">
 			<Tabs tabStyle="underline" defaultClass="flex justify-center">
 				{#if translatedDescription}
 					<TabItem open title={$t('travel.description')} defaultClass="text-lg">

@@ -3,12 +3,8 @@
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { locale, t } from 'svelte-i18n';
-	// @ts-expect-error - Typings are missing
-	import FaMap from 'svelte-icons/fa/FaMap.svelte';
-	// @ts-expect-error - Typings are missing
-	import FaMoneyBillWave from 'svelte-icons/fa/FaMoneyBillWave.svelte';
-	// @ts-expect-error - Typings are missing
-	import FaUser from 'svelte-icons/fa/FaUser.svelte';
+	import { Icon } from 'svelte-icons-pack';
+	import { FaMap, FaSolidCity, FaSolidMoneyBillWave, FaUser } from 'svelte-icons-pack/fa';
 
 	import BlogPosts from '$lib/components/BlogPosts.svelte';
 	import Map from '$lib/components/Map.svelte';
@@ -107,23 +103,23 @@
 						</TabItem>
 					{/if}
 					<TabItem open={!countryItem.description} title={$t('common.overview')} defaultClass="text-lg">
-						<div class="mb-4 flex gap-2">
-							<div class="h-6 w-6"><FaUser /></div>
-							<div>{$t('common.population')}: {countryItem.population}</div>
-						</div>
-						<div class="mb-4 flex gap-2">
-							<div class="h-6 w-6"><FaMap /></div>
-							<div>{$t('common.area')}: {countryItem.area}m²</div>
-						</div>
-						<div class="mb-4 flex gap-2">
-							<div class="h-6 w-6"><FaMoneyBillWave /></div>
-							<div>
-								{$t('common.currency')}: {countryItem.currency}
+						<div class="flex flex-col gap-4">
+							<div class="flex items-center gap-3">
+								<Icon src={FaUser} size="28"></Icon>
+								<div>{$t('common.population')}: {countryItem.population}</div>
 							</div>
-						</div>
-						<div class="mb-4 flex gap-2">
-							<div class="h-6 w-6"><FaUser /></div>
-							<div>{$t('common.capital')}: {countryItem.capital}</div>
+							<div class="flex items-center gap-3">
+								<Icon src={FaMap} size="28"></Icon>
+								<div>{$t('common.area')}: {countryItem.area}m²</div>
+							</div>
+							<div class="flex items-center gap-3">
+								<Icon src={FaSolidMoneyBillWave} size="28"></Icon>
+								<div>{$t('common.currency')}: {countryItem.currency}</div>
+							</div>
+							<div class="flex items-center gap-3">
+								<Icon src={FaSolidCity} size="28"></Icon>
+								<div>{$t('common.capital')}: {countryItem.capital}</div>
+							</div>
 						</div>
 					</TabItem>
 					{#if posts && posts.length > 0}
@@ -150,23 +146,21 @@
 					<Hr />
 				{/if}
 
-				<div class="flex justify-between gap-5">
-					<div class="mb-4 flex gap-2">
-						<div class="h-6 w-6"><FaUser /></div>
+				<div class="flex items-center justify-between gap-5">
+					<div class="flex items-center gap-2">
+						<Icon src={FaUser} size="24"></Icon>
 						<div>{$t('common.population')}: {countryItem.population}</div>
 					</div>
-					<div class="mb-4 flex gap-2">
-						<div class="h-6 w-6"><FaMap /></div>
+					<div class="flex items-center justify-center gap-2">
+						<Icon src={FaMap} size="24"></Icon>
 						<div>{$t('common.area')}: {countryItem.area}m²</div>
 					</div>
-					<div class="mb-4 flex gap-2">
-						<div class="h-6 w-6"><FaMoneyBillWave /></div>
-						<div>
-							{$t('common.currency')}: {countryItem.currency}
-						</div>
+					<div class="flex gap-2">
+						<Icon src={FaSolidMoneyBillWave} size="24"></Icon>
+						<div>{$t('common.currency')}: {countryItem.currency}</div>
 					</div>
-					<div class="mb-4 flex gap-2">
-						<div class="h-6 w-6"><FaUser /></div>
+					<div class="flex gap-2">
+						<Icon src={FaSolidCity} size="24"></Icon>
 						<div>{$t('common.capital')}: {countryItem.capital}</div>
 					</div>
 				</div>
