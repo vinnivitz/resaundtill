@@ -63,7 +63,7 @@
 				currency: country.currency,
 				name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
 				population: country.population,
-				description: ''
+				description: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.description
 			};
 		}
 	}
@@ -94,15 +94,15 @@
 			<Hr />
 
 			<div class="block md:hidden">
-				<Tabs tabStyle="underline" defaultClass="flex justify-center">
+				<Tabs tabStyle="underline" defaultClass="flex justify-center p-0">
 					{#if countryItem.description}
-						<TabItem open title={$t('common.information')} defaultClass="text-lg">
+						<TabItem open title={$t('common.information')} defaultClass="text-sm">
 							<p class="whitespace-pre-wrap text-lg font-normal">
 								{countryItem.description}
 							</p>
 						</TabItem>
 					{/if}
-					<TabItem open={!countryItem.description} title={$t('common.overview')} defaultClass="text-lg">
+					<TabItem open={!countryItem.description} title={$t('common.overview')} defaultClass="text-sm">
 						<div class="flex flex-col gap-4">
 							<div class="flex items-center gap-3">
 								<Icon src={FaUser} size="28"></Icon>
@@ -123,11 +123,11 @@
 						</div>
 					</TabItem>
 					{#if posts && posts.length > 0}
-						<TabItem title={$t('common.posts')} defaultClass="text-lg">
+						<TabItem title={$t('common.posts')} defaultClass="text-sm">
 							<BlogPosts {posts} searchable countryFilter={false} />
 						</TabItem>
 					{/if}
-					<TabItem title={$t('common.map')} defaultClass="text-lg p-0">
+					<TabItem title={$t('common.map')} defaultClass="p-0 text-sm">
 						<Map
 							items={mapItems}
 							countryCode={countryItem.code}
