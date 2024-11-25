@@ -96,16 +96,18 @@
 					if (index < markers.length - 1) {
 						addTooltip(markers[index], items[index]);
 						addPolyLine(markers[index], markers[index + 1], items[index + 1]);
+					} else {
+						addTooltip(markers[index], items[index], -95);
 					}
 				}
 			}
 		}
 	}
 
-	function addTooltip(marker: Marker, item: MapItem): void {
+	function addTooltip(marker: Marker, item: MapItem, offset = -37): void {
 		const tooltip = L.tooltip({
 			direction: 'top',
-			offset: [0, -37]
+			offset: [0, offset]
 		}).setContent(`
 			<div class="flex flex-col items-center gap-2">
 				<div>${getTranslation<BlogPostTranslation>(item.translations, $locale)?.title}</div>
@@ -163,15 +165,19 @@
 
 	function toggleActivation(): void {
 		if (deactivated) {
-			map?.touchZoom.enable();
-			map?.doubleClickZoom.enable();
-			map?.scrollWheelZoom.enable();
-			map?.keyboard.enable();
-			map?.dragging.enable();
+			enableMapInteractions();
 		} else {
 			disableMapInteractions();
 		}
 		deactivated = !deactivated;
+	}
+
+	function enableMapInteractions(): void {
+		map?.touchZoom.enable();
+		map?.doubleClickZoom.enable();
+		map?.scrollWheelZoom.enable();
+		map?.keyboard.enable();
+		map?.dragging.enable();
 	}
 
 	function disableMapInteractions(): void {
