@@ -52,7 +52,8 @@
 		"posts": "Beiträge",
 		"api": {
 			"fetch-failed": "Einige Daten konnten nicht geladen werden"
-		}
+		},
+		"million": "Mio"
 	},
 	"components": {
 		"map": {
@@ -83,6 +84,8 @@
 	},
 	"countries": {
 		"posts": "Beiträge",
-		"no-entries": "Keine Länder gefunden."
+		"no-entries": "Keine Länder gefunden.",
+		"previous-country": "vorheriges Land",
+		"next-country": "nächstes Land"
 	}
 }

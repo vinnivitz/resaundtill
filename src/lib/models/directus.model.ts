@@ -31,19 +31,18 @@ export type BlogPostEntry<T = string> = {
 };
 
 export type CountryEntry = {
-	id: string;
 	translations: CountryEntryTranslation[];
 	code: string;
 	thumbnail?: string;
-	capital: string;
 	area: number;
 	population: number;
-	currency: string;
 };
 
 export type CountryEntryTranslation = Translations & {
 	id: string;
 	name: string;
+	capital: string;
+	currency: string;
 	description?: string;
 };
 

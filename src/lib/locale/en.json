@@ -50,7 +50,8 @@
 		"posts": "Posts",
 		"api": {
 			"fetch-failed": "Failed to load some data"
-		}
+		},
+		"million": "mil"
 	},
 	"components": {
 		"map": {
@@ -81,6 +82,8 @@
 	},
 	"countries": {
 		"posts": "Posts",
-		"no-entries": "No countries found."
+		"no-entries": "No countries found.",
+		"previous-country": "previous country",
+		"next-country": "next country"
 	}
 }

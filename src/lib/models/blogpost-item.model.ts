@@ -4,7 +4,7 @@ import type { BlogPostTranslation, ImageDetails } from './directus.model';
 
 export type BlogPostItem = {
 	id: string;
-	translations: BlogPostTranslation[];
+	title: string;
 	date: Date;
 	coordinates?: Position;
 	thumbnailUrl: string;

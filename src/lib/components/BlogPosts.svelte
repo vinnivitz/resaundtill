@@ -114,7 +114,7 @@
 			return {
 				id: post.id,
 				date: new Date(post.date),
-				translations: post.translations,
+				title: getTranslation<BlogPostTranslation>(post.translations, $locale)?.title ?? '',
 				thumbnailUrl: imageUrlBuilder(imageId, DirectusImageTransformation.PREVIEW)
 			};
 		});
@@ -178,8 +178,7 @@
 			if (!searchable) {
 				return true;
 			}
-			const translatedTitle =
-				getTranslation<BlogPostTranslation>(post.translations, $locale)?.title?.toLowerCase() || '';
+			const translatedTitle = post.title?.toLowerCase() || '';
 			const isTermMatched = !term || translatedTitle.includes(term.toLowerCase());
 			const postDate = dayjs(post.date);
 			const isDateInRange =
@@ -211,13 +210,6 @@
 				observer?.unobserve(node);
 			}
 		};
-	}
-
-	function getBlogPostTranslation(
-		translations: BlogPostTranslation[],
-		locale: string | null | undefined
-	): BlogPostTranslation | undefined {
-		return getTranslation<BlogPostTranslation>(translations, locale);
 	}
 
 	function resetFilter(): void {
@@ -396,7 +388,7 @@
 						<div class="w-full bg-gradient-to-t from-black to-transparent">
 							<h2 class="p-5">
 								<div class="text-md font-medium text-gray-300">
-									{getBlogPostTranslation(post.translations, $locale)?.title}
+									{post.title}
 								</div>
 							</h2>
 						</div>

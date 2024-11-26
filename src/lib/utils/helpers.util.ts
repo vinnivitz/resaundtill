@@ -1,4 +1,8 @@
+import { Locale } from '$lib/models';
+
 import { browser } from '$app/environment';
+
+import { getLocale } from './locale.util';
 
 export function clickOutside(node: Node): { destroy: () => void } {
 	function handleClick(event: Event): void {
@@ -39,4 +43,15 @@ export function scrollTop(smooth = true): void {
 	if (browser) {
 		document.querySelector('#scroll-anchor')?.scrollIntoView({ behavior: smooth ? 'smooth' : 'instant', block: 'end' });
 	}
+}
+
+export function formatNumber(number_: number, locale: string | null | undefined): string {
+	const separators =
+		getLocale(locale) === Locale.DE ? { thousand: '.', decimal: ',' } : { thousand: ',', decimal: '.' };
+	const isNegative = number_ < 0;
+	const [integer, decimal] = Math.abs(number_).toFixed(2).split('.');
+	// eslint-disable-next-line security/detect-unsafe-regex, sonarjs/slow-regex
+	const formattedInt = integer.replaceAll(/\B(?=(\d{3})+(?!\d))/g, separators.thousand);
+	const formattedDec = decimal === '00' ? '' : separators.decimal + decimal;
+	return (isNegative ? '-' : '') + formattedInt + formattedDec;
 }

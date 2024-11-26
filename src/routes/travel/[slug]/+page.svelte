@@ -36,7 +36,7 @@
 
 	const postItem: BlogPostItemDetails | undefined = $derived(getPostItems($postsStore, $postToImagesStore));
 
-	const isNextPost = $derived($postsStore && ($postsStore.findIndex((post) => post.id === data.postId) ?? 0) > 0);
+	const isNextPost = $derived(($postsStore?.findIndex((post) => post.id === data.postId) ?? 0) > 0);
 	const isPreviousPost = $derived(
 		($postsStore?.findIndex((post) => post.id === data.postId) ?? 0) < ($postsStore?.length ?? 1) - 1
 	);
@@ -137,7 +137,6 @@
 		<Heading customSize="text-4xl md:text-5xl mt-6">
 			<Secondary>{translatedTitle}</Secondary>
 		</Heading>
-		<!-- <Hr classHr="my-4" /> -->
 
 		<div
 			class="mt-3 flex flex-wrap items-center justify-between gap-4 rounded border border-x-transparent p-2 dark:border-gray-700 dark:border-x-transparent"
