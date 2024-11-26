@@ -31,7 +31,6 @@
 			return;
 		}
 		return items.map((country) => ({
-			id: country.id,
 			name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
 			code: country.code,
 			thumbnailUrl: imageUrlBuilder(country.thumbnail, DirectusImageTransformation.PREVIEW)

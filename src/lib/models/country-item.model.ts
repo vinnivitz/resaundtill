@@ -14,7 +14,6 @@ export type CountryItemDetails = {
 };
 
 export type CountryItem = {
-	id: string;
 	code: string;
 	name: string;
 	thumbnailUrl: string;

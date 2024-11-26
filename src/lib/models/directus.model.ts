@@ -39,7 +39,6 @@ export type CountryEntry = {
 };
 
 export type CountryEntryTranslation = Translations & {
-	id: string;
 	name: string;
 	capital: string;
 	currency: string;
