@@ -11,5 +11,6 @@ export * from './blogpost-item.model';
 export * from './country-item.model';
 export * from './calendar.model';
 export * from './country-data.model';
-export * from './blogpost-sort.model';
+export * from './sort-direction.model';
 export * from './data-store.model';
+export * from './keyboard-key.model';

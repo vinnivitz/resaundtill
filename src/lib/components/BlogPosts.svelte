@@ -1,6 +1,6 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import { Input, Spinner, Button, Dropdown, Checkbox, Search, Datepicker } from 'flowbite-svelte';
+	import { Input, Spinner, Button, Dropdown, Checkbox, Search, Datepicker, Toggle } from 'flowbite-svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { t, locale } from 'svelte-i18n';
@@ -9,7 +9,7 @@
 	import { IoSearch } from 'svelte-icons-pack/io';
 
 	import {
-		BlogPostSort,
+		SortDirection,
 		DirectusImageTransformation,
 		PagePath,
 		type BlogPostCountrySearchItem,
@@ -28,12 +28,12 @@
 		posts,
 		searchable = false,
 		countryFilter = true,
-		sort = BlogPostSort.DESCENDING
+		sort = SortDirection.DESCENDING
 	}: {
 		posts: BlogPostEntry[] | undefined;
 		searchable?: boolean;
 		countryFilter?: boolean;
-		sort?: BlogPostSort;
+		sort?: SortDirection;
 	} = $props();
 
 	const observers: HTMLDivElement[] = [];
@@ -43,7 +43,9 @@
 	let countrySearchTerm: string | undefined = $state();
 	let filterTrigger = $state(0);
 	let postsItemsFiltered = $state<BlogPostItem[] | undefined>();
+	let countrySearchItemsFiltered = $state<BlogPostCountrySearchItem[] | undefined>();
 	let initCalendar = $state<CalendarModel | undefined>();
+	let countrySelectedToggle = $state(true);
 
 	const postItems = $derived(getPosts(posts, $postToImagesStore));
 
@@ -69,7 +71,9 @@
 
 	const filterApplied = $derived(!!postsItemsFiltered && postsItemsFiltered?.length !== postItems?.length);
 
-	const countrySearchItemsFiltered = $derived(getCountrySearchItemsFiltered(countrySearchItems));
+	$effect(() => {
+		countrySearchItemsFiltered = getCountrySearchItemsFiltered(countrySearchItems);
+	});
 
 	$effect(() => {
 		if (searchable) {
@@ -78,6 +82,19 @@
 	});
 
 	$effect(() => debouncedFilter(postItems, searchTerm, calendar, countrySearchItemsFiltered, filterTrigger));
+
+	onMount(async () => {
+		observer = new IntersectionObserver(lazyLoadBackground, {
+			root: undefined,
+			rootMargin: '0px',
+			threshold: 0.01
+		});
+		for (const obs of observers) {
+			observer.observe(obs);
+		}
+	});
+
+	onDestroy(() => observer?.disconnect());
 
 	function getCalendar(from?: Date, to?: Date): CalendarModel | undefined {
 		if (!from || !to) {
@@ -222,7 +239,7 @@
 	}
 
 	function toggleSorting(): void {
-		sort = sort === BlogPostSort.ASCENDING ? BlogPostSort.DESCENDING : BlogPostSort.ASCENDING;
+		sort = sort === SortDirection.ASCENDING ? SortDirection.DESCENDING : SortDirection.ASCENDING;
 		postItems?.reverse();
 		filterTrigger++;
 	}
@@ -235,18 +252,13 @@
 		}
 	}
 
-	onMount(async () => {
-		observer = new IntersectionObserver(lazyLoadBackground, {
-			root: undefined,
-			rootMargin: '0px',
-			threshold: 0.01
-		});
-		for (const obs of observers) {
-			observer.observe(obs);
-		}
-	});
-
-	onDestroy(() => observer?.disconnect());
+	function toggleCountrySelection(): void {
+		countrySelectedToggle = !countrySelectedToggle;
+		countrySearchItemsFiltered = countrySearchItemsFiltered?.map((country) => ({
+			...country,
+			checked: countrySelectedToggle
+		}));
+	}
 </script>
 
 <div class="mx-auto max-w-screen-xl dark:text-gray-100">
@@ -310,15 +322,18 @@
 				{/if}
 				{#if countrySearchItemsFiltered}
 					<div>
-						<Button
-							class="flex w-full gap-2 border border-gray-600 px-2 py-[5px] text-lg text-black focus:ring-2 dark:text-white"
-						>
+						<Button class="flex w-full gap-2 border border-gray-600 px-2 py-2 text-black focus:ring-2 dark:text-white">
 							{$t('components.posts.select-countries')}
-							<Icon src={FaSolidChevronDown} size="16"></Icon></Button
-						>
+							<Icon src={FaSolidChevronDown} size="16"></Icon>
+						</Button>
 						<Dropdown class="h-44 overflow-y-auto px-3 pb-3 text-sm">
-							<div slot="header" class="p-3">
-								<Search size="md" bind:value={countrySearchTerm} />
+							<div slot="header" class="flex flex-col gap-2 p-3">
+								<Search placeholder={$t('common.search')} size="sm" bind:value={countrySearchTerm} />
+								<Toggle checked={countrySelectedToggle} color="blue" onchange={toggleCountrySelection}>
+									{countrySelectedToggle
+										? $t('components.gallery.filter.countries.toggle.all-selected')
+										: $t('components.gallery.filter.countries.toggle.all-deselected')}
+								</Toggle>
 							</div>
 							{#each countrySearchItemsFiltered as country (country.code)}
 								{#if country.visible}
@@ -333,7 +348,7 @@
 					</div>
 				{/if}
 				<div class="flex items-center justify-center rounded-lg border border-gray-600 p-2">
-					{#if sort === BlogPostSort.ASCENDING}
+					{#if sort === SortDirection.ASCENDING}
 						<button onclick={toggleSorting}>
 							<Icon src={FaSolidArrowUp} size="22"></Icon>
 						</button>

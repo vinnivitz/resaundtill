@@ -11,15 +11,6 @@ export function getLocale(value: string | null | undefined): Locale {
 	return value === 'en' || value === 'en-US' ? Locale.EN : Locale.DE;
 }
 
-/**
- * Returns the locale in `string` format as locale code
- * @param value locale code
- * @returns {string} The locale code
- */
-export function getLocaleCode(value: string | null | undefined): string {
-	return getLocale(value) === Locale.DE ? 'de-DE' : 'en-US';
-}
-
 export function getTranslation<T = Translations>(
 	translations: Translations[] | undefined,
 	locale: string | null | undefined
@@ -42,4 +33,13 @@ export function determineLocale(): Locale {
 		localStorage.setItem('locale', locale);
 	}
 	return locale;
+}
+
+/**
+ * Returns the locale in `string` format as locale code
+ * @param value locale code
+ * @returns {string} The locale code
+ */
+function getLocaleCode(value: string | null | undefined): string {
+	return getLocale(value) === Locale.DE ? 'de-DE' : 'en-US';
 }

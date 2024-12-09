@@ -15,11 +15,15 @@
 		items,
 		activatable = false,
 		countryCode,
+		showWholeCountry = false,
+		showCustomMarker = false,
 		navigate
 	}: {
 		items: MapItem[] | undefined;
 		activatable?: boolean;
 		countryCode?: string | undefined;
+		showWholeCountry?: boolean;
+		showCustomMarker?: boolean;
 		navigate?: (id: string) => void;
 	} = $props();
 
@@ -47,7 +51,7 @@
 		spinnerElement.style.display = 'block';
 	});
 
-	function addCountryBoundaries(map?: Map, code?: string): void {
+	function addCountryBoundaries(map: Map | undefined, code: string | undefined): void {
 		if (map && code) {
 			countryBoundariesLayerGroup?.clearLayers();
 			countryBoundariesLayerGroup = L.layerGroup().addTo(map);
@@ -61,12 +65,9 @@
 							opacity: 0.5
 						}
 					}).addTo(countryBoundariesLayerGroup);
-					map?.fitBounds(geoJson.getBounds());
-				} else {
-					map?.setView(
-						currentCoordinates ? [currentCoordinates[1], currentCoordinates[0]] : [51.053_719, 13.737_908],
-						10
-					);
+					if (showWholeCountry) {
+						map.fitBounds(geoJson.getBounds());
+					}
 				}
 			});
 		} else {
@@ -128,7 +129,7 @@
 	function getMarkers(items: MapItem[]): Marker[] {
 		return items.map((item, index) => {
 			return L.marker([item.location.coordinates[1], item.location.coordinates[0]], {
-				icon: index === items.length - 1 ? resaTillIcon : defaultIcon
+				icon: index === items.length - 1 && !showCustomMarker ? resaTillIcon : defaultIcon
 			})
 				.on('click', () => navigate?.(item.id))
 				.addTo(markerLayerGroup);

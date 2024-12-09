@@ -1,4 +1,4 @@
-export enum BlogPostSort {
+export enum SortDirection {
 	ASCENDING = 'ASCENDING',
 	DESCENDING = 'DESCENDING'
 }

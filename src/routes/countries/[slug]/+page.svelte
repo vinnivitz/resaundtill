@@ -110,7 +110,7 @@
 		{#if isPreviousPost}
 			<button
 				onclick={getPreviousPost}
-				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 hover:bg-gray-400"
+				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 active:bg-gray-400 md:hover:bg-gray-400"
 			>
 				<Icon src={FaSolidArrowLeft} size="18" />
 				<div>{$t('countries.previous-country')}</div>
@@ -122,7 +122,7 @@
 		{#if isNextPost}
 			<button
 				onclick={getNextPost}
-				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 hover:bg-gray-400"
+				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 active:bg-gray-400 md:hover:bg-gray-400"
 			>
 				<div>{$t('countries.next-country')}</div>
 				<Icon src={FaSolidArrowRight} size="18" />
@@ -188,7 +188,9 @@
 						<Map
 							items={mapItems}
 							countryCode={countryItem.code}
-							activatable={true}
+							showWholeCountry
+							activatable
+							showCustomMarker
 							navigate={async (id) => await goto(`${PagePath.travel}/${id}`)}
 						/>
 					</TabItem>
@@ -232,7 +234,9 @@
 					<Map
 						items={mapItems}
 						countryCode={countryItem.code}
-						activatable={true}
+						showWholeCountry
+						activatable
+						showCustomMarker
 						navigate={async (id) => await goto(`${PagePath.travel}/${id}`)}
 					/>
 				{/if}

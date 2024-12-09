@@ -111,7 +111,7 @@
 		{#if isPreviousPost}
 			<button
 				onclick={getPreviousPost}
-				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 hover:bg-gray-400"
+				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 active:bg-gray-400 md:hover:bg-gray-400"
 			>
 				<Icon src={FaSolidArrowLeft} size="18" />
 				<div>{$t('travel.header.prev-button.label')}</div>
@@ -123,7 +123,7 @@
 		{#if isNextPost}
 			<button
 				onclick={getNextPost}
-				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 hover:bg-gray-400"
+				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 active:bg-gray-400 md:hover:bg-gray-400"
 			>
 				<div>{$t('travel.header.next-button.label')}</div>
 				<Icon src={FaSolidArrowRight} size="18" />
@@ -160,13 +160,6 @@
 
 		<div class="mb-3 block md:hidden">
 			<Tabs tabStyle="underline" defaultClass="flex justify-center">
-				{#if translatedDescription}
-					<TabItem open title={$t('travel.description')} defaultClass="text-lg">
-						<p class="whitespace-pre-wrap text-lg font-normal md:pt-12">
-							{translatedDescription}
-						</p>
-					</TabItem>
-				{/if}
 				{#if postItem && postItem.images.length > 0}
 					<TabItem title={$t('travel.gallery-title')} defaultClass="text-lg">
 						<Gallery
@@ -174,6 +167,13 @@
 							showDateOnDetail={false}
 							imageTransformation={DirectusImageTransformation.PREVIEW}
 						/>
+					</TabItem>
+				{/if}
+				{#if translatedDescription}
+					<TabItem open title={$t('travel.description')} defaultClass="text-lg">
+						<p class="whitespace-pre-wrap text-lg font-normal md:pt-12">
+							{translatedDescription}
+						</p>
 					</TabItem>
 				{/if}
 				{#if mapItems}

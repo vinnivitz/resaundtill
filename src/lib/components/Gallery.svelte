@@ -1,11 +1,11 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import { Button, Checkbox, Datepicker, Dropdown, Input, Progressbar, Search, Spinner } from 'flowbite-svelte';
+	import { Button, Checkbox, Datepicker, Dropdown, Input, Search, Spinner, Toggle } from 'flowbite-svelte';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import Masonry from 'svelte-bricks';
 	import { locale, t } from 'svelte-i18n';
 	import { Icon } from 'svelte-icons-pack';
-	import { FaSolidChevronDown, FaSolidTrashCan } from 'svelte-icons-pack/fa';
+	import { FaSolidArrowDown, FaSolidArrowUp, FaSolidChevronDown, FaSolidTrashCan } from 'svelte-icons-pack/fa';
 	import { ImCross } from 'svelte-icons-pack/im';
 	import { IoSearch } from 'svelte-icons-pack/io';
 	import { RiArrowsArrowLeftSLine, RiArrowsArrowRightSLine } from 'svelte-icons-pack/ri';
@@ -18,9 +18,12 @@
 		type CalendarModel,
 		type CountryEntry,
 		type CountryEntryTranslation,
-		type GalleryItemCountrySearchItem
+		type GalleryItemCountrySearchItem,
+		SortDirection,
+		KeyboardKey
 	} from '$lib/models';
 	import {
+		alertStore,
 		countriesStore,
 		countryToPostsStore,
 		dateStore,
@@ -32,6 +35,9 @@
 
 	import { goto } from '$app/navigation';
 
+	import Progressbar from './Progressbar.svelte';
+
+
 	let {
 		images,
 		caching = true,
@@ -39,6 +45,7 @@
 		showPostLinkOnDetail = false,
 		showDateOnDetail = false,
 		randomize = true,
+		sort = SortDirection.DESCENDING,
 		imageTransformation = DirectusImageTransformation.THUMBNAIL
 	}: {
 		images: ImageDetails[] | undefined;
@@ -47,6 +54,7 @@
 		showPostLinkOnDetail?: boolean;
 		showDateOnDetail?: boolean;
 		randomize?: boolean;
+		sort?: SortDirection;
 		imageTransformation?: DirectusImageTransformation;
 	} = $props();
 
@@ -55,15 +63,17 @@
 	let cachedImages = $state(new Map<string, HTMLImageElement>());
 	let placeholderImage = $state<string | undefined>();
 	let galleryItemsFiltered = $state<GalleryImageItem[] | undefined>();
+	let countrySearchItemsFiltered = $state<GalleryItemCountrySearchItem[] | undefined>();
 	let filterTrigger = $state(0);
 	let modalOpen = $state(false);
 	let modalIndex = $state(0);
 	let modalImage = $state<GalleryImageItem | undefined>();
 	let initCalendar = $state<CalendarModel | undefined>();
 	let countrySearchTerm = $state<string | undefined>();
+	let countrySelectedToggle = $state(true);
 
 	const galleryItems = $derived<GalleryImageItem[] | undefined>(
-		getGalleryItems(images, $galleryShufflePercentageStore, randomize)
+		getGalleryItems(images, $galleryShufflePercentageStore)
 	);
 
 	const countrySearchItems = $derived(
@@ -88,7 +98,9 @@
 
 	const filterApplied = $derived(!!galleryItemsFiltered && galleryItemsFiltered?.length !== galleryItems?.length);
 
-	const countrySearchItemsFiltered = $derived(getCountrySearchItemsFiltered(countrySearchItems));
+	$effect(() => {
+		countrySearchItemsFiltered = getCountrySearchItemsFiltered(countrySearchItems);
+	});
 
 	$effect(() => {
 		if (searchable) {
@@ -112,8 +124,7 @@
 
 	function getGalleryItems(
 		items: ImageDetails[] | undefined,
-		shufflePercentage: number | undefined,
-		randomized: boolean
+		shufflePercentage: number | undefined
 	): GalleryImageItem[] | undefined {
 		if (!items) {
 			return;
@@ -132,7 +143,7 @@
 			requested: false,
 			loaded: false
 		}));
-		return randomized ? partialShuffleImageOrder(result, shufflePercentage) : result;
+		return randomize ? partialShuffleImageOrder(result, shufflePercentage) : result;
 	}
 
 	function getCalendar(from?: Date, to?: Date): CalendarModel | undefined {
@@ -192,15 +203,15 @@
 
 	function modalKeyNavigation(event: KeyboardEvent): void {
 		switch (event.key) {
-			case 'ArrowRight': {
+			case KeyboardKey.ARROW_RIGHT: {
 				nextImage();
 				break;
 			}
-			case 'ArrowLeft': {
+			case KeyboardKey.ARROW_LEFT: {
 				previousImage();
 				break;
 			}
-			case 'Escape': {
+			case KeyboardKey.ESCAPE: {
 				modalOpen = false;
 				break;
 			}
@@ -214,6 +225,7 @@
 			country.checked = true;
 		}
 		initCalendar = getCalendar(initFromRange, initToRange);
+		countrySelectedToggle = true;
 	}
 
 	function toggleCountry(code: string): void {
@@ -240,7 +252,6 @@
 		if (percentage <= 0 || percentage >= 100 || images.length === 0) {
 			return images;
 		}
-		percentage = 0;
 		const totalElements = images.length;
 		const elementsToShuffle = Math.floor(totalElements * (percentage / 100));
 		let selectedIndices = new Set<number>();
@@ -354,11 +365,15 @@
 					image.loaded = true;
 					resolve();
 				} else {
+					alertStore.setAlert($t('common.api.fetch-failed'));
 					reject(new Error(`Failed to load image: ${xhr.statusText}`));
 				}
 			});
 
-			xhr.addEventListener('error', () => reject(new Error('Network error')));
+			xhr.addEventListener('error', () => {
+				alertStore.setAlert($t('common.api.fetch-failed'));
+				reject(new Error('Network error'));
+			});
 
 			xhr.send();
 		});
@@ -446,6 +461,20 @@
 		}
 		modalImage = galleryItemsFiltered![modalIndex];
 	}
+
+	function toggleSorting(): void {
+		sort = sort === SortDirection.ASCENDING ? SortDirection.DESCENDING : SortDirection.ASCENDING;
+		galleryItems?.reverse();
+		filterTrigger++;
+	}
+
+	function toggleCountrySelection(): void {
+		countrySelectedToggle = !countrySelectedToggle;
+		countrySearchItemsFiltered = countrySearchItemsFiltered?.map((country) => ({
+			...country,
+			checked: countrySelectedToggle
+		}));
+	}
 </script>
 
 {#if modalOpen && modalImage}
@@ -501,8 +530,7 @@
 					class="block h-auto max-h-[85vh] w-auto max-w-full object-contain"
 				/>
 				<div class="absolute bottom-0 left-0 right-0 top-0 flex w-full items-center justify-center">
-					<Progressbar progress={modalImage.progress} color="green" size="lg" class="mx-16 w-full md:mx-48" labelInside
-					></Progressbar>
+					<Progressbar value={modalImage.progress} />
 				</div>
 			{:else}
 				<img
@@ -513,9 +541,9 @@
 					class="block h-auto max-h-[85vh] w-auto max-w-full object-contain"
 				/>
 			{/if}
-			<div class="text-shadow -bottom-18 absolute left-0 w-full p-3 font-bold text-white">
+			<div class="text-shadow -bottom-18 absolute left-0 w-full p-3 text-white">
 				<div class="flex items-center justify-between">
-					<div>{modalImage.title}</div>
+					<div class="font-bold">{modalImage.title}</div>
 					{#if showDateOnDetail}
 						<div class="text-nowrap text-xs">{$dateStore(modalImage.date, 'DD. MMMM YYYY')}</div>
 					{/if}
@@ -525,7 +553,7 @@
 				{/if}
 			</div>
 			{#if modalImage.description && modalImage.description.length >= 60}
-				<div class="text-shadow absolute bottom-0 left-0 right-0 w-full p-3 text-sm font-bold text-white">
+				<div class="text-shadow absolute bottom-0 left-0 right-0 w-full p-3 text-sm text-white">
 					{modalImage.description}
 				</div>
 			{/if}
@@ -592,21 +620,24 @@
 				</div>
 			{/if}
 			{#if countrySearchItemsFiltered}
-				<div class="flex-1">
-					<Button
-						class="flex w-full gap-2 border border-gray-600 px-2 py-1 text-lg text-black focus:ring-2 dark:text-white"
-					>
+				<div class="">
+					<Button class="flex w-full gap-2 border border-gray-600 px-2 py-2 text-black focus:ring-2 dark:text-white">
 						{$t('components.posts.select-countries')}
 						<Icon src={FaSolidChevronDown} size="16"></Icon></Button
 					>
 					<Dropdown class="h-44 overflow-y-auto px-3 pb-3 text-sm">
-						<div slot="header" class="p-3">
-							<Search size="md" bind:value={countrySearchTerm} />
+						<div slot="header" class="flex flex-col gap-2 p-3">
+							<Search placeholder={$t('common.search')} size="sm" bind:value={countrySearchTerm} />
+							<Toggle checked={countrySelectedToggle} color="blue" onchange={toggleCountrySelection}>
+								{countrySelectedToggle
+									? $t('components.gallery.filter.countries.toggle.all-selected')
+									: $t('components.gallery.filter.countries.toggle.all-deselected')}
+							</Toggle>
 						</div>
 						{#each countrySearchItemsFiltered as country (country.code)}
 							{#if country.visible}
-								<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-									<Checkbox checked={country.checked} on:change={() => toggleCountry(country.code)}>
+								<li class="hover:bg- gray-100 rounded p-2 dark:hover:bg-gray-600">
+									<Checkbox checked={country.checked} onchange={() => toggleCountry(country.code)}>
 										{country.name}
 									</Checkbox>
 								</li>
@@ -615,6 +646,17 @@
 					</Dropdown>
 				</div>
 			{/if}
+			<div class="flex items-center justify-center rounded-lg border border-gray-600 p-2">
+				{#if sort === SortDirection.ASCENDING}
+					<button onclick={toggleSorting}>
+						<Icon src={FaSolidArrowUp} size="22"></Icon>
+					</button>
+				{:else}
+					<button onclick={toggleSorting}>
+						<Icon src={FaSolidArrowDown} size="22"></Icon>
+					</button>
+				{/if}
+			</div>
 		</div>
 	</div>
 {/if}

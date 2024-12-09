@@ -64,34 +64,24 @@
 		ulClass="flex flex-col md:flex-row md:py-3 md:flex-row md:space-x-8 text-center md:text-sm md:font-medium"
 	>
 		<NavLi href={PagePath.home}>
-			<div class="font-semibold hover:text-black dark:hover:text-white md:text-base md:font-normal">
+			<div class="font-semibold hover:text-black dark:hover:text-white md:text-base">
 				{$t('nav.map')}
 			</div>
 		</NavLi>
 		<NavLi href={PagePath.travel}>
-			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base md:font-normal"
-				>{$t('nav.travel')}</span
-			>
+			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base">{$t('nav.travel')}</span>
 		</NavLi>
 		<NavLi href={PagePath.countries}>
-			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base md:font-normal"
-				>{$t('nav.countries')}</span
-			>
+			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base">{$t('nav.countries')}</span>
 		</NavLi>
 		<NavLi href={PagePath.gallery}>
-			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base md:font-normal"
-				>{$t('nav.gallery')}</span
-			>
+			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base">{$t('nav.gallery')}</span>
 		</NavLi>
 		<NavLi href={PagePath.support}>
-			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base md:font-normal"
-				>{$t('nav.about')}</span
-			>
+			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base">{$t('nav.about')}</span>
 		</NavLi>
 		<NavLi href={PagePath.legals}>
-			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base md:font-normal"
-				>{$t('nav.legals')}</span
-			>
+			<span class="font-semibold hover:text-black dark:hover:text-white md:text-base">{$t('nav.legals')}</span>
 		</NavLi>
 		<NavLi class="hidden md:block">
 			<div class="flex items-center justify-center gap-4">

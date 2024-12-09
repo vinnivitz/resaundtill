@@ -50,7 +50,7 @@ export async function initApiStores(fetch: FetchInterface): Promise<void> {
 
 	async function getImages(): Promise<void> {
 		const posts = await sdk(fetch).request<BlogPostEntry<DirectusImageDetails>[]>(
-			readItems('resaundtill_posts', { limit: -1, sort: 'date', fields: ['id', 'images.*.*'] })
+			readItems('resaundtill_posts', { limit: -1, sort: '-date', fields: ['id', 'images.*.*'] })
 		);
 		const postToImages = new Map<string, ImageDetails[]>();
 		for (const post of posts) {
@@ -71,7 +71,7 @@ export async function initApiStores(fetch: FetchInterface): Promise<void> {
 				fields: ['id', 'code', 'translations.*', 'population', 'area', 'capital', 'currency', 'thumbnail']
 			})
 		);
-		countriesStore.set(countries);
+		countriesStore.set(countries.reverse());
 	}
 
 	async function getSupportInfo(): Promise<void> {
@@ -93,13 +93,13 @@ export async function initApiStores(fetch: FetchInterface): Promise<void> {
 		const countryToPosts = new Map<string, string[]>();
 		await Promise.all(
 			posts.map(async (post) => {
-				if (post.location) {
-					post.countryCode = post.countryCode ?? (await geoJsonStore.getCountryCode(post.location.coordinates));
-					if (post.countryCode) {
-						const postsForCountry = countryToPosts.get(post.countryCode) ?? [];
-						postsForCountry.push(post.id);
-						countryToPosts.set(post.countryCode, postsForCountry);
-					}
+				post.countryCode =
+					post.countryCode ??
+					(post.location ? await geoJsonStore.getCountryCode(post.location.coordinates) : undefined);
+				if (post.countryCode) {
+					const postsForCountry = countryToPosts.get(post.countryCode) ?? [];
+					postsForCountry.push(post.id);
+					countryToPosts.set(post.countryCode, postsForCountry);
 				}
 			})
 		);

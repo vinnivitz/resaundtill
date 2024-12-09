@@ -36,7 +36,6 @@
 			}
 		},
 		"gallery-title": "Gallery",
-		"no-entries": "No entries found.",
 		"description": "Information"
 	},
 	"common": {
@@ -51,7 +50,8 @@
 		"api": {
 			"fetch-failed": "Failed to load some data"
 		},
-		"million": "mil"
+		"million": "mil",
+		"search": "Search..."
 	},
 	"components": {
 		"map": {
@@ -59,19 +59,22 @@
 				"label": "{pre}activate map"
 			}
 		},
-		"countdown": {
-			"days": "Days",
-			"hours": "Hours",
-			"minutes": "Minutes",
-			"seconds": "Seconds"
-		},
+		"countdown": {},
 		"gallery": {
 			"searchbar": {
 				"placeholder": "Search..."
 			},
-			"no_results": "No images found with the keyword.",
+			"no_results": "No images found with the currently applied filters.",
 			"lightbox": {
 				"post-button": "Go to post"
+			},
+			"filter": {
+				"countries": {
+					"toggle": {
+						"all-selected": "All selected",
+						"all-deselected": "None selected"
+					}
+				}
 			}
 		},
 		"posts": {

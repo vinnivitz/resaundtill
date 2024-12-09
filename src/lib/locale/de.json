@@ -17,7 +17,6 @@
 			}
 		},
 		"gallery-title": "Bildergalerie",
-		"no-entries": "Keine Einträge gefunden.",
 		"description": "Information"
 	},
 	"legals": {
@@ -41,8 +40,6 @@
 	},
 	"common": {
 		"map": "Karte",
-		"from": "von",
-		"to": "bis",
 		"information": "Information",
 		"overview": "Übersicht",
 		"population": "Einwohner",
@@ -53,7 +50,8 @@
 		"api": {
 			"fetch-failed": "Einige Daten konnten nicht geladen werden"
 		},
-		"million": "Mio"
+		"million": "Mio",
+		"search": "Suchen..."
 	},
 	"components": {
 		"map": {
@@ -61,19 +59,22 @@
 				"label": "Karte {pre}aktivieren"
 			}
 		},
-		"countdown": {
-			"days": "Tage",
-			"hours": "Stunden",
-			"minutes": "Minuten",
-			"seconds": "Sekunden"
-		},
+		"countdown": {},
 		"gallery": {
 			"searchbar": {
 				"placeholder": "Suchen..."
 			},
-			"no_results": "Keine Bilder mit dem Stichwort gefunden.",
+			"no_results": "Keine Bilder mit diesen Filtereinstellungen gefunden.",
 			"lightbox": {
 				"post-button": "Zum Post"
+			},
+			"filter": {
+				"countries": {
+					"toggle": {
+						"all-selected": "Alle ausgewählt ",
+						"all-deselected": "Keins ausgewählt"
+					}
+				}
 			}
 		},
 		"posts": {
