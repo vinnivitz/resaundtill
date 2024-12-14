@@ -19,7 +19,8 @@
 		type CalendarModel,
 		type CountryEntry,
 		type CountryEntryTranslation,
-		type ImageDetails
+		type ImageDetails,
+		type CountryPost
 	} from '$lib/models';
 	import { countriesStore, countryToPostsStore, postToImagesStore, dateStore } from '$lib/stores';
 	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
@@ -141,17 +142,17 @@
 		filter: boolean,
 		items?: BlogPostItem[],
 		countries?: CountryEntry[],
-		countryToPostsMap?: Map<string, string[]>
+		countryToPostsMap?: Map<string, CountryPost[]>
 	): BlogPostCountrySearchItem[] | undefined {
 		if (!filter || !items || !countries || !countryToPostsMap) {
 			return;
 		}
-		const result = countries.map((country) => ({
+		const result: BlogPostCountrySearchItem[] = countries.map((country) => ({
 			name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
 			checked: true,
 			visible: true,
 			code: country.code,
-			postIds: countryToPostsMap.get(country.code) ?? []
+			postIds: countryToPostsMap.get(country.code)?.map((countryPost) => countryPost.id) ?? []
 		}));
 		const categorizedPostIds = new Set(result.flatMap((country) => country.postIds));
 		result.push({
@@ -336,7 +337,7 @@
 								</Toggle>
 							</div>
 							{#each countrySearchItemsFiltered as country (country.code)}
-								{#if country.visible}
+								{#if country.visible && country.postIds.length > 0}
 									<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
 										<Checkbox checked={country.checked} on:change={() => toggleCountry(country.code)}
 											>{country.name}</Checkbox

@@ -6,13 +6,7 @@
 	import { Icon } from 'svelte-icons-pack';
 	import { IoSearch } from 'svelte-icons-pack/io';
 
-	import {
-		DirectusImageTransformation,
-		PagePath,
-		type CountryEntry,
-		type CountryEntryTranslation,
-		type CountryItem
-	} from '$lib/models';
+	import { PagePath, type CountryEntry, type CountryEntryTranslation, type CountryItem } from '$lib/models';
 	import { countriesStore, countryToPostsStore } from '$lib/stores';
 	import { debounce, getTranslation, imageUrlBuilder } from '$lib/utils';
 
@@ -33,7 +27,7 @@
 		return items.map((country) => ({
 			name: getTranslation<CountryEntryTranslation>(country.translations, $locale)?.name ?? '',
 			code: country.code,
-			thumbnailUrl: imageUrlBuilder(country.thumbnail, DirectusImageTransformation.PREVIEW)
+			thumbnailUrl: imageUrlBuilder(country.thumbnail)
 		}));
 	}
 

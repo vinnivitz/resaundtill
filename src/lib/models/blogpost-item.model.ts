@@ -15,6 +15,8 @@ export type BlogPostItemDetails = {
 	translations: BlogPostTranslation[];
 	date: Date;
 	images: ImageDetails[];
+	previousPostId?: string;
+	nextPostId?: string;
 };
 
 export type BlogPostCountrySearchItem = {

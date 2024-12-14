@@ -28,9 +28,12 @@ export type BlogPostEntry<T = string> = {
 	location?: Point;
 	images?: DirectusImage<T>[];
 	countryCode?: string;
+	previousPostId?: string;
+	nextPostId?: string;
 };
 
 export type CountryEntry = {
+	index: number;
 	translations: CountryEntryTranslation[];
 	code: string;
 	thumbnail?: string;

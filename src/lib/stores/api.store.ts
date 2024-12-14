@@ -10,7 +10,8 @@ import {
 	type CountryEntry,
 	type MapItem,
 	type DirectusImageDetails,
-	type ImageDetails
+	type ImageDetails,
+	type CountryPost
 } from '$lib/models';
 import { sdk } from '$lib/sdk';
 
@@ -24,7 +25,7 @@ export const supportInfoStore = writable<SupportInfoEntry | undefined>();
 export const galleryShufflePercentageStore = writable<number | undefined>();
 export const currentCoordinatesStore = writable<Position | undefined>();
 export const mapItemsStore = writable<MapItem[] | undefined>();
-export const countryToPostsStore = writable<Map<string, string[]> | undefined>();
+export const countryToPostsStore = writable<Map<string, CountryPost[]> | undefined>();
 export const postToCountryStore = writable<Map<string, string> | undefined>();
 
 const $t = unwrapFunctionStore(_);
@@ -35,16 +36,38 @@ export async function initApiStores(fetch: FetchInterface): Promise<void> {
 	initialized = true;
 
 	async function fetchPosts(): Promise<void> {
-		const posts = await sdk(fetch).request<BlogPostEntry[]>(
+		let posts = await sdk(fetch).request<BlogPostEntry[]>(
 			readItems('resaundtill_posts', {
 				limit: -1,
 				sort: ['date'],
 				fields: ['id', 'date', 'location', 'isFlight', 'countryCode', 'translations.*']
 			})
 		);
+		posts = posts.map((post, index) => {
+			const previousPost = posts[index - 1];
+			const nextPost = posts[index + 1];
+			return {
+				...post,
+				previousPostId: previousPost?.id,
+				nextPostId: nextPost?.id
+			};
+		});
 		postsStore.set(posts.toReversed());
-		currentCoordinatesStore.set(posts[0]?.location?.coordinates || undefined);
-		mapItemsStore.set(posts.filter((post) => post.location) as MapItem[]);
+		currentCoordinatesStore.set(posts[0]?.location?.coordinates);
+		const postIdToLocationMap = new Map(posts.map((post) => [post.id, post.location]));
+		mapItemsStore.set(
+			posts
+				.filter((post) => post.location)
+				.map((post) => ({
+					id: post.id,
+					date: post.date,
+					location: post.location!,
+					isFlight: post.isFlight,
+					translations: post.translations,
+					previousLocation: post.previousPostId ? postIdToLocationMap.get(post.previousPostId) : undefined,
+					nextLocation: post.nextPostId ? postIdToLocationMap.get(post.nextPostId) : undefined
+				}))
+		);
 		await setCountryPostRelations(posts);
 	}
 
@@ -68,10 +91,10 @@ export async function initApiStores(fetch: FetchInterface): Promise<void> {
 	async function getCountries(): Promise<void> {
 		const countries = await sdk(fetch).request<CountryEntry[]>(
 			readItems('resaundtill_countries', {
-				fields: ['id', 'code', 'translations.*', 'population', 'area', 'capital', 'currency', 'thumbnail']
+				fields: ['id', 'index', 'code', 'translations.*', 'population', 'area', 'capital', 'currency', 'thumbnail']
 			})
 		);
-		countriesStore.set(countries.reverse());
+		countriesStore.set(countries.sort((a, b) => a.index - b.index));
 	}
 
 	async function getSupportInfo(): Promise<void> {
@@ -90,7 +113,7 @@ export async function initApiStores(fetch: FetchInterface): Promise<void> {
 	}
 
 	async function setCountryPostRelations(posts: BlogPostEntry[]): Promise<void> {
-		const countryToPosts = new Map<string, string[]>();
+		const countryToPosts = new Map<string, CountryPost[]>();
 		await Promise.all(
 			posts.map(async (post) => {
 				post.countryCode =
@@ -98,7 +121,7 @@ export async function initApiStores(fetch: FetchInterface): Promise<void> {
 					(post.location ? await geoJsonStore.getCountryCode(post.location.coordinates) : undefined);
 				if (post.countryCode) {
 					const postsForCountry = countryToPosts.get(post.countryCode) ?? [];
-					postsForCountry.push(post.id);
+					postsForCountry.push({ id: post.id, previousPostId: post.previousPostId, nextPostId: post.nextPostId });
 					countryToPosts.set(post.countryCode, postsForCountry);
 				}
 			})
@@ -106,9 +129,9 @@ export async function initApiStores(fetch: FetchInterface): Promise<void> {
 		countryToPostsStore.set(countryToPosts);
 
 		const postToCountry = new Map<string, string>();
-		for (const [countryCode, postIds] of countryToPosts.entries()) {
-			for (const postId of postIds) {
-				postToCountry.set(postId, countryCode);
+		for (const [countryCode, countryPosts] of countryToPosts.entries()) {
+			for (const countryPost of countryPosts) {
+				postToCountry.set(countryPost.id, countryCode);
 			}
 		}
 		postToCountryStore.set(postToCountry);

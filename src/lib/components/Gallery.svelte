@@ -20,7 +20,8 @@
 		type CountryEntryTranslation,
 		type GalleryItemCountrySearchItem,
 		SortDirection,
-		KeyboardKey
+		KeyboardKey,
+		type CountryPost
 	} from '$lib/models';
 	import {
 		alertStore,
@@ -36,7 +37,6 @@
 	import { goto } from '$app/navigation';
 
 	import Progressbar from './Progressbar.svelte';
-
 
 	let {
 		images,
@@ -165,7 +165,7 @@
 	function getCountrySearchItems(
 		items: GalleryImageItem[] | undefined,
 		countries: CountryEntry[] | undefined,
-		countryToPostsMap: Map<string, string[]> | undefined,
+		countryToPostsMap: Map<string, CountryPost[]> | undefined,
 		postToImagesMap: Map<string, ImageDetails[]> | undefined
 	): GalleryItemCountrySearchItem[] | undefined {
 		if (!items || !countries || !countryToPostsMap) {
@@ -179,7 +179,7 @@
 			imageIds:
 				countryToPostsMap
 					.get(country.code)
-					?.flatMap((postId) => postToImagesMap?.get(postId)?.map((image) => image.id) ?? []) ?? []
+					?.flatMap((countryPost) => postToImagesMap?.get(countryPost.id)?.map((image) => image.id) ?? []) ?? []
 		}));
 		const categorizedImageIds = new Set(result.flatMap((item) => item.imageIds));
 		result.push({
@@ -635,7 +635,7 @@
 							</Toggle>
 						</div>
 						{#each countrySearchItemsFiltered as country (country.code)}
-							{#if country.visible}
+							{#if country.visible && country.imageIds.length > 0}
 								<li class="hover:bg- gray-100 rounded p-2 dark:hover:bg-gray-600">
 									<Checkbox checked={country.checked} onchange={() => toggleCountry(country.code)}>
 										{country.name}

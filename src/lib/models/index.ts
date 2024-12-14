@@ -14,3 +14,4 @@ export * from './country-data.model';
 export * from './sort-direction.model';
 export * from './data-store.model';
 export * from './keyboard-key.model';
+export * from './country-post.model';

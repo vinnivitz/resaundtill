@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Heading, Secondary, Hr, Tabs, TabItem } from 'flowbite-svelte';
+	import { Heading, Secondary, Hr } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { t, locale } from 'svelte-i18n';
@@ -76,21 +76,21 @@
 			id: post.id,
 			date: new Date(post.date),
 			translations: post.translations,
-			images: postToImageMap.get(post.id) ?? []
+			images: postToImageMap.get(post.id) ?? [],
+			previousPostId: post.previousPostId,
+			nextPostId: post.nextPostId
 		};
 	}
 
-	async function getNextPost(): Promise<void> {
-		if ($postsStore) {
-			const post = $postsStore[$postsStore.findIndex((post) => post.id === data.postId) - 1];
-			await goto(`${PagePath.travel}/${post.id}`);
+	async function loadPreviousPost(): Promise<void> {
+		if (postItem?.previousPostId) {
+			await goto(`${PagePath.travel}/${postItem.previousPostId}`);
 		}
 	}
 
-	async function getPreviousPost(): Promise<void> {
-		if ($postsStore) {
-			const post = $postsStore[$postsStore.findIndex((post) => post.id === data.postId) + 1];
-			await goto(`${PagePath.travel}/${post.id}`);
+	async function loadNextPost(): Promise<void> {
+		if (postItem?.nextPostId) {
+			await goto(`${PagePath.travel}/${postItem.nextPostId}`);
 		}
 	}
 
@@ -98,7 +98,8 @@
 		if (!postId || !items) {
 			return;
 		}
-		return items.filter((item) => item.id === postId);
+		const item = items.find((item) => item.id === postId);
+		return item ? [item] : undefined;
 	}
 
 	async function gotoCountry(): Promise<void> {
@@ -110,7 +111,7 @@
 	<div class="mb-3 flex pt-2 md:pt-0">
 		{#if isPreviousPost}
 			<button
-				onclick={getPreviousPost}
+				onclick={loadPreviousPost}
 				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 active:bg-gray-400 md:hover:bg-gray-400"
 			>
 				<Icon src={FaSolidArrowLeft} size="18" />
@@ -122,7 +123,7 @@
 		<div class="grow"></div>
 		{#if isNextPost}
 			<button
-				onclick={getNextPost}
+				onclick={loadNextPost}
 				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 active:bg-gray-400 md:hover:bg-gray-400"
 			>
 				<div>{$t('travel.header.next-button.label')}</div>
@@ -158,54 +159,26 @@
 			{/if}
 		</div>
 
-		<div class="mb-3 block md:hidden">
-			<Tabs tabStyle="underline" defaultClass="flex justify-center">
-				{#if postItem && postItem.images.length > 0}
-					<TabItem title={$t('travel.gallery-title')} defaultClass="text-lg">
-						<Gallery
-							images={postItem.images}
-							showDateOnDetail={false}
-							imageTransformation={DirectusImageTransformation.PREVIEW}
-						/>
-					</TabItem>
-				{/if}
-				{#if translatedDescription}
-					<TabItem open title={$t('travel.description')} defaultClass="text-lg">
-						<p class="whitespace-pre-wrap text-lg font-normal md:pt-12">
-							{translatedDescription}
-						</p>
-					</TabItem>
-				{/if}
-				{#if mapItems}
-					<TabItem title={$t('common.map')} defaultClass="text-lg p-0">
-						<Map items={mapItems} {countryCode} activatable />
-					</TabItem>
-				{/if}
-			</Tabs>
-		</div>
+		{#if translatedDescription}
+			<p class="whitespace-pre-wrap pt-8 text-lg font-normal md:pt-12">
+				{translatedDescription}
+			</p>
+		{/if}
 
-		<div class="hidden md:block">
-			{#if translatedDescription}
-				<p class="whitespace-pre-wrap pt-8 text-lg font-normal md:pt-12">
-					{translatedDescription}
-				</p>
-			{/if}
+		{#if postItem && postItem.images.length > 0}
+			<Hr />
+			<div class="m-2">
+				<Gallery
+					images={postItem.images}
+					showDateOnDetail={false}
+					imageTransformation={DirectusImageTransformation.PREVIEW}
+				/>
+			</div>
+		{/if}
 
-			{#if postItem && postItem.images.length > 0}
-				<Hr />
-				<div class="m-2">
-					<Gallery
-						images={postItem.images}
-						showDateOnDetail={false}
-						imageTransformation={DirectusImageTransformation.PREVIEW}
-					/>
-				</div>
-			{/if}
-
-			{#if mapItems}
-				<Hr />
-				<Map items={mapItems} {countryCode} activatable />
-			{/if}
-		</div>
+		{#if mapItems}
+			<Hr />
+			<Map items={mapItems} {countryCode} activatable />
+		{/if}
 	</div>
 </section>

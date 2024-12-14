@@ -42,7 +42,7 @@
 
 	$effect(() => addCountryBoundaries(map, countryCode));
 
-	$effect(() => addMarkers(items, map, defaultIcon, resaTillIcon));
+	$effect(() => addMapElements(items, map, defaultIcon, resaTillIcon));
 
 	$effect(() => initView(currentCoordinates));
 
@@ -87,22 +87,41 @@
 		}
 	}
 
-	function addMarkers(items?: MapItem[], map?: Map, defaultIcon?: Icon, resaTillIcon?: Icon): void {
-		if (items && map && defaultIcon && resaTillIcon) {
-			markerLayerGroup?.clearLayers();
-			markerLayerGroup = L.layerGroup().addTo(map);
-			const markers = getMarkers(items);
-			if (markers.length > 1) {
-				for (let index = 0; index < markers.length; index++) {
-					if (index < markers.length - 1) {
-						addTooltip(markers[index], items[index]);
-						addPolyLine(markers[index], markers[index + 1], items[index + 1]);
-					} else {
-						addTooltip(markers[index], items[index], -95);
-					}
-				}
+	function addMapElements(
+		items: MapItem[] | undefined,
+		map: Map | undefined,
+		defaultIcon: Icon | undefined,
+		resaTillIcon: Icon | undefined
+	): void {
+		if (!items || !map || !defaultIcon || !resaTillIcon) {
+			return;
+		}
+
+		markerLayerGroup?.clearLayers();
+		markerLayerGroup = L.layerGroup().addTo(map);
+		const markers = getMarkers(items);
+
+		const length = markers.length;
+		if (length <= 0) {
+			return;
+		}
+
+		for (let index = 0; index < length - 1; index++) {
+			const currentItem = items[index];
+			const currentMarker = markers[index];
+			const nextItem = items[index + 1];
+			const nextMarker = markers[index + 1];
+
+			addTooltip(currentMarker, currentItem);
+
+			const hasNextInSequence = currentItem.nextLocation === nextItem?.location;
+			if (hasNextInSequence && nextMarker) {
+				addPolyLine(currentMarker, nextMarker, nextItem);
 			}
 		}
+
+		const lastIndex = length - 1;
+		addTooltip(markers[lastIndex], items[lastIndex], -95);
 	}
 
 	function addTooltip(marker: Marker, item: MapItem, offset = -37): void {
