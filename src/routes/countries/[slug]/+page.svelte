@@ -77,7 +77,7 @@
 			return postIds
 				.map((countryPost) => $postsStore?.find((post) => post.id === countryPost.id))
 				.filter((post) => isDefined(post))
-				.sort((a, b) => (new Date(a.date).getTime() > new Date(b.date).getTime() ? -1 : 1));
+				.sort((a, b) => (new Date(a.date).getTime() > new Date(b.date).getTime() ? -1 : 1)).toReversed();
 		}
 	}
 
