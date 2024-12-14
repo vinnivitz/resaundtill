@@ -1,13 +1,6 @@
-import type { Feature, FeatureCollection, GeoJsonProperties, MultiPolygon, Polygon } from 'geojson';
-
-export type CustomFeatureCollection = FeatureCollection<Polygon | MultiPolygon, CustomGeoJsonProperties> & {
-	type: FeatureCollection;
-	features: Feature<Polygon | MultiPolygon, CustomGeoJsonProperties>[];
-};
+import type { Feature, GeoJsonProperties, MultiPolygon, Polygon } from 'geojson';
 
 export type CustomGeoJsonProperties = GeoJsonProperties & {
-	ADMIN: string;
-	ISO_A3: string;
 	ISO_A2: string;
 };
 

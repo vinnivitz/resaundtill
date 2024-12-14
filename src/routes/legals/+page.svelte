@@ -24,6 +24,6 @@
 		{$t('legals.privacy.content')}
 	</p>
 </section>
-<div class="absolute bottom-5 left-0 right-0 w-full">
+<div class="absolute bottom-4 left-0 right-0 w-full">
 	<Footer></Footer>
 </div>

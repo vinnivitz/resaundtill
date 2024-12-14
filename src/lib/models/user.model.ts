@@ -8,7 +8,3 @@ export enum Locale {
 	DE = 'de'
 }
 
-export type UserPrefs = {
-	theme: LayoutTheme;
-	locale: Locale;
-};

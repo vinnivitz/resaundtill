@@ -11,6 +11,8 @@ export type CountryItemDetails = {
 	currency: string;
 	posts?: BlogPostEntry[];
 	mapItems?: MapItem[];
+	previousCountryCode?: string;
+	nextCountryCode?: string;
 };
 
 export type CountryItem = {

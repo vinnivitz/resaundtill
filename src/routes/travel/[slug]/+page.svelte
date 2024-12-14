@@ -36,11 +36,6 @@
 
 	const postItem: BlogPostItemDetails | undefined = $derived(getPostItems($postsStore, $postToImagesStore));
 
-	const isNextPost = $derived(($postsStore?.findIndex((post) => post.id === data.postId) ?? 0) > 0);
-	const isPreviousPost = $derived(
-		($postsStore?.findIndex((post) => post.id === data.postId) ?? 0) < ($postsStore?.length ?? 1) - 1
-	);
-
 	const translatedTitle = $derived(getTranslation<BlogPostTranslation>(postItem?.translations, $locale)?.title);
 
 	const translatedDescription = $derived(
@@ -109,7 +104,7 @@
 
 <section class="px-3 md:px-12 md:pt-4">
 	<div class="mb-3 flex pt-2 md:pt-0">
-		{#if isPreviousPost}
+		{#if postItem?.previousPostId}
 			<button
 				onclick={loadPreviousPost}
 				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 active:bg-gray-400 md:hover:bg-gray-400"
@@ -121,7 +116,7 @@
 			<div class="invisible flex rounded-full p-2"></div>
 		{/if}
 		<div class="grow"></div>
-		{#if isNextPost}
+		{#if postItem?.nextPostId}
 			<button
 				onclick={loadNextPost}
 				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 active:bg-gray-400 md:hover:bg-gray-400"

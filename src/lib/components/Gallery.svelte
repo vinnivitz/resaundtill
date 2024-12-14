@@ -129,7 +129,7 @@
 		if (!items) {
 			return;
 		}
-		const result = items.map((image) => ({
+		const result: GalleryImageItem[] = items.map((image) => ({
 			id: image.id,
 			src: imageUrlBuilder(image.id),
 			thumb: imageUrlBuilder(image.id, imageTransformation),

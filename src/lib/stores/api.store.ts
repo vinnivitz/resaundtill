@@ -43,15 +43,11 @@ export async function initApiStores(fetch: FetchInterface): Promise<void> {
 				fields: ['id', 'date', 'location', 'isFlight', 'countryCode', 'translations.*']
 			})
 		);
-		posts = posts.map((post, index) => {
-			const previousPost = posts[index - 1];
-			const nextPost = posts[index + 1];
-			return {
-				...post,
-				previousPostId: previousPost?.id,
-				nextPostId: nextPost?.id
-			};
-		});
+		posts = posts.map((post, index) => ({
+			...post,
+			previousPostId: posts[index - 1]?.id,
+			nextPostId: posts[index + 1]?.id
+		}));
 		postsStore.set(posts.toReversed());
 		currentCoordinatesStore.set(posts[0]?.location?.coordinates);
 		const postIdToLocationMap = new Map(posts.map((post) => [post.id, post.location]));
@@ -73,7 +69,19 @@ export async function initApiStores(fetch: FetchInterface): Promise<void> {
 
 	async function getImages(): Promise<void> {
 		const posts = await sdk(fetch).request<BlogPostEntry<DirectusImageDetails>[]>(
-			readItems('resaundtill_posts', { limit: -1, sort: '-date', fields: ['id', 'images.*.*'] })
+			readItems('resaundtill_posts', {
+				limit: -1,
+				sort: '-date',
+				fields: [
+					'id',
+					'images.directus_files_id.id',
+					'images.directus_files_id.title',
+					'images.directus_files_id.description',
+					'images.directus_files_id.height',
+					'images.directus_files_id.width',
+					'images.directus_files_id.uploaded_on'
+				]
+			})
 		);
 		const postToImages = new Map<string, ImageDetails[]>();
 		for (const post of posts) {
@@ -89,25 +97,32 @@ export async function initApiStores(fetch: FetchInterface): Promise<void> {
 	}
 
 	async function getCountries(): Promise<void> {
-		const countries = await sdk(fetch).request<CountryEntry[]>(
+		let countries = await sdk(fetch).request<CountryEntry[]>(
 			readItems('resaundtill_countries', {
-				fields: ['id', 'index', 'code', 'translations.*', 'population', 'area', 'capital', 'currency', 'thumbnail']
+				fields: ['index', 'code', 'translations.*', 'population', 'area', 'thumbnail']
 			})
 		);
-		countriesStore.set(countries.sort((a, b) => a.index - b.index));
+		countries = countries
+			.sort((a, b) => a.index - b.index)
+			.map((country, index) => ({
+				...country,
+				previousCountryCode: countries[index - 1]?.code,
+				nextCountryCode: countries[index + 1]?.code
+			}));
+		countriesStore.set(countries);
 	}
 
 	async function getSupportInfo(): Promise<void> {
 		const supportInfo = await sdk(fetch).request<SupportInfoEntry>(
 			// @ts-expect-error - translations with wildcard is not recognized correctly
-			readSingleton('resaundtill_support', { fields: ['id', 'translations.*'] })
+			readSingleton('resaundtill_support', { fields: ['translations.*'] })
 		);
 		supportInfoStore.set(supportInfo);
 	}
 
 	async function getGalleryShufflePercentage(): Promise<void> {
 		const galleryShufflePercentage = await sdk(fetch).request<GalleryShufflePercentage>(
-			readSingleton('resaundtill_gallery_shuffle_percentage')
+			readSingleton('resaundtill_gallery_shuffle_percentage', { fields: ['value'] })
 		);
 		galleryShufflePercentageStore.set(galleryShufflePercentage.value);
 	}

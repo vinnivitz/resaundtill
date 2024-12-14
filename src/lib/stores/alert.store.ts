@@ -14,5 +14,4 @@ export function createAlertStore(): Readable<string | undefined> & { setAlert: (
 	};
 }
 
-// Export a single instance of the alert store
 export const alertStore = createAlertStore();

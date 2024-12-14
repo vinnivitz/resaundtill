@@ -39,28 +39,17 @@
 
 	const mapItems = $derived<MapItem[] | undefined>(getMapItems(posts, $mapItemsStore));
 
-	const nextCountryExists = $derived(
-		($countriesStore?.findIndex((country) => country.code === data.countryCode) ?? 0) > 0
-	);
-
-	const isPreviousPost = $derived(
-		($countriesStore?.findIndex((country) => country.code === data.countryCode) ?? 0) <
-			($countriesStore?.length ?? 1) - 1
-	);
-
 	onMount(() => scrollTop(false));
 
-	async function loadNextCountry(): Promise<void> {
-		if ($countriesStore) {
-			const country = $countriesStore[$countriesStore.findIndex((country) => country.code === data.countryCode) - 1];
-			await goto(`${PagePath.countries}/${country.code}`);
+	async function loadPreviousCountry(): Promise<void> {
+		if (countryItem?.previousCountryCode) {
+			await goto(`${PagePath.countries}/${countryItem.previousCountryCode}`);
 		}
 	}
 
-	async function loadPreviousCountry(): Promise<void> {
-		if ($countriesStore) {
-			const country = $countriesStore[$countriesStore.findIndex((post) => post.code === data.countryCode) + 1];
-			await goto(`${PagePath.countries}/${country.code}`);
+	async function loadNextCountry(): Promise<void> {
+		if (countryItem?.nextCountryCode) {
+			await goto(`${PagePath.countries}/${countryItem.nextCountryCode}`);
 		}
 	}
 
@@ -77,7 +66,8 @@
 			return postIds
 				.map((countryPost) => $postsStore?.find((post) => post.id === countryPost.id))
 				.filter((post) => isDefined(post))
-				.sort((a, b) => (new Date(a.date).getTime() > new Date(b.date).getTime() ? -1 : 1)).toReversed();
+				.sort((a, b) => (new Date(a.date).getTime() > new Date(b.date).getTime() ? -1 : 1))
+				.toReversed();
 		}
 	}
 
@@ -95,7 +85,9 @@
 				currency: translations?.currency ?? '',
 				name: translations?.name ?? '',
 				population: country.population,
-				description: translations?.description
+				description: translations?.description,
+				previousCountryCode: country.previousCountryCode,
+				nextCountryCode: country.nextCountryCode
 			};
 		}
 	}
@@ -111,7 +103,7 @@
 
 <section class="px-3 md:px-12 md:py-4">
 	<div class="mb-3 flex pt-2 md:pt-0">
-		{#if isPreviousPost}
+		{#if countryItem?.previousCountryCode}
 			<button
 				onclick={loadPreviousCountry}
 				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 active:bg-gray-400 md:hover:bg-gray-400"
@@ -123,7 +115,7 @@
 			<div class="invisible flex rounded-full p-2"></div>
 		{/if}
 		<div class="grow"></div>
-		{#if nextCountryExists}
+		{#if countryItem?.nextCountryCode}
 			<button
 				onclick={loadNextCountry}
 				class="flex items-center justify-center gap-2 rounded-full bg-gray-200 p-2 text-sm font-bold text-gray-800 active:bg-gray-400 md:hover:bg-gray-400"
