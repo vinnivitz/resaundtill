@@ -16,10 +16,7 @@ export function getApiUrl(): string {
 }
 
 export function getHostUrl(): string {
-	if (env.PUBLIC_SERVER === 'true') {
-		return browser ? env.PUBLIC_EXTERNAL_HOST_URL : env.PUBLIC_INTERNAL_HOST_URL;
-	}
-	return env.PUBLIC_INTERNAL_HOST_URL;
+	return env.PUBLIC_SERVER === 'true' ? env.PUBLIC_EXTERNAL_HOST_URL ?? '' : env.PUBLIC_INTERNAL_HOST_URL ?? '';
 }
 
 /**
