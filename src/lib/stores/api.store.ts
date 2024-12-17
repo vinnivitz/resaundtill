@@ -50,19 +50,16 @@ export async function initApiStores(fetch: FetchInterface): Promise<void> {
 		}));
 		postsStore.set(posts.toReversed());
 		currentCoordinatesStore.set(posts[0]?.location?.coordinates);
-		const postIdToLocationMap = new Map(posts.map((post) => [post.id, post.location]));
+		const locationPosts = posts.filter((post) => Boolean(post.location));
 		mapItemsStore.set(
-			posts
-				.filter((post) => post.location)
-				.map((post) => ({
-					id: post.id,
-					date: post.date,
-					location: post.location!,
-					isFlight: post.isFlight,
-					translations: post.translations,
-					previousLocation: post.previousPostId ? postIdToLocationMap.get(post.previousPostId) : undefined,
-					nextLocation: post.nextPostId ? postIdToLocationMap.get(post.nextPostId) : undefined
-				}))
+			locationPosts.map((post, index) => ({
+				id: post.id,
+				date: post.date,
+				location: post.location!,
+				isFlight: post.isFlight,
+				translations: post.translations,
+				nextItemId: locationPosts[index + 1]?.id
+			}))
 		);
 		await setCountryPostRelations(posts);
 	}

@@ -114,7 +114,7 @@
 
 			addTooltip(currentMarker, currentItem);
 
-			const hasNextInSequence = currentItem.nextLocation === nextItem?.location;
+			const hasNextInSequence = currentItem.nextItemId === nextItem.id;
 			if (hasNextInSequence && nextMarker) {
 				addPolyLine(currentMarker, nextMarker, nextItem);
 			}

@@ -6,7 +6,7 @@ export type MapItem = {
 	id: string;
 	date: string;
 	translations: BlogPostTranslation[];
-	nextLocation?: Point;
+	nextItemId?: string;
 	location: Point;
 	isFlight: boolean;
 };
