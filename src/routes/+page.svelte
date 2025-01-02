@@ -6,4 +6,4 @@
 	import { goto } from '$app/navigation';
 </script>
 
-<Map items={$mapItemsStore} navigate={async (postId) => await goto(`${PagePath.travel}/${postId}`)} />
+<Map items={$mapItemsStore} showCustomMarker navigate={async (postId) => await goto(`${PagePath.travel}/${postId}`)} />

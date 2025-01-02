@@ -186,7 +186,6 @@
 							countryCode={countryItem.code}
 							showWholeCountry
 							activatable
-							showCustomMarker
 							navigate={async (id) => await goto(`${PagePath.travel}/${id}`)}
 						/>
 					</TabItem>
@@ -232,7 +231,6 @@
 						countryCode={countryItem.code}
 						showWholeCountry
 						activatable
-						showCustomMarker
 						navigate={async (id) => await goto(`${PagePath.travel}/${id}`)}
 					/>
 				{/if}
